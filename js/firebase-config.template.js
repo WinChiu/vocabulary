@@ -22,7 +22,6 @@ let db;
 try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
-  console.log('Firebase (Modular) initialized successfully');
 } catch (error) {
   console.error('Firebase init failed:', error);
 }

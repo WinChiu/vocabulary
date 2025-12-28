@@ -150,7 +150,9 @@ const DataService = {
       batch.set(docRef, {
         word_en: String(card.word_en).trim(),
         meaning_zh: String(card.meaning_zh).trim(),
-        example_en: String(card.example_en || '').trim(),
+        example_en: Array.isArray(card.example_en)
+          ? card.example_en
+          : [String(card.example_en || '').trim()].filter(Boolean),
         is_starred: false,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp(),

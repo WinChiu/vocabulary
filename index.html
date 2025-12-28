@@ -176,7 +176,7 @@
           <div class="full-width-list-container vocab-section-container">
             <div class="section-label section-header-label">
               <div
-                class="header-title-group flex w-full md:w-auto justify-between items-center gap-4 mr-8"
+                class="header-title-group flex w-full md:w-auto justify-between items-center gap-4 md:mr-8"
               >
                 <h1 class="text-2xl font-bold">Vocabulary List</h1>
 
@@ -309,13 +309,19 @@
                 />
               </div>
               <div class="form-group">
-                <label for="example_en">Example Sentence</label>
-                <textarea
-                  id="example_en"
-                  rows="3"
-                  placeholder="e.g., She is a resilient person."
-                  class="w-full bg-white rounded-3xl border border-gray-200 px-6 py-4 text-base text-gray-800 outline-none transition-all focus:border-accent-orange min-h-[120px]"
-                ></textarea>
+                <label>Example Sentences (Max 5)</label>
+                <div id="examples-container" class="flex flex-col gap-3">
+                  <!-- Dynamic inputs will be added here -->
+                </div>
+                <button
+                  type="button"
+                  id="add-example-btn"
+                  class="btn btn-tonal btn-sm mt-3"
+                  style="align-self: flex-start"
+                >
+                  <span class="material-icons text-sm mr-1">add</span>
+                  Add Sentence
+                </button>
               </div>
               <div class="form-group checkbox-group">
                 <div class="inline-flex items-center">
@@ -597,7 +603,9 @@
         <section id="review-session" class="view">
           <div class="view-header-flex">
             <h1>Active Review</h1>
-            <div class="flex items-center gap-4">
+            <div
+              class="flex w-full md:w-auto justify-between md:justify-end items-center gap-4"
+            >
               <div id="review-progress" class="review-progress-text">0 / 0</div>
               <button
                 id="exit-review-btn"

@@ -73,6 +73,14 @@ const createFlexibleRegex = (text) => {
   return new RegExp(`\\b${pattern}\\b`, 'gi');
 };
 
+// Helper to get examples as array
+const getExamples = (card) => {
+  if (Array.isArray(card.example_en)) {
+    return card.example_en.length > 0 ? card.example_en : [''];
+  }
+  return [card.example_en || ''];
+};
+
 class ReviewSession {
   constructor(cards, mode) {
     this.cards = cards; // Filtered list of cards
@@ -123,6 +131,18 @@ class ReviewSession {
       case 2: // ZH -> EN
         const front = this.mode === 1 ? card.word_en : card.meaning_zh;
         const back = this.mode === 1 ? card.meaning_zh : card.word_en;
+
+        // Pick a random example and persist it for this card session
+        if (
+          !this.currentReviewSentence ||
+          this.currentReviewCardId !== card.id
+        ) {
+          const examples = getExamples(card);
+          this.currentReviewCardId = card.id;
+          this.currentReviewSentence =
+            examples[Math.floor(Math.random() * examples.length)];
+        }
+
         return `
                     <div class="flashcard" id="active-flashcard">
                         ${levelBadge}
@@ -131,7 +151,9 @@ class ReviewSession {
                           this.isCardRevealed ? '' : 'hidden'
                         }">
                             <div class="meaning">${back}</div>
-                            <div class="example">${card.example_en}</div>
+                            <div class="example">${
+                              this.currentReviewSentence
+                            }</div>
                         </div>
                         ${
                           !this.isCardRevealed
@@ -141,13 +163,14 @@ class ReviewSession {
                     </div>
                 `;
       case 3: // Spelling
+        const spellingEx = getExamples(card)[0]; // Show first example context
         if (this.isCardRevealed) {
           return `
                         <div class="flashcard">
                             ${levelBadge}
                             <div class="sub-content" style="margin-bottom:1rem;">${card.meaning_zh}</div>
-                            <div class="content" style="color:var(--success-color)">${card.word_en}</div>
-                             <div class="sub-content"><small>${card.example_en}</small></div>
+                            <div class="content">${card.word_en}</div>
+                             <div class="sub-content"><small>${spellingEx}</small></div>
                         </div>
                     `;
         }
@@ -162,7 +185,29 @@ class ReviewSession {
       case 4: // Cloze
         const word = card.word_en;
         const regex = createFlexibleRegex(word);
-        let sentence = card.example_en;
+
+        // Pick a random example that contains the word
+        const allExamples = getExamples(card);
+        // We prefer examples that actually match the word for Cloze
+        const validExamples = allExamples.filter((ex) => regex.test(ex));
+        regex.lastIndex = 0; // Reset
+
+        // If no example matches (rare), allow any (will just show text without blank)
+        const candidates =
+          validExamples.length > 0 ? validExamples : allExamples;
+        // Random selection (Stateful per card render? Ideally yes, but here re-render calls getting random again is chaos.
+        // We should store selected example index in the session/card state if we want persistence across reveal.
+        // But for now, let's pick one based on a hash or simple random if render is stable)
+        // Actually, renderCard is called multiple times? No, mainly once per state change.
+        // To be safe, let's use a stable selection if possible or just random.
+        // Random is fine, but when revealing, we want the SAME sentence.
+
+        if (!this.currentClozeSentence || this.currentClozeCardId !== card.id) {
+          this.currentClozeCardId = card.id;
+          this.currentClozeSentence =
+            candidates[Math.floor(Math.random() * candidates.length)];
+        }
+        let sentence = this.currentClozeSentence;
 
         if (this.isCardRevealed) {
           return `
@@ -291,9 +336,23 @@ const ReviewManager = {
     }
   },
 
-  reveal: (isAuto = false) => {
+  reveal: async (isAuto = false) => {
     const session = ReviewManager.session;
     if (!session) return;
+
+    // If it's a skip (I don't know) in Modes 3 or 4, record as wrong
+    if (
+      !isAuto &&
+      (session.mode === 3 || session.mode === 4) &&
+      !session.isCardRevealed
+    ) {
+      session.results.wrong++;
+      const card = session.getCurrentCard();
+      const modeKey = MODE_MAP[session.mode];
+      const weight = MODE_WEIGHTS[session.mode];
+      await DataService.updateReviewStats(card.id, modeKey, false, weight);
+    }
+
     session.isCardRevealed = true;
     ReviewManager.updateUI();
   },
@@ -353,7 +412,7 @@ const ReviewManager = {
       const weight = MODE_WEIGHTS[session.mode];
       await DataService.updateReviewStats(card.id, modeKey, true, weight);
       setTimeout(() => {
-        ReviewManager.reveal();
+        ReviewManager.reveal(true);
       }, 500);
     } else {
       session.results.wrong++;
@@ -378,7 +437,9 @@ const ReviewManager = {
 
     // Flexible matching: check against base word AND any variation found in the sentence
     const regex = createFlexibleRegex(card.word_en);
-    const matches = (card.example_en.match(regex) || []).map((m) =>
+    // Use the currently displayed sentence for matching context if needed.
+    // We must check against the specific sentence used in the cloze to find the correct variation (suffixed word)
+    const matches = (session.currentClozeSentence.match(regex) || []).map((m) =>
       normalize(m)
     );
 

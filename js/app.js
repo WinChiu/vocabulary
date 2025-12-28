@@ -18,6 +18,53 @@ const App = {
   currentPage: 1, // Pagination State
   userInfo: null,
 
+  // UI Helpers for Examples
+  addExampleInput: (value = '') => {
+    const container = $('#examples-container');
+    const inputs = container.querySelectorAll('.example-row');
+    if (inputs.length >= 5) {
+      showPopup(
+        'Limit Reached',
+        'You can include at most 5 example sentences.'
+      );
+      return;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'example-row relative mb-2';
+    div.innerHTML = `
+      <textarea
+        rows="2"
+        placeholder="e.g., She is a resilient person."
+        class="example-input w-full bg-white rounded-full border border-gray-200 px-6 py-4 pr-12 text-base text-gray-800 outline-none transition-all focus:border-accent-orange min-h-[80px]"
+      >${value}</textarea>
+      ${`<button type="button" class="btn-remove-example absolute right-2 top-2 text-gray-400 hover:text-red-500 p-2">
+           <span class="material-icons text-xl">close</span>
+         </button>`}
+    `;
+
+    container.appendChild(div);
+    App.updateExampleButtons();
+  },
+
+  updateExampleButtons: () => {
+    const container = $('#examples-container');
+    const rows = container.querySelectorAll('.example-row');
+    const addBtn = $('#add-example-btn');
+
+    // Hide/Show Add Button
+    if (addBtn) addBtn.style.display = rows.length >= 5 ? 'none' : 'flex';
+
+    // Handle Remove Buttons
+    rows.forEach((row, index) => {
+      const btn = row.querySelector('.btn-remove-example');
+      if (btn) {
+        // If only one row, hide remove button to enforce "at least one"
+        btn.style.display = rows.length === 1 ? 'none' : 'block';
+      }
+    });
+  },
+
   init: async () => {
     App.selectedIds = new Set();
     App.bindEvents();
@@ -25,22 +72,11 @@ const App = {
     const auth = getAuth();
 
     onAuthStateChanged(auth, async (user) => {
-      // 1. Handle Legacy Anonymous Users (Cleanup)
-      if (user && user.isAnonymous) {
-        console.log('Cleaning up anonymous session...');
-        await signOut(auth);
-        showView('login');
-        return;
-      }
-
-      // 2. Handle Logic
-      if (user && user.email) {
-        console.log('User detected:', user.email);
+      if (user) {
         App.userInfo = user;
         showView('dashboard');
         await App.refreshData();
       } else {
-        console.log('No user, showing login');
         showView('login');
       }
     });
@@ -61,10 +97,8 @@ const App = {
   },
 
   refreshData: async () => {
-    console.log('[Debug] refreshData: Starting fetch...');
     try {
       const cards = await DataService.fetchCards();
-      console.log('[Debug] refreshData: Fetched cards:', cards.length);
       App.allCards = cards;
       App.renderDashboard();
       App.updateDashboardChart();
@@ -118,12 +152,10 @@ const App = {
   },
 
   bindEvents: () => {
-    console.log('[Debug] bindEvents: Attaching listeners...');
     // Navigation Interception
     $$('.nav-btn').forEach((btn) => {
       on(btn, 'click', () => {
         const target = btn.getAttribute('data-target');
-        console.log('Navigating to:', target);
 
         // Reset Import View State
         if (target === 'import') {
@@ -132,6 +164,13 @@ const App = {
           $('#import-cancel-initial').classList.remove('hidden');
           $('#import-file-section').classList.remove('hidden');
           $('#csv-file-input').value = '';
+        }
+
+        if (target === 'add-card') {
+          // Reset and init form with one empty input
+          $('#add-card-form').reset();
+          $('#examples-container').innerHTML = '';
+          App.addExampleInput();
         }
 
         if (target === 'dashboard') {
@@ -191,12 +230,28 @@ const App = {
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
+      // Collect Examples
+      const exampleInputs = $$('.example-input');
+      const examples = Array.from(exampleInputs)
+        .map((input) => input.value.trim())
+        .filter((text) => text.length > 0);
+
       const card = {
         word_en: $('#word_en').value.trim(),
         meaning_zh: $('#meaning_zh').value.trim(),
-        example_en: $('#example_en').value.trim(),
+        example_en: examples.length > 0 ? examples : [], // Data service will validate or we rely on required input
         is_starred: $('#is_starred').checked,
       };
+
+      if (card.example_en.length === 0) {
+        showPopup(
+          'Missing Info',
+          '<p>Please add at least one example sentence.</p>'
+        );
+        btn.disabled = false;
+        btn.textContent = 'Save Card';
+        return;
+      }
 
       // Duplicate Check (Case-insensitive)
       const isDuplicate = App.allCards.some(
@@ -214,11 +269,11 @@ const App = {
         return;
       }
 
-      console.log('[Debug] Add Card: Submitting...', card);
-
       try {
         await DataService.addCard(card);
         e.target.reset();
+        $('#examples-container').innerHTML = ''; // Clear inputs
+        App.addExampleInput(); // Add one fresh input
         await App.refreshData(); // Refresh list
         showPopup(
           'Saved!',
@@ -282,6 +337,25 @@ const App = {
           const id = row.dataset.id;
           App.showCardPreview(id);
         }
+      });
+    }
+
+    // Event Delegation for Examples
+    if (document.querySelector('#examples-container')) {
+      on($('#examples-container'), 'click', (e) => {
+        const btn = e.target.closest('.btn-remove-example');
+        if (btn) {
+          const row = btn.closest('.example-row');
+          row.remove();
+          App.updateExampleButtons();
+        }
+      });
+    }
+
+    const addExBtn = $('#add-example-btn');
+    if (addExBtn) {
+      on(addExBtn, 'click', () => {
+        App.addExampleInput();
       });
     }
 
@@ -385,11 +459,18 @@ const App = {
               lowKey.includes('sentence') ||
               lowKey.includes('例句')
             ) {
-              newRow.example_en = row[key];
+              // Aggregate examples
+              if (!newRow.example_en) newRow.example_en = [];
+              const val = row[key].toString().trim();
+              if (val) newRow.example_en.push(val);
             } else {
               newRow[key] = row[key]; // Keep original for preview
             }
           });
+
+          // Ensure example_en is an array even if empty found
+          if (!newRow.example_en) newRow.example_en = [];
+
           return newRow;
         });
 
@@ -839,14 +920,7 @@ const App = {
               card.meaning_zh
             }</div>
 
-            <div style="background:var(--bg-workspace); padding:1.5rem; border-radius:20px; text-align:left; margin-bottom:1.5rem;">
-                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">Example Sentence</div>
-                <div style="font-size:1.1rem; line-height:1.5;">${
-                  card.example_en || '<i>No example provided.</i>'
-                }</div>
-            </div>
-
-            <div style="display:flex; gap:1rem;">
+            <div style="display:flex; gap:1rem; margin-bottom: 1.5rem;">
                 <div class="status-badge-container status-${level.label.toLowerCase()}">
                     <div class="status-label">STATUS</div>
                     <div class="status-value">${level.label.toUpperCase()}</div>
@@ -856,6 +930,19 @@ const App = {
                     <div style="font-weight:800; color:#1a1a1a;">${
                       card.review_stats.total_attempts || 0
                     }</div>
+                </div>
+            </div>
+
+            <div style="background:var(--bg-workspace); padding:1.5rem; border-radius:20px; text-align:left;">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">Example Sentences</div>
+                <div style="font-size:1.1rem; line-height:1.5; display: flex; flex-direction: column; gap: 8px;">
+                    ${
+                      Array.isArray(card.example_en)
+                        ? card.example_en
+                            .map((ex) => `<div>${ex}</div>`)
+                            .join('')
+                        : card.example_en || '<i>No example provided.</i>'
+                    }
                 </div>
             </div>
         </div>
@@ -916,7 +1003,6 @@ const App = {
   },
 
   handleDelete: async (id) => {
-    console.log('[Debug] handleDelete: id=', id);
     showPopup(
       'Delete Card',
       '<p>Are you sure you want to delete this card? This action cannot be undone.</p>',
@@ -1145,17 +1231,34 @@ const App = {
       $('#import-file-section').classList.add('hidden');
     }
 
-    // Headers
+    // Headers and Formatting Mapping
+    const labelMap = {
+      word_en: 'Word',
+      meaning_zh: 'Meaning',
+      example_en: 'Example Sentences',
+    };
+
     if (previewData.length > 0) {
       const keys = Object.keys(previewData[0]);
       let headerHTML = '<tr>';
-      keys.forEach((k) => (headerHTML += `<th>${k}</th>`));
+      keys.forEach((k) => {
+        const label = labelMap[k] || k;
+        headerHTML += `<th>${label}</th>`;
+      });
       headerHTML += '</tr>';
 
       let bodyHTML = '';
       previewData.forEach((row) => {
         bodyHTML += '<tr>';
-        keys.forEach((k) => (bodyHTML += `<td>${row[k] || ''}</td>`));
+        keys.forEach((k) => {
+          let val = row[k] || '';
+          if (Array.isArray(val)) {
+            val = val
+              .map((v) => `<div style="margin-bottom: 4px;">• ${v}</div>`)
+              .join('');
+          }
+          bodyHTML += `<td>${val}</td>`;
+        });
         bodyHTML += '</tr>';
       });
       previewTable.innerHTML = headerHTML + bodyHTML;

@@ -11,17 +11,6 @@
       href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD,ROND@6..144,100..1000,0..100,0..100&display=swap"
       rel="stylesheet"
     />
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=1.2" />
-    <!-- Material Icons -->
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <!-- SheetJS -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -36,6 +25,17 @@
         },
       };
     </script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css?v=1.5" />
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="light-mode">
     <div class="app-shell">
@@ -54,7 +54,7 @@
                 >lock_person</span
               >
             </div>
-            <h1 style="font-size: 2rem; margin-bottom: 1rem">Welcome</h1>
+            <h1>Welcome</h1>
             <p style="color: var(--text-muted); margin-bottom: 2rem">
               Please sign in to access your vocabulary.
             </p>
@@ -173,7 +173,7 @@
 
             <!-- Action: Import -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn orange"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn"
               data-target="import"
             >
               <div class="card-label">Import CSV</div>
@@ -181,7 +181,7 @@
 
             <!-- Action: Add Card -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn orange"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn"
               data-target="add-card"
             >
               <div class="card-label">Add Card</div>
@@ -195,7 +195,7 @@
               <div
                 class="header-title-group flex w-full md:w-auto justify-between items-center gap-4 md:mr-8"
               >
-                <h1 class="text-2xl font-bold">Vocabulary List</h1>
+                <h1>Vocabulary List</h1>
 
                 <!-- Starred Toggle -->
                 <label

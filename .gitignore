@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Secrets (DO NOT COMMIT)
+js/firebase-config.js

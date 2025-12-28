@@ -7,26 +7,48 @@ import ReviewManager, {
 import { $, $$, on, showView, showPopup, closeModal } from './utils.js';
 import {
   getAuth,
-  signInWithEmailAndPassword,
-  signInAnonymously,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 
 const App = {
   allCards: [],
   currentPage: 1, // Pagination State
+  userInfo: null,
 
   init: async () => {
     App.selectedIds = new Set();
     App.bindEvents();
 
     const auth = getAuth();
-    await signInAnonymously(auth);
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-      await App.refreshData();
+      if (user) {
+        console.log('User detected:', user.email);
+        App.userInfo = user;
+        showView('dashboard');
+        await App.refreshData();
+      } else {
+        console.log('No user, showing login');
+        showView('login');
+      }
     });
+
+    // Handle Login Button
+    const loginBtn = $('#google-login-btn');
+    if (loginBtn) {
+      on(loginBtn, 'click', async () => {
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error('Login failed', error);
+          showPopup('Login Error', `<p>${error.message}</p>`);
+        }
+      });
+    }
   },
 
   refreshData: async () => {
@@ -39,6 +61,20 @@ const App = {
       App.updateDashboardChart();
     } catch (e) {
       console.error('Failed to refresh data', e);
+
+      // Handle Permission Denied (e.g., wrong email)
+      if (e.code === 'permission-denied' || e.message.includes('permission')) {
+        const auth = getAuth();
+        const email = App.userInfo ? App.userInfo.email : 'Unknown Account';
+        await signOut(auth);
+        showPopup(
+          'Access Denied',
+          `<p>The account <b>${email}</b> is not authorized to access this database.</p><p style="font-size:0.85em; color:#666">Server Rejected Request.</p>`
+        );
+        showView('login');
+        return;
+      }
+
       showPopup(
         'Network Error',
         `<p>Could not load cards. Details: <br><b>${e.message}</b></p>`

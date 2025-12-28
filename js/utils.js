@@ -1,0 +1,105 @@
+// Utility functions (ES Module)
+
+export const $ = (selector) => document.querySelector(selector);
+export const $$ = (selector) => document.querySelectorAll(selector);
+
+// Simple event listener wrapper
+export const on = (element, event, handler) => {
+  if (element) {
+    element.addEventListener(event, handler);
+  }
+};
+
+// Toggle visibility of views
+export const closeModal = () => {
+  const overlay = $('#modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+};
+
+export const showPopup = (title, content, options = {}) => {
+  const {
+    showClose = true,
+    onConfirm = null,
+    onCancel = null,
+    confirmText = 'Got it',
+    cancelText = 'Cancel',
+    footerLeft = null,
+  } = options;
+
+  const contentArea = $('#modal-content');
+  if (!contentArea) return;
+
+  let footerHTML = '';
+  if (onConfirm) {
+    footerHTML = `
+      <button class="btn btn-tonal" id="modal-cancel-btn">${cancelText}</button>
+      <button class="btn btn-primary" id="modal-confirm-btn">${confirmText}</button>
+    `;
+  } else if (showClose) {
+    footerHTML = `<button class="btn btn-primary" id="modal-close-btn-footer">${confirmText}</button>`;
+  }
+
+  contentArea.innerHTML = `
+        <div class="modal-header">
+            <h2 style="font-weight: 800; letter-spacing:-0.02em;">${title}</h2>
+            ${
+              showClose
+                ? `<button class="modal-close-btn" id="modal-close-x"><span class="material-icons">close</span></button>`
+                : ''
+            }
+        </div>
+        <div class="modal-body">
+            ${content}
+        </div>
+        <div class="modal-footer ${footerLeft ? 'has-left' : ''}">
+            <div class="modal-footer-left">${footerLeft || ''}</div>
+            <div class="modal-footer-right">${footerHTML}</div>
+        </div>
+    `;
+
+  const overlay = $('#modal-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+
+    // Helper to close and cleanup
+    const close = () => {
+      overlay.style.display = 'none';
+      if (onCancel) onCancel();
+    };
+
+    // Bind Close Actions
+    if ($('#modal-close-x')) $('#modal-close-x').onclick = close;
+    if ($('#modal-close-btn-footer'))
+      $('#modal-close-btn-footer').onclick = close;
+    if ($('#modal-cancel-btn')) $('#modal-cancel-btn').onclick = close;
+
+    if ($('#modal-confirm-btn')) {
+      $('#modal-confirm-btn').onclick = () => {
+        overlay.style.display = 'none';
+        if (onConfirm) onConfirm();
+      };
+    }
+
+    // Close on background click
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close();
+    };
+  }
+};
+
+export const showView = (viewId) => {
+  $$('.view').forEach((el) => el.classList.remove('active'));
+  $$('.nav-btn').forEach((el) => el.classList.remove('active'));
+
+  const target = $(`#${viewId}`);
+  if (target) {
+    target.classList.add('active');
+  }
+
+  const navBtn = $(`.nav-btn[data-target="${viewId}"]`);
+  if (navBtn) {
+    navBtn.classList.add('active');
+  }
+};
+
+window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove

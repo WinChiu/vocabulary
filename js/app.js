@@ -25,7 +25,16 @@ const App = {
     const auth = getAuth();
 
     onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      // 1. Handle Legacy Anonymous Users (Cleanup)
+      if (user && user.isAnonymous) {
+        console.log('Cleaning up anonymous session...');
+        await signOut(auth);
+        showView('login');
+        return;
+      }
+
+      // 2. Handle Logic
+      if (user && user.email) {
         console.log('User detected:', user.email);
         App.userInfo = user;
         showView('dashboard');

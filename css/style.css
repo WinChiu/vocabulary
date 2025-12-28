@@ -354,7 +354,7 @@ h1 {
   padding: 1.5rem 1rem;
   animation: fadeIn 0.2s ease-in-out;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 
 .view.active {
@@ -767,7 +767,10 @@ label {
   color: var(--md-sys-color-primary);
 }
 
-input[type='text'],
+input[type='text']:not(.cloze-input),
+input[type='password']:not(.cloze-input),
+input[type='email']:not(.cloze-input),
+input[type='number']:not(.cloze-input),
 textarea,
 select {
   font-family: inherit;
@@ -1180,7 +1183,7 @@ textarea:focus {
 /* Global Select Design (Tailwind-like but in CSS) */
 .vocab-select-pill {
   background-color: white;
-  border-radius: var(--radius-pill) !important;
+  border-radius: var(--radius-pill);
   border: 1px solid rgba(0, 0, 0, 0.08);
   font-size: 0.85rem;
   color: var(--text-main);
@@ -1223,9 +1226,9 @@ textarea:focus {
   margin-top: 1.5rem;
 }
 .flex-justify-between-center {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
 }
 
@@ -1235,28 +1238,28 @@ textarea:focus {
 }
 
 .btn-reveal {
-  width: auto !important;
+  width: auto;
   min-width: 150px;
-  max-width: none !important;
-  padding: 1rem !important;
+  max-width: none;
+  padding: 1rem;
 }
 
 .text-forgot {
-  color: var(--md-sys-color-error, #b3261e) !important;
+  color: var(--md-sys-color-error, #b3261e);
 }
 
 .text-center {
-  text-align: center !important;
+  text-align: center;
 }
 
 .summary-text-large {
-  font-size: 4rem !important;
-  margin: 1rem 0 !important;
+  font-size: 4rem;
+  margin: 1rem 0;
 }
 
 .summary-footer-text {
-  color: var(--text-muted) !important;
-  font-size: 1rem !important;
+  color: var(--text-muted);
+  font-size: 1rem;
 }
 
 .summary-header-text {
@@ -1312,7 +1315,7 @@ textarea:focus {
   }
 
   .desktop-only {
-    display: none !important;
+    display: none;
   }
 
   .mobile-meaning {

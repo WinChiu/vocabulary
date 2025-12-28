@@ -145,7 +145,6 @@ class ReviewSession {
 
         return `
                     <div class="flashcard" id="active-flashcard">
-                        ${levelBadge}
                         <div class="content">${front}</div>
                         <div class="sub-content ${
                           this.isCardRevealed ? '' : 'hidden'
@@ -167,7 +166,6 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                         <div class="flashcard">
-                            ${levelBadge}
                             <div class="sub-content" style="margin-bottom:1rem;">${card.meaning_zh}</div>
                             <div class="content">${card.word_en}</div>
                              <div class="sub-content"><small>${spellingEx}</small></div>
@@ -176,9 +174,8 @@ class ReviewSession {
         }
         return `
                     <div class="flashcard">
-                        ${levelBadge}
                         <div class="content">${card.meaning_zh}</div>
-                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" >
+                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off"  >
                          <div id="spelling-feedback" class="feedback-msg"></div>
                     </div>
                 `;
@@ -212,7 +209,6 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                         <div class="flashcard">
-                           ${levelBadge}
                            <div class="sub-content" style="margin-bottom:1rem;">${
                              card.meaning_zh
                            }</div>
@@ -230,7 +226,6 @@ class ReviewSession {
 
         return `
                     <div class="flashcard">
-                        ${levelBadge}
                         <div class="sub-content" style="margin-bottom:1rem;">${
                           card.meaning_zh
                         }</div>

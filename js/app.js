@@ -15,6 +15,7 @@ import {
 
 const App = {
   allCards: [],
+  isBatchMode: false, // New State
   currentPage: 1, // Pagination State
   userInfo: null,
 
@@ -364,6 +365,13 @@ const App = {
       showView('review-setup');
     });
 
+    // Bulk Action Toggle
+    on($('#bulk-action-btn'), 'click', () => {
+      App.isBatchMode = true;
+      App.selectedIds.clear();
+      App.renderDashboard();
+    });
+
     // Review Setup Start
     on($('#review-setup-form'), 'submit', (e) => {
       e.preventDefault();
@@ -641,8 +649,9 @@ const App = {
 
     // 5. Cancel Batch Mode
     on($('#cancel-batch-btn'), 'click', () => {
+      App.isBatchMode = false;
       App.selectedIds.clear();
-      App.renderDashboard(); // This will call updateBatchUI and uncheck boxes
+      App.renderDashboard();
     });
   },
 
@@ -799,11 +808,11 @@ const App = {
         <table class="vocab-table">
           <thead>
             <tr>
-              <th class="checkbox-col"></th>
+              ${App.isBatchMode ? '<th class="checkbox-col"></th>' : ''}
               <th>Word</th>
               <th class="desktop-only">Meaning</th>
               <th>Status</th>
-              <th class="desktop-only" style="width: 100px; text-align: right;">Actions</th>
+              <th style="width: 100px; text-align: right;">Actions</th>
             </tr>
           </thead>
           <tbody id="vocab-table-body"></tbody>
@@ -826,6 +835,9 @@ const App = {
       row.dataset.id = card.id;
 
       row.innerHTML = `
+        ${
+          App.isBatchMode
+            ? `
         <td class="checkbox-col">
           <div class="inline-flex items-center">
             <label class="flex items-center cursor-pointer relative" for="check-${
@@ -847,7 +859,9 @@ const App = {
               </span>
             </label>
           </div>
-        </td>
+        </td>`
+            : ''
+        }
         <td>
           <div class="vocab-table-word">${card.word_en}</div>
           <div class="mobile-meaning">${card.meaning_zh}</div>
@@ -858,7 +872,7 @@ const App = {
         <td>
           <span class="level-indicator ${level.class}">${level.label}</span>
         </td>
-        <td class="vocab-table-actions desktop-only">
+        <td class="vocab-table-actions">
           <button class="icon-btn btn-star ${
             card.is_starred ? 'starred' : ''
           }" data-starred="${card.is_starred}">
@@ -880,12 +894,14 @@ const App = {
   updateBatchUI: () => {
     const bar = $('#batch-action-bar');
     const filterControls = $('.filter-controls-flex');
+    const bulkBtn = $('#bulk-action-btn');
     const countText = $('#selected-count-text');
     const count = App.selectedIds.size;
 
-    if (count > 0) {
+    if (App.isBatchMode) {
       if (bar) bar.classList.remove('hidden');
       if (filterControls) filterControls.classList.add('hidden');
+      if (bulkBtn) bulkBtn.classList.add('hidden');
       if (countText) countText.textContent = `${count} selected`;
 
       // Update Select All button text
@@ -895,13 +911,12 @@ const App = {
         const allChecked =
           allVisible.length > 0 &&
           Array.from(allVisible).every((cb) => cb.checked);
-        btn.innerHTML = allChecked
-          ? '<span class="material-icons" style="font-size: 18px; margin-right: 4px;">deselect</span> Deselect All'
-          : '<span class="material-icons" style="font-size: 18px; margin-right: 4px;">done_all</span> Select All';
+        btn.innerHTML = allChecked ? 'Deselect All' : 'Select All';
       }
     } else {
       if (bar) bar.classList.add('hidden');
       if (filterControls) filterControls.classList.remove('hidden');
+      if (bulkBtn) bulkBtn.classList.remove('hidden');
     }
   },
 

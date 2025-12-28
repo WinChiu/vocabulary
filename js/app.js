@@ -15,7 +15,6 @@ import {
 
 const App = {
   allCards: [],
-  isBatchMode: false, // New State
   currentPage: 1, // Pagination State
   userInfo: null,
 
@@ -67,7 +66,6 @@ const App = {
   },
 
   init: async () => {
-    App.selectedIds = new Set();
     App.bindEvents();
 
     const auth = getAuth();
@@ -314,9 +312,9 @@ const App = {
         // 1. Handle Action Buttons (Star, Delete)
         const btn = e.target.closest('button');
         if (btn) {
-          const rowEl = btn.closest('.vocab-row');
-          if (!rowEl) return;
-          const id = rowEl.dataset.id;
+          const itemEl = btn.closest('.vocab-row, .vocab-card-modern');
+          if (!itemEl) return;
+          const id = itemEl.dataset.id;
 
           if (btn.classList.contains('btn-star')) {
             const isStarred = btn.dataset.starred === 'true';
@@ -327,15 +325,15 @@ const App = {
           return;
         }
 
-        // 2. Ignore Checkbox interactions (don't trigger preview)
+        // 2. Ignore Checkbox interactions (if any)
         if (e.target.closest('.checkbox-col')) {
           return;
         }
 
-        // 3. Handle Card Preview Click (bubble up) - Anywhere else in the row
-        const row = e.target.closest('.vocab-row');
-        if (row) {
-          const id = row.dataset.id;
+        // 3. Handle Preview Click (bubble up) - Anywhere else in the row or card
+        const item = e.target.closest('.vocab-row, .vocab-card-modern');
+        if (item) {
+          const id = item.dataset.id;
           App.showCardPreview(id);
         }
       });
@@ -382,13 +380,6 @@ const App = {
     // Start Review Button
     on($('#start-review-btn'), 'click', () => {
       showView('review-setup');
-    });
-
-    // Bulk Action Toggle
-    on($('#bulk-action-btn'), 'click', () => {
-      App.isBatchMode = true;
-      App.selectedIds.clear();
-      App.renderDashboard();
     });
 
     // Review Setup Start
@@ -588,90 +579,6 @@ const App = {
     on($('#btn-assess-forgot'), 'click', () => ReviewManager.assess(false));
     on($('#btn-assess-know'), 'click', () => ReviewManager.assess(true));
     on($('#btn-next-card'), 'click', () => ReviewManager.next());
-
-    // --- Batch Action Events ---
-    // 1. Select All Button
-    on($('#select-all-btn'), 'click', () => {
-      const visibleCheckboxes = $$('.row-checkbox');
-      const allSelected = Array.from(visibleCheckboxes).every(
-        (cb) => cb.checked
-      );
-
-      const shouldSelect = !allSelected;
-      visibleCheckboxes.forEach((cb) => {
-        cb.checked = shouldSelect;
-        const id = cb.dataset.id;
-        if (shouldSelect) App.selectedIds.add(id);
-        else App.selectedIds.delete(id);
-      });
-
-      App.updateBatchUI();
-    });
-
-    // 2. Individual Checkbox Delegation
-    if (listContainer) {
-      on(listContainer, 'change', (e) => {
-        if (e.target.classList.contains('row-checkbox')) {
-          const id = e.target.dataset.id;
-          if (e.target.checked) App.selectedIds.add(id);
-          else App.selectedIds.delete(id);
-
-          App.updateBatchUI();
-        }
-      });
-    }
-
-    // 3. Batch Delete Action
-    on($('#batch-delete-btn'), 'click', () => {
-      const count = App.selectedIds.size;
-      if (count === 0) return;
-
-      showPopup(
-        'Batch Delete',
-        `<p>Are you sure you want to delete <b>${count}</b> selected cards? This cannot be undone.</p>`,
-        {
-          confirmText: `Delete ${count}`,
-          onConfirm: async () => {
-            try {
-              const btn = $('#batch-delete-btn');
-              btn.disabled = true;
-              btn.textContent = 'Deleting...';
-
-              await DataService.batchDeleteCards(Array.from(App.selectedIds));
-              App.selectedIds.clear();
-              App.updateBatchUI(); // Hide bar immediately
-
-              await App.refreshData();
-              showPopup(
-                'Success',
-                `<p>${count} cards deleted successfully.</p>`
-              );
-            } catch (err) {
-              showPopup('Error', '<p>Failed to perform batch delete.</p>');
-              console.error(err);
-            } finally {
-              $('#batch-delete-btn').disabled = false;
-              $('#batch-delete-btn').innerHTML =
-                '<span class="material-icons" style="font-size: 18px; margin-right: 4px;">delete</span> Delete Selected';
-            }
-          },
-        }
-      );
-    });
-
-    // 4. Progress Chart Trigger (Hidden as it's now inline)
-    /*
-    on($('#total-progress-card'), 'click', () => {
-      App.showProgressChart();
-    });
-    */
-
-    // 5. Cancel Batch Mode
-    on($('#cancel-batch-btn'), 'click', () => {
-      App.isBatchMode = false;
-      App.selectedIds.clear();
-      App.renderDashboard();
-    });
   },
 
   renderDashboard: () => {
@@ -824,11 +731,11 @@ const App = {
     }
 
     container.innerHTML = `
+      <!-- Desktop Table View -->
       <div class="table-responsive">
         <table class="vocab-table">
           <thead>
             <tr>
-              ${App.isBatchMode ? '<th class="checkbox-col"></th>' : ''}
               <th>Word</th>
               <th class="desktop-only">Meaning</th>
               <th>Status</th>
@@ -838,50 +745,31 @@ const App = {
           <tbody id="vocab-table-body"></tbody>
         </table>
       </div>
+
+      <!-- Mobile Card View -->
+      <div class="vocab-list-modern">
+      </div>
     `;
 
-    const tbody = $('#vocab-table-body');
+    const tbody = container.querySelector('#vocab-table-body');
+    const listEl = container.querySelector('.vocab-list-modern');
+
     if (filteredCards.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="5" style="text-align:center; padding: 3rem; color: var(--text-muted);">No vocabulary found.</td></tr>';
+      const emptyMsg =
+        '<div style="text-align:center; padding: 3rem; color: var(--text-muted); width: 100%;">No vocabulary found.</div>';
+      tbody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+      listEl.innerHTML = emptyMsg;
       return;
     }
 
     pagedCards.forEach((card) => {
       const level = getFamiliarityLevel(card.review_stats);
 
+      // 1. Table Row (Desktop)
       const row = document.createElement('tr');
       row.className = 'vocab-row';
       row.dataset.id = card.id;
-
       row.innerHTML = `
-        ${
-          App.isBatchMode
-            ? `
-        <td class="checkbox-col">
-          <div class="inline-flex items-center">
-            <label class="flex items-center cursor-pointer relative" for="check-${
-              card.id
-            }">
-              <input type="checkbox"
-                id="check-${card.id}"
-                class="row-checkbox peer h-5 w-5 cursor-pointer transition-all appearance-none rounded border border-slate-300 checked:bg-accent-orange checked:border-accent-orange"
-                data-id="${card.id}"
-                ${
-                  App.selectedIds && App.selectedIds.has(card.id)
-                    ? 'checked'
-                    : ''
-                } />
-              <span class="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                </svg>
-              </span>
-            </label>
-          </div>
-        </td>`
-            : ''
-        }
         <td>
           <div class="vocab-table-word">${card.word_en}</div>
           <div class="mobile-meaning">${card.meaning_zh}</div>
@@ -906,38 +794,34 @@ const App = {
         </td>
       `;
       tbody.appendChild(row);
+
+      // 2. Card (Mobile)
+      const cardEl = document.createElement('div');
+      cardEl.className = 'vocab-card-modern';
+      cardEl.dataset.id = card.id;
+      cardEl.innerHTML = `
+        <div class="vocab-card-main">
+          <div class="vocab-card-word">${card.word_en}</div>
+          <div class="vocab-card-meaning">${card.meaning_zh}</div>
+        </div>
+        <div class="vocab-card-side">
+          <span class="level-indicator ${level.class}">${level.label}</span>
+          <div class="vocab-card-actions">
+            <button class="icon-btn btn-star ${
+              card.is_starred ? 'starred' : ''
+            }" data-starred="${card.is_starred}">
+              <span class="material-icons" style="font-size:20px;">${
+                card.is_starred ? 'star' : 'star_border'
+              }</span>
+            </button>
+            <button class="icon-btn btn-delete">
+              <span class="material-icons" style="font-size:20px;">delete_outline</span>
+            </button>
+          </div>
+        </div>
+      `;
+      listEl.appendChild(cardEl);
     });
-
-    App.updateBatchUI();
-  },
-
-  updateBatchUI: () => {
-    const bar = $('#batch-action-bar');
-    const filterControls = $('.filter-controls-flex');
-    const bulkBtn = $('#bulk-action-btn');
-    const countText = $('#selected-count-text');
-    const count = App.selectedIds.size;
-
-    if (App.isBatchMode) {
-      if (bar) bar.classList.remove('hidden');
-      if (filterControls) filterControls.classList.add('hidden');
-      if (bulkBtn) bulkBtn.classList.add('hidden');
-      if (countText) countText.textContent = `${count} selected`;
-
-      // Update Select All button text
-      const btn = $('#select-all-btn');
-      if (btn) {
-        const allVisible = $$('.row-checkbox');
-        const allChecked =
-          allVisible.length > 0 &&
-          Array.from(allVisible).every((cb) => cb.checked);
-        btn.innerHTML = allChecked ? 'Deselect All' : 'Select All';
-      }
-    } else {
-      if (bar) bar.classList.add('hidden');
-      if (filterControls) filterControls.classList.remove('hidden');
-      if (bulkBtn) bulkBtn.classList.remove('hidden');
-    }
   },
 
   showCardPreview: (id) => {

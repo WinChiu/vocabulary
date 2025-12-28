@@ -597,12 +597,130 @@ button {
   background: rgba(239, 68, 68, 0.1);
 }
 
+/* Vocabulary List Modern Card Layout */
+.vocab-list-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* Let cards handle borders */
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: var(--radius-inner);
+  overflow: hidden;
+  box-shadow: var(--shadow-bento);
+}
+
+.vocab-card-modern {
+  background: var(--card-bg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vocab-card-modern:hover {
+  background: rgba(211, 84, 0, 0.02);
+}
+
+.vocab-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.vocab-card-word {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.vocab-card-meaning {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.vocab-card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-width: 100px;
+}
+
+.vocab-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.vocab-card-actions .icon-btn {
+  padding: 6px;
+  border-radius: 8px;
+  color: #666;
+}
+
+.vocab-card-actions .btn-star.starred {
+  color: #fbbf24;
+}
+
+.vocab-card-actions .btn-delete:hover {
+  color: #ef4444;
+}
+
+/* Level Badges for Modern List */
+.level-indicator {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.level-indicator.level-new {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.level-indicator.level-learning {
+  background: rgba(211, 84, 0, 0.1);
+  color: var(--accent-orange);
+}
+
+.level-indicator.level-mastered {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
 /* Mobile Sidebar */
 @media (max-width: 900px) {
   .main-workspace {
     margin: 0;
     border-radius: 0;
     padding: 0rem 0rem;
+  }
+}
+
+/* Responsive Word List Toggling */
+@media (min-width: 900px) {
+  .vocab-list-modern {
+    display: none !important;
+  }
+  .table-responsive {
+    display: block !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .vocab-list-modern {
+    display: flex !important;
+  }
+  .table-responsive {
+    display: none !important;
   }
 }
 
@@ -654,7 +772,7 @@ textarea,
 select {
   font-family: inherit;
   box-sizing: border-box;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) !important;
 }
 
 input[type='text']:focus,
@@ -722,7 +840,7 @@ textarea:focus {
 .form-actions-fixed {
   display: flex;
   gap: 1rem;
-  margin-top: 3rem;
+  margin-top: 2rem;
   justify-content: flex-end;
 }
 
@@ -853,26 +971,27 @@ textarea:focus {
 }
 
 .level-indicator {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
   display: inline-block;
-  margin-top: 4px;
-  width: fit-content;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: capitalize;
 }
 
-.level-mastered {
-  background-color: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+.level-indicator.level-new {
+  background: rgba(148, 163, 184, 0.1);
+  color: #64748b;
 }
-.level-learning {
-  background-color: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+
+.level-indicator.level-learning {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
 }
-.level-new {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+
+.level-indicator.level-mastered {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
 }
 
 .btn-success {
@@ -957,7 +1076,6 @@ textarea:focus {
   margin-top: 2rem;
 }
 .section-header-label {
-  padding: 0 1.5rem !important; /* Increased horizontal padding */
   margin-bottom: 1.5rem !important;
 }
 
@@ -1183,7 +1301,7 @@ textarea:focus {
   margin-top: 2px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   /* ... existing styles ... */
   .flashcard {
     padding: 3rem 1rem;
@@ -1396,13 +1514,13 @@ textarea:focus {
   font-weight: 800;
 }
 
-/* New Status - Red Theme */
+/* New Status - Grey/Blue Theme */
 .status-new {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(148, 163, 184, 0.1);
 }
 .status-new .status-label,
 .status-new .status-value {
-  color: #ef4444;
+  color: #64748b;
 }
 
 /* Learning Status - Blue Theme */
@@ -1420,5 +1538,5 @@ textarea:focus {
 }
 .status-mastered .status-label,
 .status-mastered .status-value {
-  color: #22c55e;
+  color: #16a34a;
 }

@@ -353,6 +353,25 @@ const App = {
       });
     }
 
+    // Chart Toggle
+    const chartHeader = $('#toggle-chart-header');
+    if (chartHeader) {
+      on(chartHeader, 'click', () => {
+        const card = $('#dashboard-chart-card');
+        const container = $('#chart-container');
+        const icon = $('#chart-toggle-icon');
+        if (container.classList.contains('hidden')) {
+          container.classList.remove('hidden');
+          card.classList.remove('collapsed');
+          icon.textContent = 'expand_less';
+        } else {
+          container.classList.add('hidden');
+          card.classList.add('collapsed');
+          icon.textContent = 'expand_more';
+        }
+      });
+    }
+
     const addExBtn = $('#add-example-btn');
     if (addExBtn) {
       on(addExBtn, 'click', () => {

@@ -674,13 +674,19 @@ const App = {
       dueNew = 0,
       dueLrn = 0,
       dueMst = 0;
-    let learningLoad = 0;
-    let masteredTotal = 0;
+    let totalNew = 0,
+      totalLrn = 0,
+      totalMst = 0;
     let demotions30d = 0;
 
     dashboardCards.forEach((card) => {
       const stats = card.review_stats || {};
       const state = stats.state || 'NEW';
+
+      // Total State Count
+      if (state === 'NEW') totalNew++;
+      else if (state === 'LEARNING') totalLrn++;
+      else if (state === 'MASTERED') totalMst++;
 
       // Due Calculation
       let isDue = false;
@@ -700,12 +706,6 @@ const App = {
         else if (state === 'MASTERED') dueMst++;
       }
 
-      // Learning Load
-      if (state === 'LEARNING') learningLoad++;
-
-      // Mastered Quality
-      if (state === 'MASTERED') masteredTotal++;
-
       // Demotions (30d)
       if (stats.demotions && Array.isArray(stats.demotions)) {
         stats.demotions.forEach((d) => {
@@ -716,21 +716,22 @@ const App = {
     });
 
     // Update Dashboard DOM
+    if ($('#total-new')) $('#total-new').textContent = totalNew;
+    if ($('#total-lrn')) $('#total-lrn').textContent = totalLrn;
+    if ($('#total-mst')) $('#total-mst').textContent = totalMst;
+
     const elDueCount = $('#due-count');
     if (elDueCount) {
       elDueCount.textContent = dueTotal;
-      // In black card, we might not want it RED if it's white text,
-      // but let's keep the logic or adjust it.
-      // If it's a dark card, maybe we want a highlight instead.
-      // For now, let's just update the text.
     }
     if ($('#due-new')) $('#due-new').textContent = dueNew;
     if ($('#due-lrn')) $('#due-lrn').textContent = dueLrn;
     if ($('#due-mst')) $('#due-mst').textContent = dueMst;
 
+    // These IDs are actually the same as totalLrn and totalMst in the current logic
     if ($('#learning-load-count'))
-      $('#learning-load-count').textContent = learningLoad;
-    if ($('#mastered-count')) $('#mastered-count').textContent = masteredTotal;
+      $('#learning-load-count').textContent = totalLrn;
+    if ($('#mastered-count')) $('#mastered-count').textContent = totalMst;
     if ($('#demoted-30d-count'))
       $('#demoted-30d-count').textContent = demotions30d;
 

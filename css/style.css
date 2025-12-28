@@ -24,7 +24,7 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  --success-color: #22c55e;
+  --success-color: #19b452;
   --danger-color: #ef4444;
 }
 
@@ -238,14 +238,35 @@ body {
   }
 }
 
+.bento-card.orange,
+.bento-card.dark,
+.bento-card.green {
+  color: white !important;
+}
+
+.bento-card.orange .card-label,
+.bento-card.dark .card-label,
+.bento-card.green .card-label,
+.bento-card.orange .card-value,
+.bento-card.dark .card-value,
+.bento-card.green .card-value,
+.bento-card.orange .card-footer,
+.bento-card.dark .card-footer,
+.bento-card.green .card-footer {
+  color: white !important;
+  opacity: 0.9 !important;
+}
+
 .bento-card.orange {
   background: var(--accent-orange);
-  color: white;
 }
 
 .bento-card.dark {
   background: var(--bg-sidebar);
-  color: white;
+}
+
+.bento-card.green {
+  background: var(--success-color);
 }
 
 .bento-card .card-label {

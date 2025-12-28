@@ -110,6 +110,23 @@
             <div class="bento-card col-8 orange">
               <div class="card-label">Total Word Progress</div>
               <div class="card-value" id="total-count">0</div>
+              <div class="card-footer mt-4 flex gap-2 flex-wrap">
+                <span
+                  class="due-badge-dark"
+                  style="background: rgba(255, 255, 255, 0.15)"
+                  >NEW: <b id="total-new">0</b></span
+                >
+                <span
+                  class="due-badge-dark"
+                  style="background: rgba(255, 255, 255, 0.15)"
+                  >LRN: <b id="total-lrn">0</b></span
+                >
+                <span
+                  class="due-badge-dark"
+                  style="background: rgba(255, 255, 255, 0.15)"
+                  >MST: <b id="total-mst">0</b></span
+                >
+              </div>
             </div>
 
             <div class="bento-card col-4 dark" id="due-card-black">
@@ -148,7 +165,7 @@
 
             <!-- Action: Start Review -->
             <div
-              class="bento-card col-4 action-card nav-btn"
+              class="bento-card col-4 action-card nav-btn green"
               data-target="review-setup"
             >
               <div class="card-label">Start Review</div>
@@ -156,7 +173,7 @@
 
             <!-- Action: Import -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn orange"
               data-target="import"
             >
               <div class="card-label">Import CSV</div>
@@ -164,7 +181,7 @@
 
             <!-- Action: Add Card -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn orange"
               data-target="add-card"
             >
               <div class="card-label">Add Card</div>

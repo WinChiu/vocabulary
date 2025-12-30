@@ -1,6 +1,6 @@
 :root {
   /* Bento Color Tokens */
-  --bg-workspace: #f8f9fa;
+  --bg-workspace: #ffffff;
   --bg-sidebar: #0e0e0e;
   --accent-orange: #d35400; /* Terracotta / Burned Orange */
   --accent-orange-soft: rgba(211, 84, 0, 0.1);
@@ -1060,7 +1060,14 @@ textarea:focus {
   height: auto;
   min-height: auto;
 }
-
+.btn-text {
+  padding: 0;
+  font-size: 1rem;
+  width: fit-content;
+  height: auto;
+  min-height: auto;
+  background-color: transparent;
+}
 .form-checkbox-label {
   display: flex;
   align-items: center;
@@ -1186,8 +1193,6 @@ textarea:focus {
 
 .preview-list-container {
   width: auto;
-  margin-left: -2rem;
-  margin-right: -2rem;
 }
 
 .preview-item {
@@ -1290,7 +1295,7 @@ textarea:focus {
   color: rgba(255, 255, 255, 0.9);
   padding: 4px 8px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -1606,10 +1611,9 @@ textarea:focus {
   font-size: 1.25rem; /* 20px */
 }
 
-@media (max-width: 600px) {
-  .view {
-    padding: 1rem 0;
-  }
+.icon-check-xs {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 /* Example Row & Remove Button Styles (Added for Add Card Form) */
@@ -1895,7 +1899,7 @@ textarea:focus {
     height: calc(100vh);
   }
   .view {
-    padding-bottom: 60px !important;
+    padding-bottom: 50px !important;
     padding: 0;
   }
   .action-card:hover {
@@ -1927,13 +1931,13 @@ textarea:focus {
   }
 
   .view-header-flex {
-    padding: 0rem 1rem 0rem 1rem;
+    padding: 0rem 1.5rem 0rem 1.5rem;
     position: sticky;
     top: 0;
     z-index: 1000;
   }
   .section-header-label {
-    padding: 1.5rem 1rem 1.5rem 1rem;
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem;
   }
   #dashboard .view-header-flex {
     margin-bottom: 0;
@@ -2007,7 +2011,7 @@ textarea:focus {
     border: none;
     border-radius: 0;
     box-shadow: none;
-    height: calc(100vh - 79px - 66px);
+    height: calc(100vh - 90px - 60px);
     margin: 0;
   }
   .btn-primary:hover {
@@ -2021,10 +2025,7 @@ textarea:focus {
   .vocab-section-container {
     margin-top: 3rem;
   }
-  .preview-list-container {
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-  }
+
   .preview-item {
     padding: 1.5rem;
   }

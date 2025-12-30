@@ -116,7 +116,7 @@
 
             <!-- Action: Start Review -->
             <div
-              class="bento-card col-4 action-card nav-btn green desktop-only"
+              class="bento-card col-4 action-card nav-btn orange desktop-only"
               data-target="review-setup"
             >
               <div class="card-label">Start Review</div>
@@ -139,7 +139,7 @@
               Add Card
             </button>
             <button
-              class="btn btn-primary nav-btn green btn-flex-grow-2"
+              class="btn btn-primary nav-btn orange btn-flex-grow-2"
               data-target="review-setup"
             >
               Start Review
@@ -230,7 +230,7 @@
               Add Card
             </button>
             <button
-              class="btn btn-primary nav-btn green btn-flex-grow-2"
+              class="btn btn-primary nav-btn orange btn-flex-grow-2"
               data-target="review-setup"
             >
               Start Review
@@ -273,9 +273,9 @@
                 <button
                   type="button"
                   id="add-example-btn"
-                  class="btn btn-tonal btn-sm mt-3 align-self-start"
+                  class="btn btn-tonal btn-text"
+                  style="margin: 0.5rem 0rem"
                 >
-                  <span class="material-icons icon-sm-mr">add</span>
                   Add Sentence
                 </button>
               </div>
@@ -333,8 +333,11 @@
           <div class="view-header-flex">
             <h1>Import Vocabulary</h1>
           </div>
-          <div class="bento-card full-height">
-            <div id="import-file-section">
+          <div class="bento-card full-height" style="padding: 0rem">
+            <div
+              id="import-file-section"
+              style="padding: 1.5rem 1.5rem 0rem 1.5rem"
+            >
               <div class="section-label">Select CSV File</div>
               <div class="form-group" style="margin-bottom: 0rem">
                 <input
@@ -347,7 +350,12 @@
             </div>
 
             <div id="import-preview" class="hidden">
-              <div class="section-label">Data Preview</div>
+              <div
+                class="section-label"
+                style="padding: 1.5rem 1.5rem 0rem 1.5rem"
+              >
+                Data Preview
+              </div>
               <div id="preview-list" class="preview-list-container">
                 <!-- Preview items injected here -->
               </div>
@@ -526,7 +534,7 @@
           <div class="view-header-flex">
             <div class="review-session-header">
               <div id="review-progress" class="review-progress-text">0 / 0</div>
-              <button id="exit-review-btn" class="btn btn-tonal btn-compact">
+              <button id="exit-review-btn" class="btn btn-tonal btn-text">
                 Exit Session
               </button>
             </div>
@@ -604,7 +612,7 @@
             </div>
           </div>
 
-          <div class="form-actions form-actions-fixed">
+          <div class="form-actions form-actions-fixed" style="border: none">
             <button
               class="btn btn-primary nav-btn btn-full-width"
               data-target="dashboard"
@@ -614,28 +622,6 @@
           </div>
         </section>
       </main>
-
-      <!-- Fixed Navigation Bar (Mobile) Global -->
-      <div
-        id="mobile-main-nav"
-        class="form-actions form-actions-fixed mobile-only"
-      >
-        <button class="btn white nav-btn btn-flex-grow-1" data-target="import">
-          Import
-        </button>
-        <button
-          class="btn white nav-btn btn-flex-grow-1"
-          data-target="add-card"
-        >
-          Add Card
-        </button>
-        <button
-          class="btn btn-primary nav-btn green btn-flex-grow-2"
-          data-target="review-setup"
-        >
-          Start Review
-        </button>
-      </div>
     </div>
 
     <!-- Scripts (Type Module) -->

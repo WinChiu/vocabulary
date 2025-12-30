@@ -964,7 +964,7 @@ const App = {
         let examplesHtml = '';
         if (Array.isArray(examples) && examples.length > 0) {
           examplesHtml = `
-            <div class="vocab-card-examples" style="margin-top: 12px; font-size: 0.9rem; color: var(--text-muted); padding-top: 8px; width: 100%;">
+            <div class="vocab-card-examples" style="font-size: 0.9rem; color: var(--text-muted); padding-top: 8px; width: 100%;">
               ${examples
                 .map((ex) => `<div style="margin-bottom: 6px;">• ${ex}</div>`)
                 .join('')}

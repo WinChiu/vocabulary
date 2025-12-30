@@ -1204,21 +1204,6 @@ textarea:focus {
   text-align: center;
 }
 
-.summary-text-large {
-  font-size: 4rem;
-  margin: 1rem 0;
-}
-
-.summary-footer-text {
-  color: var(--text-muted);
-  font-size: 1rem;
-}
-
-.summary-header-text {
-  color: var(--text-main) !important;
-  opacity: 0.8 !important;
-}
-
 .mr-2 {
   margin-right: 0.5rem !important;
 }
@@ -1362,6 +1347,18 @@ textarea:focus {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Visibility Utilities */
+.desktop-only {
+  display: block;
+}
+.mobile-only {
+  display: none;
+}
+.btn.green {
+  background-color: var(--success-color) !important;
+  color: white !important;
 }
 
 .flex {
@@ -1910,6 +1907,10 @@ textarea:focus {
     height: calc(100vh - 90px - 66px);
     overflow-y: scroll;
   }
+  .bento-grid.full-height {
+    height: calc(100vh - 90px - 66px);
+    overflow-y: scroll;
+  }
   .bento-grid {
     gap: 0;
   }
@@ -1917,16 +1918,33 @@ textarea:focus {
     padding: 0;
   }
   .form-actions-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     margin: 0;
     gap: 0;
     width: 100%;
+    z-index: 1000;
+    background: var(--card-bg);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.12);
   }
   .form-actions-fixed .btn {
     flex: 1;
-    width: 50%;
     border-radius: 0;
     margin: 0;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
+    height: auto;
+    border: none;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+  .view {
+    padding-bottom: 80px !important;
   }
   .input-group-flex {
     flex-direction: column;
@@ -1955,5 +1973,11 @@ textarea:focus {
   .btn-primary:hover {
     filter: none;
     transform: none;
+  }
+  .btn-flex-grow-1 {
+    flex: 1 !important;
+  }
+  .btn-flex-grow-2 {
+    flex: 2 !important;
   }
 }

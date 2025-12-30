@@ -112,7 +112,7 @@
 
             <!-- Action: Start Review -->
             <div
-              class="bento-card col-4 action-card nav-btn green"
+              class="bento-card col-4 action-card nav-btn green desktop-only"
               data-target="review-setup"
             >
               <div class="card-label">Start Review</div>
@@ -120,7 +120,7 @@
 
             <!-- Action: Import -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn desktop-only"
               data-target="import"
             >
               <div class="card-label">Import CSV</div>
@@ -128,7 +128,7 @@
 
             <!-- Action: Add Card -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn"
+              class="bento-card col-4 mobile-col-6 action-card nav-btn desktop-only"
               data-target="add-card"
             >
               <div class="card-label">Add Card</div>
@@ -194,6 +194,28 @@
                 >
               </button>
             </div>
+          </div>
+
+          <!-- Fixed Navigation Bar (Mobile) -->
+          <div class="form-actions form-actions-fixed mobile-only">
+            <button
+              class="btn btn-primary nav-btn green btn-flex-grow-2"
+              data-target="review-setup"
+            >
+              Start Review
+            </button>
+            <button
+              class="btn white nav-btn btn-flex-grow-1"
+              data-target="import"
+            >
+              Import
+            </button>
+            <button
+              class="btn white nav-btn btn-flex-grow-1"
+              data-target="add-card"
+            >
+              Add Card
+            </button>
           </div>
         </section>
 
@@ -545,33 +567,34 @@
           <div class="view-header-flex">
             <h1>Review Summary</h1>
           </div>
-          <div class="bento-card full-height">
-            <div class="card-value summary-text-large">
-              <span id="summary-total">0</span>
+          <div class="bento-grid full-height">
+            <div class="bento-card col-12 dark">
+              <div class="card-label">Review Session Result</div>
+              <div class="card-value" id="summary-total">0</div>
+              <div class="card-footer">Words completed in this session</div>
             </div>
 
-            <div class="card-footer summary-footer-text">
-              Words Review Completed
+            <div class="bento-card col-6 green mobile-col-6">
+              <div class="card-label">Remembered</div>
+              <div class="card-value" id="summary-correct">0</div>
+              <div class="card-footer">Well done!</div>
             </div>
 
-            <div class="summary-stats-grid mt-8">
-              <div class="summary-stat-box bg-green-soft">
-                <div class="summary-label-green">Remembered</div>
-                <div class="summary-value-green" id="summary-correct">0</div>
-              </div>
-              <div class="summary-stat-box bg-red-soft">
-                <div class="summary-label-red">Forgot</div>
-                <div class="summary-value-red" id="summary-wrong">0</div>
-              </div>
+            <div class="bento-card col-6 white mobile-col-6">
+              <div class="card-label">Forgot</div>
+              <div class="card-value" id="summary-wrong">0</div>
+              <div class="card-footer">Keep practicing</div>
             </div>
           </div>
 
-          <button
-            class="btn btn-primary nav-btn btn-full-width mt-8"
-            data-target="dashboard"
-          >
-            Back to Dashboard
-          </button>
+          <div class="form-actions form-actions-fixed">
+            <button
+              class="btn btn-primary nav-btn btn-full-width"
+              data-target="dashboard"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </section>
       </main>
     </div>

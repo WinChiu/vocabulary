@@ -597,13 +597,6 @@ button {
   color: #ef4444;
 }
 
-.review-session-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
 /* Level Badges for Modern List */
 .level-indicator {
   padding: 4px 10px;
@@ -882,8 +875,18 @@ textarea:focus {
 }
 
 .review-controls {
-  margin-top: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  align-items: center;
   width: 100%;
+}
+
+#self-assess-btns {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: auto;
 }
 
 #self-assess-btns .btn {
@@ -978,24 +981,16 @@ textarea:focus {
   border-collapse: collapse;
 }
 
-#preview-table {
-  border: none !important;
-}
-
 #preview-table th,
 #preview-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
   font-size: 0.875rem;
-  border-top: none;
-  border-left: none;
-  border-right: none;
 }
 /* --- Extracted Component Classes --- */
 
 .view-header-flex {
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   width: 100%;
@@ -1165,6 +1160,8 @@ textarea:focus {
 
 .table-preview-container {
   overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-inner);
 }
 
 .table-preview {
@@ -1587,84 +1584,9 @@ textarea:focus {
   }
 }
 
-/* Example Row & Remove Button Styles (Added for Add Card Form) */
-.example-row {
-  position: relative;
-  width: 100%;
-}
-
-.btn-remove-example {
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  transform: translateY(-50%);
-  background: transparent !important;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 50%;
-  transition: all 0.2s;
-}
-
-.btn-remove-example:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  color: var(--danger-color);
-}
-
-/* Pagination Refinement */
-.pagination-container {
-  display: flex !important;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin: 1.5rem 0rem;
-  padding: 0 0.5rem;
-}
-
-.pagination-container.hidden {
-  display: none !important;
-}
-
-.page-indicator-text {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: var(--bg-workspace);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  min-width: 100px;
-  text-align: center;
-}
-
-.pagination-container .btn-tonal {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.pagination-container .btn-tonal:hover:not(:disabled) {
-  background: var(--accent-orange-soft);
-  color: var(--accent-orange);
-}
-
 /* =========================================
    Responsive Design (Media Queries consolidated)
    ========================================= */
-
-/* Global Helper Classes */
-.mobile-examples,
-.mobile-meaning {
-  display: none;
-}
 
 /* --- Desktop (min-width: 900px) --- */
 @media (min-width: 900px) {
@@ -1672,7 +1594,7 @@ textarea:focus {
     grid-template-columns: repeat(12, 1fr);
   }
   .bento-card.col-2 {
-    grid-column: span 2;
+    grid-column: span 6;
   }
   .bento-card.col-3 {
     grid-column: span 3;
@@ -1739,8 +1661,7 @@ textarea:focus {
     display: none;
   }
 
-  .mobile-meaning,
-  .mobile-examples {
+  .mobile-meaning {
     display: block;
   }
 
@@ -1931,29 +1852,5 @@ textarea:focus {
   .input-group-flex {
     flex-direction: column;
     gap: 2rem;
-  }
-  .review-controls {
-    margin: 0;
-  }
-  .review-controls .form-actions-fixed {
-    margin-top: 0;
-  }
-  .review-session-header {
-    padding: 0 1rem;
-    width: 100%;
-  }
-  .pagination-container {
-    justify-content: center;
-  }
-  .flashcard {
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    height: calc(100vh - 79px - 66px);
-    margin: 0;
-  }
-  .btn-primary:hover {
-    filter: none;
-    transform: none;
   }
 }

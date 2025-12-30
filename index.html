@@ -11,22 +11,8 @@
       href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD,ROND@6..144,100..1000,0..100,0..100&display=swap"
       rel="stylesheet"
     />
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'accent-orange': '#d35400',
-              'accent-orange-soft': 'rgba(211, 84, 0, 0.1)',
-            },
-          },
-        },
-      };
-    </script>
     <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=1.15" />
+    <link rel="stylesheet" href="css/style.css?v=1.16" />
     <!-- Material Icons -->
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -34,8 +20,6 @@
     />
     <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="light-mode">
     <div class="app-shell">
@@ -43,36 +27,22 @@
       <main class="main-workspace">
         <!-- Login View -->
         <section id="login" class="view active">
-          <div
-            class="bento-card"
-            style="max-width: 400px; margin: 4rem auto; text-align: center"
-          >
-            <div style="margin-bottom: 2rem">
-              <span
-                class="material-icons"
-                style="font-size: 64px; color: var(--accent-orange)"
-                >lock_person</span
-              >
+          <div class="bento-card max-w-400-center">
+            <div class="mb-2rem">
+              <span class="material-icons icon-login-large">lock_person</span>
             </div>
             <h1>Welcome</h1>
-            <p style="color: var(--text-muted); margin-bottom: 2rem">
+            <p class="text-muted-mb-2rem">
               Please sign in to access your vocabulary.
             </p>
             <button
               id="google-login-btn"
-              class="btn btn-primary btn-full-width"
-              style="justify-content: center; gap: 0.5rem"
+              class="btn btn-primary btn-full-width btn-google-signin"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt="Google"
-                style="
-                  width: 20px;
-                  height: 20px;
-                  background: white;
-                  border-radius: 50%;
-                  padding: 2px;
-                "
+                class="google-icon-svg"
               />
               Sign in with Google
             </button>
@@ -81,24 +51,19 @@
 
         <!-- Dashboard View -->
         <section id="dashboard" class="view">
-          <div
-            class="view-header-flex !flex-row !items-center !justify-between w-full"
-          >
+          <div class="view-header-flex">
             <h1>Dashboard</h1>
-            <div class="flex items-center gap-3">
-              <span class="text-sm font-medium text-gray-500">Starred</span>
-              <label
-                class="relative inline-flex items-center cursor-pointer"
-                style="margin-bottom: 0"
-              >
+            <div class="toggle-switch">
+              <span class="filter-label">Starred</span>
+              <label class="toggle-switch" style="margin-bottom: 0">
                 <input
                   type="checkbox"
-                  id="dashboard-starred-toggle"
-                  class="sr-only peer"
+                  id="filter-starred-only"
+                  class="toggle-input"
                 />
-                <div
-                  class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-orange"
-                ></div>
+                <div class="toggle-track">
+                  <span class="toggle-thumb"></span>
+                </div>
               </label>
             </div>
           </div>
@@ -108,20 +73,14 @@
             <div class="bento-card col-8 orange">
               <div class="card-label">Total Word Progress</div>
               <div class="card-value" id="total-count">0</div>
-              <div class="card-footer mt-4 flex gap-2 flex-wrap">
-                <span
-                  class="due-badge-dark"
-                  style="background: rgba(255, 255, 255, 0.15)"
+              <div class="card-footer-stats">
+                <span class="due-badge-dark due-badge-custom-bg"
                   >NEW: <b id="total-new">0</b></span
                 >
-                <span
-                  class="due-badge-dark"
-                  style="background: rgba(255, 255, 255, 0.15)"
+                <span class="due-badge-dark due-badge-custom-bg"
                   >LRN: <b id="total-lrn">0</b></span
                 >
-                <span
-                  class="due-badge-dark"
-                  style="background: rgba(255, 255, 255, 0.15)"
+                <span class="due-badge-dark due-badge-custom-bg"
                   >MST: <b id="total-mst">0</b></span
                 >
               </div>
@@ -130,7 +89,7 @@
             <div class="bento-card col-4 dark" id="due-card-black">
               <div class="card-label">Today Due</div>
               <div class="card-value" id="due-count">0</div>
-              <div class="card-footer mt-4 flex gap-2 flex-wrap">
+              <div class="card-footer-stats">
                 <span class="due-badge-dark">NEW: <b id="due-new">0</b></span>
                 <span class="due-badge-dark">LRN: <b id="due-lrn">0</b></span>
                 <span class="due-badge-dark">MST: <b id="due-mst">0</b></span>
@@ -140,38 +99,14 @@
             <div class="bento-card col-4 mobile-col-6">
               <div class="card-label">Learning Load</div>
               <div class="card-value" id="learning-load-count">0</div>
-              <div class="card-footer text-xs text-gray-400 mt-2">
-                Active learning
-              </div>
+              <div class="card-footer text-sub-label">Active learning</div>
             </div>
 
             <div class="bento-card col-8 mobile-col-6">
               <div class="card-label">Mastered Quality</div>
               <div class="card-value" id="mastered-count">0</div>
-              <div class="card-footer text-xs text-orange-500 font-medium mt-2">
+              <div class="card-footer text-orange-label">
                 Demoted: <span id="demoted-30d-count">0</span> (30d)
-              </div>
-            </div>
-
-            <!-- Inline Progress Chart -->
-            <div class="bento-card col-12 collapsed" id="dashboard-chart-card">
-              <div
-                class="card-header-toggle cursor-pointer flex items-center justify-between"
-                id="toggle-chart-header"
-              >
-                <div class="card-label">Progress Overview</div>
-                <span
-                  class="material-icons text-gray-400"
-                  id="chart-toggle-icon"
-                  >expand_more</span
-                >
-              </div>
-              <div
-                id="chart-container"
-                class="hidden"
-                style="height: 300px; width: 100%"
-              >
-                <canvas id="dashboard-progress-chart"></canvas>
               </div>
             </div>
 
@@ -204,48 +139,33 @@
           <!-- Vocabulary List Section (Full Width) -->
           <div class="full-width-list-container vocab-section-container">
             <div class="section-label section-header-label">
-              <div
-                class="header-title-group flex w-full md:w-auto justify-start items-center gap-4 md:mr-8"
-              >
+              <div class="header-title-group">
                 <h1>Word List</h1>
 
                 <!-- Starred Toggle -->
-                <label
-                  class="inline-flex items-center cursor-pointer"
-                  style="margin-bottom: 0"
-                >
-                  <span class="mr-3 text-sm font-medium text-gray-700"
-                    >Starred</span
-                  >
+                <label class="toggle-switch" style="margin-bottom: 0">
+                  <span class="filter-label">Starred</span>
                   <input
                     type="checkbox"
                     id="filter-starred-only"
-                    class="sr-only peer"
+                    class="toggle-input"
                   />
-                  <div
-                    class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-orange)]"
-                  ></div>
+                  <div class="toggle-track">
+                    <span class="toggle-thumb"></span>
+                  </div>
                 </label>
               </div>
 
               <div class="filter-controls-flex">
-                <div
-                  class="search-box flex items-center bg-white rounded-full px-4 border border-gray-200 transition-all focus-within:border-accent-orange w-64"
-                >
-                  <span class="material-icons text-gray-400 text-xl mr-2"
-                    >search</span
-                  >
+                <div class="search-box-custom">
+                  <span class="material-icons search-icon">search</span>
                   <input
                     type="text"
                     id="search-input"
                     placeholder="Search words..."
-                    class="border-none !border-none !bg-transparent py-2 w-full text-sm outline-none !ring-0"
                   />
                 </div>
-                <select
-                  id="filter-status"
-                  class="vocab-select-pill px-4 py-2 pr-10 border border-gray-200 focus:border-accent-orange"
-                >
+                <select id="filter-status" class="vocab-select-pill">
                   <option value="all">All Status</option>
                   <option value="mastered">Mastered</option>
                   <option value="learning">Learning</option>
@@ -259,26 +179,19 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div
-              id="pagination-controls"
-              class="flex justify-between items-center mt-6 pt-4 border-gray-100 hidden"
-            >
-              <button
-                id="prev-page-btn"
-                class="btn btn-tonal btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span class="material-icons text-sm mr-2">arrow_back</span>
+            <div id="pagination-controls" class="pagination-container hidden">
+              <button id="prev-page-btn" class="btn btn-tonal btn-sm">
+                <span class="material-icons pagination-icon-prev"
+                  >arrow_back</span
+                >
               </button>
-              <span
-                id="page-indicator"
-                class="text-sm font-medium text-gray-500"
+              <span id="page-indicator" class="page-indicator-text"
                 >Page 1 of 1</span
               >
-              <button
-                id="next-page-btn"
-                class="btn btn-tonal btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span class="material-icons text-sm ml-2">arrow_forward</span>
+              <button id="next-page-btn" class="btn btn-tonal btn-sm">
+                <span class="material-icons pagination-icon-next"
+                  >arrow_forward</span
+                >
               </button>
             </div>
           </div>
@@ -289,60 +202,54 @@
           <div class="view-header-flex">
             <h1>Add New Card</h1>
           </div>
-          <div class="bento-card">
+          <div class="bento-card full-height">
             <form id="add-card-form">
-              <div class="form-group">
+              <div class="input-wrapper-flex">
                 <label for="word_en">English Word</label>
                 <input
                   type="text"
                   id="word_en"
                   placeholder="e.g., Resilient"
-                  class="w-full bg-white rounded-full border border-gray-200 px-6 py-4 text-base text-gray-800 outline-none transition-all focus:border-accent-orange"
+                  class="input-pill"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="input-wrapper-flex">
                 <label for="meaning_zh">Chinese Meaning</label>
                 <input
                   type="text"
                   id="meaning_zh"
                   placeholder="e.g., 有韌性的"
-                  class="w-full bg-white rounded-full border border-gray-200 px-6 py-4 text-base text-gray-800 outline-none transition-all focus:border-accent-orange"
+                  class="input-pill"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="input-wrapper-flex">
                 <label>Example Sentences (Max 5)</label>
-                <div id="examples-container" class="flex flex-col gap-3">
+                <div id="examples-container" class="flex-col-gap">
                   <!-- Dynamic inputs will be added here -->
                 </div>
                 <button
                   type="button"
                   id="add-example-btn"
-                  class="btn btn-tonal btn-sm mt-3"
-                  style="align-self: flex-start"
+                  class="btn btn-tonal btn-sm mt-3 align-self-start"
                 >
-                  <span class="material-icons text-sm mr-1">add</span>
+                  <span class="material-icons icon-sm-mr">add</span>
                   Add Sentence
                 </button>
               </div>
-              <div class="form-group checkbox-group">
-                <div class="inline-flex items-center">
-                  <label
-                    class="flex items-center cursor-pointer relative"
-                    for="is_starred"
-                  >
+              <div class="form-group checkbox-group mb-0">
+                <div class="checkbox-wrapper">
+                  <label class="checkbox-custom-label" for="is_starred">
                     <input
                       type="checkbox"
                       id="is_starred"
-                      class="peer h-6 w-6 cursor-pointer transition-all appearance-none rounded border border-slate-300 checked:bg-accent-orange checked:border-accent-orange"
+                      class="checkbox-custom"
                     />
-                    <span
-                      class="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                    >
+                    <span class="checkbox-checkmark">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
+                        class="icon-check-xs"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         stroke="currentColor"
@@ -356,10 +263,7 @@
                       </svg>
                     </span>
                   </label>
-                  <label
-                    class="cursor-pointer ml-3 text-slate-600 text-base"
-                    for="is_starred"
-                  >
+                  <label class="checkbox-label-text" for="is_starred">
                     Mark as Starred
                   </label>
                 </div>
@@ -388,7 +292,7 @@
           <div class="view-header-flex">
             <h1>Import Vocabulary</h1>
           </div>
-          <div class="bento-card">
+          <div class="bento-card full-height">
             <div id="import-file-section">
               <div class="section-label">Select CSV File</div>
               <div class="form-group" style="margin-bottom: 0rem">
@@ -398,13 +302,6 @@
                   accept=".csv"
                   class="file-input-dropzone"
                 />
-                <button
-                  type="button"
-                  class="btn btn-tonal cancel-nav btn-full-width mt-8"
-                  id="import-cancel-initial"
-                >
-                  Cancel
-                </button>
               </div>
             </div>
 
@@ -416,6 +313,18 @@
                 </table>
               </div>
             </div>
+          </div>
+          <div
+            id="import-initial-actions"
+            class="form-actions form-actions-fixed"
+          >
+            <button
+              type="button"
+              class="btn btn-tonal cancel-nav btn-full-width"
+              id="import-cancel-initial"
+            >
+              Cancel
+            </button>
           </div>
           <div
             id="import-actions-container"
@@ -441,36 +350,24 @@
           <div class="view-header-flex">
             <h1>Review Session</h1>
           </div>
-          <div class="bento-card">
+          <div class="bento-card full-height">
             <form id="review-setup-form">
-              <div class="form-group flex gap-4">
-                <div class="flex-1">
+              <div class="form-group input-group-flex">
+                <div class="input-wrapper-flex">
                   <label>Selection Scope</label>
                   <select
                     name="scope"
-                    class="w-full bg-white rounded-full border border-gray-200 px-6 py-4 text-base text-gray-800 outline-none cursor-pointer transition-all focus:border-accent-orange appearance-none pr-12"
-                    style="
-                      background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E');
-                      background-repeat: no-repeat;
-                      background-position: right 1.5rem center;
-                      background-size: 1.25rem;
-                    "
+                    class="input-pill select-rounded select-with-chevron"
                   >
                     <option value="all">All Vocabulary</option>
                     <option value="starred">Starred</option>
                   </select>
                 </div>
-                <div class="w-1/3">
+                <div class="input-wrapper-flex">
                   <label>Limit</label>
                   <select
                     name="limit"
-                    class="w-full bg-white rounded-full border border-gray-200 px-6 py-4 text-base text-gray-800 outline-none cursor-pointer transition-all focus:border-accent-orange appearance-none pr-12 text-center"
-                    style="
-                      background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E');
-                      background-repeat: no-repeat;
-                      background-position: right 1rem center;
-                      background-size: 1rem;
-                    "
+                    class="input-pill select-rounded select-with-chevron text-center"
                   >
                     <option value="10" selected>10</option>
                     <option value="15">15</option>
@@ -479,28 +376,20 @@
                   </select>
                 </div>
               </div>
-              <div
-                class="form-group checkbox-group"
-                style="margin-top: -0.5rem; margin-bottom: 1.5rem"
-              >
-                <div class="inline-flex items-center">
-                  <label
-                    class="flex items-center cursor-pointer relative"
-                    for="review-due-only"
-                  >
+              <div class="form-group checkbox-group mt-n05 mb-6">
+                <div class="checkbox-wrapper">
+                  <label class="checkbox-custom-label" for="review-due-only">
                     <input
                       type="checkbox"
                       id="review-due-only"
                       name="dueOnly"
                       checked
-                      class="peer h-5 w-5 cursor-pointer transition-all appearance-none rounded border border-slate-300 checked:bg-accent-orange checked:border-accent-orange"
+                      class="checkbox-custom"
                     />
-                    <span
-                      class="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                    >
+                    <span class="checkbox-checkmark">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="h-3.5 w-3.5"
+                        class="icon-check-xs"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         stroke="currentColor"
@@ -514,10 +403,7 @@
                       </svg>
                     </span>
                   </label>
-                  <label
-                    class="cursor-pointer ml-2 text-slate-600 text-sm"
-                    for="review-due-only"
-                  >
+                  <label class="checkbox-label-text" for="review-due-only">
                     Due Only -
                     <span
                       id="due-count-badge"
@@ -529,7 +415,7 @@
                 </div>
               </div>
 
-              <div class="form-group" style="margin-bottom: 0rem">
+              <div class="form-group mb-0">
                 <div class="mode-selection">
                   <label class="mode-option">
                     <input
@@ -599,14 +485,9 @@
 
         <section id="review-session" class="view">
           <div class="view-header-flex">
-            <div
-              class="flex w-full md:w-auto justify-between md:justify-end items-center gap-4"
-            >
+            <div class="review-session-header">
               <div id="review-progress" class="review-progress-text">0 / 0</div>
-              <button
-                id="exit-review-btn"
-                class="btn btn-tonal !px-4 !py-2 !text-xs !h-auto"
-              >
+              <button id="exit-review-btn" class="btn btn-tonal btn-compact">
                 Exit Session
               </button>
             </div>
@@ -617,22 +498,44 @@
           </div>
 
           <div class="review-controls">
-            <button id="reveal-btn" class="btn btn-primary btn-reveal">
-              <span class="material-icons mr-2">visibility</span>
-              Show Answer
-            </button>
+            <div
+              id="reveal-btn-container"
+              class="form-actions form-actions-fixed"
+            >
+              <button
+                id="reveal-btn"
+                class="btn btn-primary btn-reveal btn-full-width"
+              >
+                <span class="material-icons mr-2">visibility</span>
+                Show Answer
+              </button>
+            </div>
 
-            <div id="self-assess-btns" class="hidden">
-              <button class="btn btn-tonal text-forgot" id="btn-assess-forgot">
+            <div
+              id="self-assess-btns"
+              class="form-actions form-actions-fixed hidden"
+            >
+              <button
+                class="btn btn-tonal text-forgot btn-flex-grow-1"
+                id="btn-assess-forgot"
+              >
                 I Forgot
               </button>
-              <button class="btn btn-primary" id="btn-assess-know">
+              <button
+                class="btn btn-primary btn-flex-grow-2"
+                id="btn-assess-know"
+              >
                 I Know
               </button>
             </div>
 
-            <div id="grading-btns" class="hidden">
-              <button class="btn btn-dark" id="btn-next-card">Next Card</button>
+            <div
+              id="grading-btns"
+              class="form-actions form-actions-fixed hidden"
+            >
+              <button class="btn btn-dark btn-full-width" id="btn-next-card">
+                Next Card
+              </button>
             </div>
           </div>
         </section>
@@ -642,7 +545,7 @@
           <div class="view-header-flex">
             <h1>Review Summary</h1>
           </div>
-          <div class="bento-card">
+          <div class="bento-card full-height">
             <div class="card-value summary-text-large">
               <span id="summary-total">0</span>
             </div>
@@ -651,69 +554,14 @@
               Words Review Completed
             </div>
 
-            <div
-              class="summary-stats-grid mt-8"
-              style="display: flex; gap: 1rem; width: 100%"
-            >
-              <div
-                style="
-                  flex: 1;
-                  background: rgba(34, 197, 94, 0.1);
-                  padding: 1rem;
-                  border-radius: 16px;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                "
-              >
-                <div
-                  style="
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    color: #166534;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    margin-bottom: 0.25rem;
-                  "
-                >
-                  Remembered
-                </div>
-                <div
-                  style="font-size: 1.5rem; font-weight: 800; color: #15803d"
-                  id="summary-correct"
-                >
-                  0
-                </div>
+            <div class="summary-stats-grid mt-8">
+              <div class="summary-stat-box bg-green-soft">
+                <div class="summary-label-green">Remembered</div>
+                <div class="summary-value-green" id="summary-correct">0</div>
               </div>
-              <div
-                style="
-                  flex: 1;
-                  background: rgba(239, 68, 68, 0.1);
-                  padding: 1rem;
-                  border-radius: 16px;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                "
-              >
-                <div
-                  style="
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    color: #991b1b;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    margin-bottom: 0.25rem;
-                  "
-                >
-                  Forgot
-                </div>
-                <div
-                  style="font-size: 1.5rem; font-weight: 800; color: #b91c1c"
-                  id="summary-wrong"
-                >
-                  0
-                </div>
+              <div class="summary-stat-box bg-red-soft">
+                <div class="summary-label-red">Forgot</div>
+                <div class="summary-value-red" id="summary-wrong">0</div>
               </div>
             </div>
           </div>

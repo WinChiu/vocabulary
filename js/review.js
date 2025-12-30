@@ -303,28 +303,29 @@ const ReviewManager = {
     }
 
     // Update Buttons
-    const revealBtn = $('#reveal-btn');
+    const revealBtnContainer = $('#reveal-btn-container'); // Wrapper
+    const revealBtn = $('#reveal-btn'); // Button for text
     const gradingBtns = $('#grading-btns');
     const selfAssessBtns = $('#self-assess-btns'); // NEW
 
     if (session.mode === 1 || session.mode === 2) {
       if (session.isCardRevealed) {
-        revealBtn.classList.add('hidden');
+        revealBtnContainer.classList.add('hidden');
         gradingBtns.classList.add('hidden'); // We use selfAssessBtns instead
         selfAssessBtns.classList.remove('hidden');
       } else {
-        revealBtn.classList.add('hidden'); // No "I don't know" button, tap card to reveal
+        revealBtnContainer.classList.add('hidden'); // No "I don't know" button, tap card to reveal
         gradingBtns.classList.add('hidden');
         selfAssessBtns.classList.add('hidden');
       }
     } else {
       if (session.isCardRevealed) {
-        revealBtn.classList.add('hidden');
+        revealBtnContainer.classList.add('hidden');
         gradingBtns.classList.remove('hidden');
         selfAssessBtns.classList.add('hidden');
       } else {
         revealBtn.textContent = "I don't know";
-        revealBtn.classList.remove('hidden');
+        revealBtnContainer.classList.remove('hidden');
         gradingBtns.classList.add('hidden');
         selfAssessBtns.classList.add('hidden');
       }

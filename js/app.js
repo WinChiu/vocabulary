@@ -31,15 +31,16 @@ const App = {
     }
 
     const div = document.createElement('div');
-    div.className = 'example-row relative mb-2';
+    div.className = 'example-row';
     div.innerHTML = `
       <textarea
         rows="2"
         placeholder="e.g., She is a resilient person."
-        class="example-input w-full bg-white rounded-full border border-gray-200 px-6 py-4 pr-12 text-base text-gray-800 outline-none transition-all focus:border-accent-orange min-h-[80px]"
+        class="input-pill example-input"
+        style="min-height: 80px; padding-right: 3rem;"
       >${value}</textarea>
-      ${`<button type="button" class="btn-remove-example absolute right-2 top-2 text-gray-400 hover:text-red-500 p-2">
-           <span class="material-icons text-xl">close</span>
+      ${`<button type="button" class="btn-icon-absolute btn-remove-example">
+           <span class="material-icons icon-sm">close</span>
          </button>`}
     `;
 
@@ -100,7 +101,6 @@ const App = {
       const cards = await DataService.fetchCards();
       App.allCards = cards;
       App.renderDashboard();
-      App.updateDashboardChart();
     } catch (e) {
       console.error('Failed to refresh data', e);
 
@@ -160,7 +160,7 @@ const App = {
         if (target === 'import') {
           $('#import-preview').classList.add('hidden');
           $('#import-actions-container').classList.add('hidden'); // Also hide the external actions
-          $('#import-cancel-initial').classList.remove('hidden');
+          $('#import-initial-actions').classList.remove('hidden');
           $('#import-file-section').classList.remove('hidden');
           $('#csv-file-input').value = '';
         }
@@ -305,6 +305,13 @@ const App = {
       App.renderDashboard();
     });
 
+    const starredToggle = $('#filter-starred-only');
+    if (starredToggle) {
+      on(starredToggle, 'change', () => {
+        App.renderDashboard();
+      });
+    }
+
     // CARD LIST EVENT DELEGATION (New)
     const listContainer = $('#card-list-modern');
     if (listContainer) {
@@ -347,25 +354,6 @@ const App = {
           const row = btn.closest('.example-row');
           row.remove();
           App.updateExampleButtons();
-        }
-      });
-    }
-
-    // Chart Toggle
-    const chartHeader = $('#toggle-chart-header');
-    if (chartHeader) {
-      on(chartHeader, 'click', () => {
-        const card = $('#dashboard-chart-card');
-        const container = $('#chart-container');
-        const icon = $('#chart-toggle-icon');
-        if (container.classList.contains('hidden')) {
-          container.classList.remove('hidden');
-          card.classList.remove('collapsed');
-          icon.textContent = 'expand_less';
-        } else {
-          container.classList.add('hidden');
-          card.classList.add('collapsed');
-          icon.textContent = 'expand_more';
         }
       });
     }
@@ -583,8 +571,8 @@ const App = {
 
   renderDashboard: () => {
     // Determine which cards to aggregate for dashboard stats
-    const isGlobalStarredOnly =
-      $('#dashboard-starred-toggle') && $('#dashboard-starred-toggle').checked;
+    const toggleEl = $('#filter-starred-only');
+    const isGlobalStarredOnly = toggleEl && toggleEl.checked;
     const dashboardCards = isGlobalStarredOnly
       ? App.allCards.filter((c) => c.is_starred)
       : App.allCards;
@@ -784,12 +772,12 @@ const App = {
           <button class="icon-btn btn-star ${
             card.is_starred ? 'starred' : ''
           }" data-starred="${card.is_starred}">
-            <span class="material-icons" style="font-size:20px;">${
+            <span class="material-icons icon-table-action">${
               card.is_starred ? 'star' : 'star_border'
             }</span>
           </button>
           <button class="icon-btn btn-delete">
-            <span class="material-icons" style="font-size:20px;">delete_outline</span>
+            <span class="material-icons icon-table-action">delete_outline</span>
           </button>
         </td>
       `;
@@ -941,212 +929,21 @@ const App = {
     );
   },
 
-  updateDashboardChart: () => {
-    const canvas = document.getElementById('dashboard-progress-chart');
-    if (!canvas) return;
-
-    const data = App.processChartData(App.allCards);
-    if (data.labels.length === 0) return;
-
-    // Destroy existing chart instance if it exists
-    const existingChart = Chart.getChart(canvas);
-    if (existingChart) {
-      existingChart.destroy();
-    }
-
-    new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          {
-            label: 'Total Words',
-            data: data.totalCounts,
-            borderColor: '#f97316',
-            backgroundColor: 'rgba(249, 115, 22, 0.05)',
-            borderWidth: 3,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#f97316',
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.3,
-          },
-          {
-            label: 'Mastered',
-            data: data.masteredCounts,
-            borderColor: '#27ae60',
-            backgroundColor: 'rgba(39, 174, 96, 0.05)',
-            borderWidth: 3,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#27ae60',
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.3,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'end',
-            labels: {
-              usePointStyle: true,
-              pointStyle: 'circle',
-              boxWidth: 6,
-              boxHeight: 6,
-              generateLabels(chart) {
-                const labels =
-                  Chart.defaults.plugins.legend.labels.generateLabels(chart);
-
-                labels.forEach((l) => {
-                  l.fillStyle = l.strokeStyle;
-                  l.lineWidth = 0;
-                  l.pointStyle = 'circle';
-                  l.boxWidth = 12;
-                  l.boxHeight = 6;
-                });
-
-                return labels;
-              },
-
-              font: { size: 11, weight: '600' },
-              padding: 20,
-            },
-          },
-          tooltip: {
-            // enabled: false,
-            mode: 'index',
-            intersect: false,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1a1a1a',
-            bodyColor: '#666',
-            borderColor: '#eee',
-            borderWidth: 1,
-            padding: 12,
-            displayColors: true,
-            usePointStyle: true,
-          },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: '#f0f0f0', drawBorder: false },
-            ticks: {
-              stepSize: 1,
-              color: '#999',
-              font: { size: 10 },
-              padding: 8,
-            },
-          },
-          x: {
-            grid: { display: false },
-            ticks: {
-              color: '#999',
-              font: { size: 10 },
-              maxRotation: 0,
-              autoSkip: true,
-              maxTicksLimit: 7,
-              padding: 8,
-            },
-          },
-        },
-      },
-    });
-  },
-
-  processChartData: (cards) => {
-    if (!cards || cards.length === 0)
-      return { labels: [], totalCounts: [], masteredCounts: [] };
-
-    const eventMap = {}; // { 'YYYY-MM-DD': { added: 0, mastered: 0 } }
-
-    const getLocalDate = (rawDate) => {
-      const d = rawDate?.toDate
-        ? rawDate.toDate()
-        : rawDate
-        ? new Date(rawDate)
-        : new Date();
-
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    // 1. Map all events to their dates
-    cards.forEach((card) => {
-      // Created Date
-      const dateKey = getLocalDate(card.created_at);
-      if (!eventMap[dateKey]) eventMap[dateKey] = { added: 0, mastered: 0 };
-      eventMap[dateKey].added += 1;
-
-      // Mastered Date
-      if (card.review_stats?.state === 'MASTERED') {
-        const mKey = getLocalDate(
-          card.review_stats.mastered_at ||
-            card.review_stats.last_reviewed_at ||
-            card.created_at
-        );
-        if (!eventMap[mKey]) eventMap[mKey] = { added: 0, mastered: 0 };
-        eventMap[mKey].mastered += 1;
-      }
-    });
-
-    const sortedDates = Object.keys(eventMap).sort();
-    if (sortedDates.length === 0)
-      return { labels: [], totalCounts: [], masteredCounts: [] };
-
-    // 2. Determine Range (First Event -> Today)
-    const startDate = new Date(sortedDates[0]);
-    const endDate = new Date(); // Today
-    // Reset times to compare dates only
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const finalLabels = [];
-    const totalCounts = [];
-    const masteredCounts = [];
-
-    let currentTotal = 0;
-    let currentMastered = 0;
-
-    // 3. Iterate day by day
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setDate(d.getDate() + 1)
-    ) {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-
-      if (eventMap[dateStr]) {
-        currentTotal += eventMap[dateStr].added;
-        currentMastered += eventMap[dateStr].mastered;
-      }
-
-      finalLabels.push(dateStr);
-      totalCounts.push(currentTotal);
-      masteredCounts.push(currentMastered);
-    }
-
-    return { labels: finalLabels, totalCounts, masteredCounts };
-  },
-
   renderImportPreview: (data) => {
     const previewData = data.slice(0, 5);
     const importPreviewContainer = $('#import-preview');
     const previewTable = $('#preview-table');
 
+    // Update Header with Count
+    const sectionLabel = importPreviewContainer.querySelector('.section-label');
+    if (sectionLabel) {
+      sectionLabel.innerHTML = `Data Preview <span style="font-size:0.9rem; color:var(--text-muted); font-weight:400; margin-left:8px;">(${data.length} vocabularies)</span>`;
+    }
+
     if (importPreviewContainer) {
       importPreviewContainer.classList.remove('hidden');
       $('#import-actions-container').classList.remove('hidden'); // Show external actions
-      $('#import-cancel-initial').classList.add('hidden');
+      $('#import-initial-actions').classList.add('hidden');
       $('#import-file-section').classList.add('hidden');
     }
 
@@ -1158,25 +955,74 @@ const App = {
     };
 
     if (previewData.length > 0) {
-      const keys = Object.keys(previewData[0]);
-      let headerHTML = '<tr>';
-      keys.forEach((k) => {
-        const label = labelMap[k] || k;
-        headerHTML += `<th>${label}</th>`;
+      // Define explicit columns for better control
+      const columns = [
+        { key: 'word_en', label: 'Word' },
+        { key: 'meaning_zh', label: 'Meaning', className: 'desktop-only' },
+        {
+          key: 'example_en',
+          label: 'Example Sentences',
+          className: 'desktop-only',
+        },
+      ];
+
+      // fallback for unknown dynamic keys if needed, but for now we stick to schema
+      // Headers Removed per request
+      let headerHTML = '';
+      /*
+      columns.forEach((col) => {
+        const cls = col.className ? `class="${col.className}"` : '';
+        headerHTML += `<th ${cls}>${col.label}</th>`;
       });
       headerHTML += '</tr>';
+      */
 
       let bodyHTML = '';
       previewData.forEach((row) => {
         bodyHTML += '<tr>';
-        keys.forEach((k) => {
-          let val = row[k] || '';
-          if (Array.isArray(val)) {
-            val = val
+        columns.forEach((col) => {
+          const cls = col.className ? `class="${col.className}"` : '';
+          let val = row[col.key] || '';
+          let cellContent = val;
+
+          // Format Examples
+          if (col.key === 'example_en' && Array.isArray(val)) {
+            cellContent = val
               .map((v) => `<div style="margin-bottom: 4px;">• ${v}</div>`)
               .join('');
           }
-          bodyHTML += `<td>${val}</td>`;
+
+          // Special Mobile Handling: Inject Meaning AND Examples under Word
+          if (col.key === 'word_en') {
+            const examples = row.example_en;
+            let mobileExamplesHtml = '';
+            if (Array.isArray(examples) && examples.length > 0) {
+              mobileExamplesHtml = `
+                 <div class="mobile-examples" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); border: none;">
+                   ${examples
+                     .map(
+                       (ex) => `<div style="margin-bottom: 4px;">• ${ex}</div>`
+                     )
+                     .join('')}
+                 </div>
+               `;
+            }
+
+            cellContent = `
+               <div class="vocab-table-word">${val}</div>
+               <div class="mobile-meaning" style="margin-top: 4px; color: var(--text-main);">${
+                 row.meaning_zh || ''
+               }</div>
+               ${mobileExamplesHtml}
+             `;
+          }
+
+          // Desktop Meaning Cell
+          if (col.key === 'meaning_zh') {
+            cellContent = `<div class="vocab-table-meaning">${val}</div>`;
+          }
+
+          bodyHTML += `<td ${cls}>${cellContent}</td>`;
         });
         bodyHTML += '</tr>';
       });

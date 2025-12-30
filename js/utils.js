@@ -41,7 +41,7 @@ export const showPopup = (title, content, options = {}) => {
 
   contentArea.innerHTML = `
         <div class="modal-header">
-            <h2 style="font-weight: 800; letter-spacing:-0.02em;">${title}</h2>
+            <h2 style="font-size: 1.25rem; font-weight: 800; letter-spacing:-0.02em;">${title}</h2>
             ${
               showClose
                 ? `<button class="modal-close-btn" id="modal-close-x"><span class="material-icons">close</span></button>`

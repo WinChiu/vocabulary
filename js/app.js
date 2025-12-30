@@ -820,7 +820,7 @@ const App = {
 
     const html = `
         <div style="text-align:center; padding-top:1rem;">
-            <div style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em;">${
+            <div style="font-size:2rem; font-weight:800; letter-spacing:-0.03em;">${
               card.word_en
             }</div>
             <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:1.5rem;">${

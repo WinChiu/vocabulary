@@ -382,7 +382,7 @@ button {
 
 .full-width-list-container {
   width: 100%;
-  margin-top: 5rem !important;
+  margin-top: 5rem;
 }
 
 .vocab-card {
@@ -1979,5 +1979,8 @@ textarea:focus {
   }
   .btn-flex-grow-2 {
     flex: 2 !important;
+  }
+  .vocab-section-container {
+    margin-top: 3rem;
   }
 }

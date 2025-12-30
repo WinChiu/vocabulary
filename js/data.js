@@ -118,53 +118,57 @@ const DataService = {
 
   // Batch Delete
   batchDeleteCards: async (ids) => {
-    const batch = writeBatch(db);
-    let count = 0;
+    let totalCount = 0;
+    const CHUNK_SIZE = 450; // Firestore limit is 500
 
-    // Firestore limit is 500 per batch
-    const CHUNK_SIZE = 450;
-    const toDelete = ids.slice(0, CHUNK_SIZE);
+    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+      const batch = writeBatch(db);
+      const chunk = ids.slice(i, i + CHUNK_SIZE);
 
-    toDelete.forEach((id) => {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      batch.delete(docRef);
-      count++;
-    });
+      chunk.forEach((id) => {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        batch.delete(docRef);
+        totalCount++;
+      });
 
-    if (count > 0) {
-      await callWithTimeout(batch.commit(), 10000);
+      if (chunk.length > 0) {
+        await callWithTimeout(batch.commit(), 10000);
+      }
     }
-    return count;
+    return totalCount;
   },
 
   // Batch Add (for Import)
   batchAddCards: async (cards) => {
-    const batch = writeBatch(db);
-    let count = 0;
-    const CHUNK_SIZE = 400;
-    const chunk = cards.slice(0, CHUNK_SIZE);
+    let totalCount = 0;
+    const CHUNK_SIZE = 450; // Firestore limit is 500
 
-    chunk.forEach((card) => {
-      if (!card.word_en || !card.meaning_zh) return;
-      const docRef = doc(collection(db, COLLECTION_NAME));
-      batch.set(docRef, {
-        word_en: String(card.word_en).trim(),
-        meaning_zh: String(card.meaning_zh).trim(),
-        example_en: Array.isArray(card.example_en)
-          ? card.example_en
-          : [String(card.example_en || '').trim()].filter(Boolean),
-        is_starred: false,
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-        review_stats: INITIAL_STATS(),
+    for (let i = 0; i < cards.length; i += CHUNK_SIZE) {
+      const batch = writeBatch(db);
+      const chunk = cards.slice(i, i + CHUNK_SIZE);
+
+      chunk.forEach((card) => {
+        if (!card.word_en || !card.meaning_zh) return;
+        const docRef = doc(collection(db, COLLECTION_NAME));
+        batch.set(docRef, {
+          word_en: String(card.word_en).trim(),
+          meaning_zh: String(card.meaning_zh).trim(),
+          example_en: Array.isArray(card.example_en)
+            ? card.example_en
+            : [String(card.example_en || '').trim()].filter(Boolean),
+          is_starred: false,
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+          review_stats: INITIAL_STATS(),
+        });
+        totalCount++;
       });
-      count++;
-    });
 
-    if (count > 0) {
-      await callWithTimeout(batch.commit(), 10000); // 10s for batch
+      if (chunk.length > 0) {
+        await callWithTimeout(batch.commit(), 15000); // 15s for larger batches
+      }
     }
-    return count;
+    return totalCount;
   },
 
   // Update statistics after a review

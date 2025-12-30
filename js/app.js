@@ -100,6 +100,7 @@ const App = {
     try {
       const cards = await DataService.fetchCards();
       App.allCards = cards;
+      App.currentPage = 1; // Reset to page 1 on full refresh
       App.renderDashboard();
     } catch (e) {
       console.error('Failed to refresh data', e);
@@ -288,29 +289,20 @@ const App = {
       }
     });
 
-    // Dashboard Filters
-    on($('#dashboard-starred-toggle'), 'change', () => {
-      App.renderDashboard();
-    });
-
     on($('#filter-starred-only'), 'change', () => {
+      App.currentPage = 1; // Reset to first page on filter change
       App.renderDashboard();
     });
 
     on($('#search-input'), 'input', () => {
+      App.currentPage = 1;
       App.renderDashboard();
     });
 
     on($('#filter-status'), 'change', () => {
+      App.currentPage = 1;
       App.renderDashboard();
     });
-
-    const starredToggle = $('#filter-starred-only');
-    if (starredToggle) {
-      on(starredToggle, 'change', () => {
-        App.renderDashboard();
-      });
-    }
 
     // CARD LIST EVENT DELEGATION (New)
     const listContainer = $('#card-list-modern');
@@ -574,7 +566,9 @@ const App = {
     const toggleEl = $('#filter-starred-only');
     const isGlobalStarredOnly = toggleEl && toggleEl.checked;
     const dashboardCards = isGlobalStarredOnly
-      ? App.allCards.filter((c) => c.is_starred)
+      ? App.allCards.filter(
+          (c) => c.is_starred === true || String(c.is_starred) === 'true'
+        )
       : App.allCards;
 
     // Stats
@@ -661,7 +655,9 @@ const App = {
     // Apply filtering
     const filteredCards = App.allCards.filter((card) => {
       // Starred filter
-      if (showStarredOnly && !card.is_starred) return false;
+      const isStarred =
+        card.is_starred === true || String(card.is_starred) === 'true';
+      if (showStarredOnly && !isStarred) return false;
 
       // Search filter (word or meaning)
       if (
@@ -770,10 +766,16 @@ const App = {
         </td>
         <td class="vocab-table-actions">
           <button class="icon-btn btn-star ${
-            card.is_starred ? 'starred' : ''
-          }" data-starred="${card.is_starred}">
+            card.is_starred === true || String(card.is_starred) === 'true'
+              ? 'starred'
+              : ''
+          }" data-starred="${
+        card.is_starred === true || String(card.is_starred) === 'true'
+      }">
             <span class="material-icons icon-table-action">${
-              card.is_starred ? 'star' : 'star_border'
+              card.is_starred === true || String(card.is_starred) === 'true'
+                ? 'star'
+                : 'star_border'
             }</span>
           </button>
           <button class="icon-btn btn-delete">
@@ -796,10 +798,16 @@ const App = {
           <span class="level-indicator ${level.class}">${level.label}</span>
           <div class="vocab-card-actions">
             <button class="icon-btn btn-star ${
-              card.is_starred ? 'starred' : ''
-            }" data-starred="${card.is_starred}">
+              card.is_starred === true || String(card.is_starred) === 'true'
+                ? 'starred'
+                : ''
+            }" data-starred="${
+        card.is_starred === true || String(card.is_starred) === 'true'
+      }">
               <span class="material-icons" style="font-size:20px;">${
-                card.is_starred ? 'star' : 'star_border'
+                card.is_starred === true || String(card.is_starred) === 'true'
+                  ? 'star'
+                  : 'star_border'
               }</span>
             </button>
             <button class="icon-btn btn-delete">
@@ -902,7 +910,9 @@ const App = {
     // Optimistic update
     const card = App.allCards.find((c) => c.id === id);
     if (card) {
-      card.is_starred = !status;
+      const currentlyStarred =
+        card.is_starred === true || String(card.is_starred) === 'true';
+      card.is_starred = !currentlyStarred;
       App.renderDashboard();
     }
     await DataService.toggleStar(id, status);

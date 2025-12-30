@@ -999,7 +999,8 @@ textarea:focus {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  min-height: 90px;
 }
 
 .header-title-group {
@@ -1246,7 +1247,6 @@ textarea:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
 }
 
 .bento-card.dark .card-label {
@@ -1865,6 +1865,7 @@ textarea:focus {
 /* --- Mobile Small (max-width: 600px) --- */
 @media (max-width: 600px) {
   .view {
+    padding-bottom: 60px !important;
     padding: 0;
   }
   .action-card:hover {
@@ -1904,11 +1905,11 @@ textarea:focus {
     transform: none;
   }
   .bento-card.full-height {
-    height: calc(100vh - 90px - 66px);
+    height: calc(100vh - 90px - 60px);
     overflow-y: scroll;
   }
   .bento-grid.full-height {
-    height: calc(100vh - 90px - 66px);
+    height: calc(100vh - 90px - 58px);
     overflow-y: scroll;
   }
   .bento-grid {
@@ -1943,9 +1944,7 @@ textarea:focus {
   .desktop-only {
     display: none !important;
   }
-  .view {
-    padding-bottom: 80px !important;
-  }
+
   .input-group-flex {
     flex-direction: column;
     gap: 2rem;

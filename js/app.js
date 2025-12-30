@@ -153,7 +153,7 @@ const App = {
 
   bindEvents: () => {
     // Navigation Interception
-    $$('.nav-btn').forEach((btn) => {
+    $$('.nav-btn, .nav-item').forEach((btn) => {
       on(btn, 'click', () => {
         const target = btn.getAttribute('data-target');
 
@@ -173,8 +173,8 @@ const App = {
           App.addExampleInput();
         }
 
-        if (target === 'dashboard') {
-          App.refreshData();
+        if (target === 'dashboard' || target === 'words') {
+          App.renderDashboard();
         }
 
         if (target === 'review-setup') {
@@ -562,14 +562,7 @@ const App = {
   },
 
   renderDashboard: () => {
-    // Determine which cards to aggregate for dashboard stats
-    const toggleEl = $('#filter-starred-only');
-    const isGlobalStarredOnly = toggleEl && toggleEl.checked;
-    const dashboardCards = isGlobalStarredOnly
-      ? App.allCards.filter(
-          (c) => c.is_starred === true || String(c.is_starred) === 'true'
-        )
-      : App.allCards;
+    const dashboardCards = App.allCards;
 
     // Stats
     $('#total-count').textContent = dashboardCards.length;
@@ -679,6 +672,7 @@ const App = {
 
     // Pagination Logic
     App.lastFilteredCount = filteredCards.length;
+    const isMobile = window.innerWidth <= 899;
     const ITEMS_PER_PAGE = 15;
     const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE) || 1;
 
@@ -687,12 +681,15 @@ const App = {
     if (App.currentPage < 1) App.currentPage = 1;
 
     const startIdx = (App.currentPage - 1) * ITEMS_PER_PAGE;
-    const pagedCards = filteredCards.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+    const pagedCards = isMobile
+      ? filteredCards
+      : filteredCards.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
     // Update Pagination UI
     const paginationEl = $('#pagination-controls');
     if (paginationEl) {
-      if (filteredCards.length > 0) {
+      // Only show pagination on desktop AND if there's more than one page
+      if (!isMobile && filteredCards.length > ITEMS_PER_PAGE) {
         paginationEl.classList.remove('hidden');
         $(
           '#page-indicator'
@@ -942,7 +939,7 @@ const App = {
   renderImportPreview: (data) => {
     const previewData = data.slice(0, 5);
     const importPreviewContainer = $('#import-preview');
-    const previewTable = $('#preview-table');
+    const previewList = $('#preview-list');
 
     // Update Header with Count
     const sectionLabel = importPreviewContainer.querySelector('.section-label');
@@ -957,86 +954,35 @@ const App = {
       $('#import-file-section').classList.add('hidden');
     }
 
-    // Headers and Formatting Mapping
-    const labelMap = {
-      word_en: 'Word',
-      meaning_zh: 'Meaning',
-      example_en: 'Example Sentences',
-    };
-
     if (previewData.length > 0) {
-      // Define explicit columns for better control
-      const columns = [
-        { key: 'word_en', label: 'Word' },
-        { key: 'meaning_zh', label: 'Meaning', className: 'desktop-only' },
-        {
-          key: 'example_en',
-          label: 'Example Sentences',
-          className: 'desktop-only',
-        },
-      ];
-
-      // fallback for unknown dynamic keys if needed, but for now we stick to schema
-      // Headers Removed per request
-      let headerHTML = '';
-      /*
-      columns.forEach((col) => {
-        const cls = col.className ? `class="${col.className}"` : '';
-        headerHTML += `<th ${cls}>${col.label}</th>`;
-      });
-      headerHTML += '</tr>';
-      */
-
-      let bodyHTML = '';
+      let listHTML = '';
       previewData.forEach((row) => {
-        bodyHTML += '<tr>';
-        columns.forEach((col) => {
-          const cls = col.className ? `class="${col.className}"` : '';
-          let val = row[col.key] || '';
-          let cellContent = val;
+        const word = row.word_en || '';
+        const meaning = row.meaning_zh || '';
+        const examples = row.example_en || [];
 
-          // Format Examples
-          if (col.key === 'example_en' && Array.isArray(val)) {
-            cellContent = val
-              .map((v) => `<div style="margin-bottom: 4px;">• ${v}</div>`)
-              .join('');
-          }
+        let examplesHtml = '';
+        if (Array.isArray(examples) && examples.length > 0) {
+          examplesHtml = `
+            <div class="vocab-card-examples" style="margin-top: 12px; font-size: 0.9rem; color: var(--text-muted); padding-top: 8px; width: 100%;">
+              ${examples
+                .map((ex) => `<div style="margin-bottom: 6px;">• ${ex}</div>`)
+                .join('')}
+            </div>
+          `;
+        }
 
-          // Special Mobile Handling: Inject Meaning AND Examples under Word
-          if (col.key === 'word_en') {
-            const examples = row.example_en;
-            let mobileExamplesHtml = '';
-            if (Array.isArray(examples) && examples.length > 0) {
-              mobileExamplesHtml = `
-                 <div class="mobile-examples" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); border: none;">
-                   ${examples
-                     .map(
-                       (ex) => `<div style="margin-bottom: 4px;">• ${ex}</div>`
-                     )
-                     .join('')}
-                 </div>
-               `;
-            }
-
-            cellContent = `
-               <div class="vocab-table-word">${val}</div>
-               <div class="mobile-meaning" style="margin-top: 4px; color: var(--text-main);">${
-                 row.meaning_zh || ''
-               }</div>
-               ${mobileExamplesHtml}
-             `;
-          }
-
-          // Desktop Meaning Cell
-          if (col.key === 'meaning_zh') {
-            cellContent = `<div class="vocab-table-meaning">${val}</div>`;
-          }
-
-          bodyHTML += `<td ${cls}>${cellContent}</td>`;
-        });
-        bodyHTML += '</tr>';
+        listHTML += `
+          <div class="preview-item">
+            <div class="vocab-card-main">
+              <div class="vocab-card-word">${word}</div>
+              <div class="vocab-card-meaning" style="color: var(--text-main); font-weight: 500;">${meaning}</div>
+            </div>
+            ${examplesHtml}
+          </div>
+        `;
       });
-      previewTable.innerHTML = headerHTML + bodyHTML;
+      previewList.innerHTML = listHTML;
     }
   },
 };

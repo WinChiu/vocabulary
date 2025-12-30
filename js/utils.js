@@ -89,17 +89,17 @@ export const showPopup = (title, content, options = {}) => {
 
 export const showView = (viewId) => {
   $$('.view').forEach((el) => el.classList.remove('active'));
-  $$('.nav-btn').forEach((el) => el.classList.remove('active'));
+  $$('.nav-btn, .nav-item').forEach((el) => el.classList.remove('active'));
 
   const target = $(`#${viewId}`);
   if (target) {
     target.classList.add('active');
   }
 
-  const navBtn = $(`.nav-btn[data-target="${viewId}"]`);
-  if (navBtn) {
-    navBtn.classList.add('active');
-  }
+  const navElements = $$(
+    `.nav-btn[data-target="${viewId}"], .nav-item[data-target="${viewId}"]`
+  );
+  navElements.forEach((el) => el.classList.add('active'));
 };
 
 window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove

@@ -52,28 +52,16 @@
         <!-- Dashboard View -->
         <section id="dashboard" class="view">
           <div class="view-header-flex">
-            <h1>Dashboard</h1>
-            <div class="toggle-switch">
-              <span class="filter-label">Starred</span>
-              <label class="toggle-switch" style="margin-bottom: 0">
-                <input
-                  type="checkbox"
-                  id="filter-starred-only"
-                  class="toggle-input"
-                />
-                <div class="toggle-track">
-                  <span class="toggle-thumb"></span>
-                </div>
-              </label>
-            </div>
+            <h1 class="nav-item active" data-target="dashboard">Dashboard</h1>
+            <h1 class="nav-item" data-target="words">Words</h1>
           </div>
 
-          <div class="bento-grid">
+          <div class="bento-grid full-height">
             <!-- Summary Stats -->
             <div class="bento-card col-8 orange">
               <div class="card-label">Total Word Progress</div>
               <div class="card-value" id="total-count">0</div>
-              <div class="card-footer-stats">
+              <div class="card-footer card-footer-stats">
                 <span class="due-badge-dark due-badge-custom-bg"
                   >NEW: <b id="total-new">0</b></span
                 >
@@ -89,7 +77,7 @@
             <div class="bento-card col-4 dark" id="due-card-black">
               <div class="card-label">Today Due</div>
               <div class="card-value" id="due-count">0</div>
-              <div class="card-footer-stats">
+              <div class="card-footer card-footer-stats">
                 <span class="due-badge-dark">NEW: <b id="due-new">0</b></span>
                 <span class="due-badge-dark">LRN: <b id="due-lrn">0</b></span>
                 <span class="due-badge-dark">MST: <b id="due-mst">0</b></span>
@@ -110,14 +98,6 @@
               </div>
             </div>
 
-            <!-- Action: Start Review -->
-            <div
-              class="bento-card col-4 action-card nav-btn green desktop-only"
-              data-target="review-setup"
-            >
-              <div class="card-label">Start Review</div>
-            </div>
-
             <!-- Action: Import -->
             <div
               class="bento-card col-4 mobile-col-6 action-card nav-btn desktop-only"
@@ -133,16 +113,53 @@
             >
               <div class="card-label">Add Card</div>
             </div>
+
+            <!-- Action: Start Review -->
+            <div
+              class="bento-card col-4 action-card nav-btn green desktop-only"
+              data-target="review-setup"
+            >
+              <div class="card-label">Start Review</div>
+            </div>
           </div>
           <!-- End Bento Grid -->
 
-          <!-- Vocabulary List Section (Full Width) -->
-          <div class="full-width-list-container vocab-section-container">
-            <div class="section-label section-header-label">
-              <div class="header-title-group">
-                <h1>Word List</h1>
-              </div>
+          <!-- Fixed Navigation Bar (Mobile) -->
+          <div class="form-actions form-actions-fixed mobile-only">
+            <button
+              class="btn white nav-btn btn-flex-grow-1"
+              data-target="import"
+            >
+              Import
+            </button>
+            <button
+              class="btn white nav-btn btn-flex-grow-1"
+              data-target="add-card"
+            >
+              Add Card
+            </button>
+            <button
+              class="btn btn-primary nav-btn green btn-flex-grow-2"
+              data-target="review-setup"
+            >
+              Start Review
+            </button>
+          </div>
+        </section>
 
+        <!-- Words View -->
+        <section id="words" class="view">
+          <div class="view-header-flex">
+            <h1 class="nav-item" data-target="dashboard">Dashboard</h1>
+            <h1 class="nav-item active" data-target="words">Words</h1>
+          </div>
+
+          <!-- Vocabulary List Section (Full Width) -->
+          <div
+            class="full-width-list-container vocab-section-container"
+            style="margin-top: 0"
+          >
+            <div class="section-label section-header-label">
               <div class="filter-controls-flex">
                 <div class="search-box-custom">
                   <span class="material-icons search-icon">search</span>
@@ -152,12 +169,27 @@
                     placeholder="Search words..."
                   />
                 </div>
-                <select id="filter-status" class="vocab-select-pill">
-                  <option value="all">All Status</option>
-                  <option value="mastered">Mastered</option>
-                  <option value="learning">Learning</option>
-                  <option value="new">New</option>
-                </select>
+                <div class="filter-group-row">
+                  <select id="filter-status" class="vocab-select-pill">
+                    <option value="all">All Status</option>
+                    <option value="mastered">Mastered</option>
+                    <option value="learning">Learning</option>
+                    <option value="new">New</option>
+                  </select>
+
+                  <!-- Starred Toggle -->
+                  <label class="toggle-switch" style="margin-bottom: 0">
+                    <span class="filter-label">Starred</span>
+                    <input
+                      type="checkbox"
+                      id="filter-starred-only"
+                      class="toggle-input"
+                    />
+                    <div class="toggle-track">
+                      <span class="toggle-thumb"></span>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -186,12 +218,6 @@
           <!-- Fixed Navigation Bar (Mobile) -->
           <div class="form-actions form-actions-fixed mobile-only">
             <button
-              class="btn btn-primary nav-btn green btn-flex-grow-2"
-              data-target="review-setup"
-            >
-              Start Review
-            </button>
-            <button
               class="btn white nav-btn btn-flex-grow-1"
               data-target="import"
             >
@@ -202,6 +228,12 @@
               data-target="add-card"
             >
               Add Card
+            </button>
+            <button
+              class="btn btn-primary nav-btn green btn-flex-grow-2"
+              data-target="review-setup"
+            >
+              Start Review
             </button>
           </div>
         </section>
@@ -316,10 +348,8 @@
 
             <div id="import-preview" class="hidden">
               <div class="section-label">Data Preview</div>
-              <div class="table-preview-container">
-                <table id="preview-table" class="table-preview">
-                  <!-- Preview rows -->
-                </table>
+              <div id="preview-list" class="preview-list-container">
+                <!-- Preview items injected here -->
               </div>
             </div>
           </div>
@@ -376,7 +406,7 @@
                   <label>Limit</label>
                   <select
                     name="limit"
-                    class="input-pill select-rounded select-with-chevron text-center"
+                    class="input-pill select-rounded select-with-chevron"
                   >
                     <option value="10" selected>10</option>
                     <option value="15">15</option>
@@ -584,6 +614,28 @@
           </div>
         </section>
       </main>
+
+      <!-- Fixed Navigation Bar (Mobile) Global -->
+      <div
+        id="mobile-main-nav"
+        class="form-actions form-actions-fixed mobile-only"
+      >
+        <button class="btn white nav-btn btn-flex-grow-1" data-target="import">
+          Import
+        </button>
+        <button
+          class="btn white nav-btn btn-flex-grow-1"
+          data-target="add-card"
+        >
+          Add Card
+        </button>
+        <button
+          class="btn btn-primary nav-btn green btn-flex-grow-2"
+          data-target="review-setup"
+        >
+          Start Review
+        </button>
+      </div>
     </div>
 
     <!-- Scripts (Type Module) -->

@@ -2037,7 +2037,7 @@ textarea:focus {
     flex: 1;
     border-radius: 0;
     margin: 0;
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 1rem calc(1.25rem + 24px) 1rem;
     height: auto;
     border: none;
   }

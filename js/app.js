@@ -65,7 +65,7 @@ const App = {
         class="input-pill example-input"
         style="min-height: 80px; padding-right: 3rem;"
       >${value}</textarea>
-      ${`<button type="button" class="btn-icon-absolute btn-remove-example">
+      ${`<button type="button" class="btn-remove-example">
            <span class="material-icons icon-sm">close</span>
          </button>`}
     `;
@@ -754,7 +754,6 @@ const App = {
 
     // Pagination Logic
     App.currentList = filteredCards; // Save for navigation
-    App.lastFilteredCount = filteredCards.length;
     const isMobile = window.innerWidth <= 899;
     const ITEMS_PER_PAGE = 15;
     const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE) || 1;

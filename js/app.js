@@ -362,6 +362,18 @@ const App = {
       showView('review-setup');
     });
 
+    // Dashboard Quick Action
+    const quickReviewAction = $('#start-review-action');
+    if (quickReviewAction) {
+      on(quickReviewAction, 'click', () => {
+        // Only start if text implies there are items, or check style
+        // Simplest: Check if text is 'Start Review!'
+        if (quickReviewAction.textContent.includes('Start Review')) {
+          showView('review-setup');
+        }
+      });
+    }
+
     // Review Setup Start
     on($('#review-setup-form'), 'submit', (e) => {
       e.preventDefault();
@@ -564,12 +576,8 @@ const App = {
   renderDashboard: () => {
     const dashboardCards = App.allCards;
 
-    // Stats
-    $('#total-count').textContent = dashboardCards.length;
-
     // Advanced Stats Calculation
     const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     let dueTotal = 0,
       dueNew = 0,
@@ -578,7 +586,6 @@ const App = {
     let totalNew = 0,
       totalLrn = 0,
       totalMst = 0;
-    let demotions30d = 0;
 
     dashboardCards.forEach((card) => {
       const stats = card.review_stats || {};
@@ -606,35 +613,35 @@ const App = {
         else if (state === 'LEARNING') dueLrn++;
         else if (state === 'MASTERED') dueMst++;
       }
-
-      // Demotions (30d)
-      if (stats.demotions && Array.isArray(stats.demotions)) {
-        stats.demotions.forEach((d) => {
-          const dDate = new Date(d);
-          if (dDate >= thirtyDaysAgo) demotions30d++;
-        });
-      }
     });
 
     // Update Dashboard DOM
-    if ($('#total-new')) $('#total-new').textContent = totalNew;
-    if ($('#total-lrn')) $('#total-lrn').textContent = totalLrn;
-    if ($('#total-mst')) $('#total-mst').textContent = totalMst;
+    if ($('#dashboard-new-count'))
+      $('#dashboard-new-count').textContent = totalNew;
+    if ($('#dashboard-lrn-count'))
+      $('#dashboard-lrn-count').textContent = totalLrn;
+    if ($('#dashboard-mst-count'))
+      $('#dashboard-mst-count').textContent = totalMst;
 
     const elDueCount = $('#due-count');
+    const elDueCard = $('#card-due-container');
+    const elActionLabel = $('#start-review-action');
+
     if (elDueCount) {
       elDueCount.textContent = dueTotal;
     }
-    if ($('#due-new')) $('#due-new').textContent = dueNew;
-    if ($('#due-lrn')) $('#due-lrn').textContent = dueLrn;
-    if ($('#due-mst')) $('#due-mst').textContent = dueMst;
 
-    // These IDs are actually the same as totalLrn and totalMst in the current logic
-    if ($('#learning-load-count'))
-      $('#learning-load-count').textContent = totalLrn;
-    if ($('#mastered-count')) $('#mastered-count').textContent = totalMst;
-    if ($('#demoted-30d-count'))
-      $('#demoted-30d-count').textContent = demotions30d;
+    if (elDueCard && elActionLabel) {
+      if (dueTotal === 0) {
+        elDueCard.classList.remove('orange');
+        elDueCard.classList.add('green');
+        elActionLabel.textContent = 'Congratulation!';
+      } else {
+        elDueCard.classList.remove('green');
+        elDueCard.classList.add('orange');
+        elActionLabel.textContent = 'Start Review!';
+      }
+    }
 
     // List rendering
     const container = $('#card-list-modern');

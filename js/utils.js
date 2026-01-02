@@ -100,6 +100,16 @@ export const showView = (viewId) => {
     `.nav-btn[data-target="${viewId}"], .nav-item[data-target="${viewId}"]`
   );
   navElements.forEach((el) => el.classList.add('active'));
+
+  // Dashboard specific: hide mobile bottom actions
+  const mobileActions = $('#mobile-bottom-actions');
+  if (mobileActions) {
+    if (viewId === 'dashboard') {
+      mobileActions.classList.add('hidden');
+    } else {
+      mobileActions.classList.remove('hidden');
+    }
+  }
 };
 
 window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove

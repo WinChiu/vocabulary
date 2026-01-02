@@ -56,95 +56,67 @@
             <h1 class="nav-item" data-target="words">Words</h1>
           </div>
 
-          <div class="bento-grid full-height">
+          <div class="bento-grid full-height dashboard">
             <!-- Summary Stats -->
-            <div class="bento-card col-8 orange">
-              <div class="card-label">Total Word Progress</div>
-              <div class="card-value" id="total-count">0</div>
-              <div class="card-footer card-footer-stats">
-                <span class="due-badge-dark due-badge-custom-bg"
-                  >NEW: <b id="total-new">0</b></span
-                >
-                <span class="due-badge-dark due-badge-custom-bg"
-                  >LRN: <b id="total-lrn">0</b></span
-                >
-                <span class="due-badge-dark due-badge-custom-bg"
-                  >MST: <b id="total-mst">0</b></span
-                >
-              </div>
-            </div>
-
-            <div class="bento-card col-4 dark" id="due-card-black">
+            <div
+              class="bento-card col-12 orange card-height-half"
+              id="card-due-container"
+            >
               <div class="card-label">Today Due</div>
-              <div class="card-value" id="due-count">0</div>
-              <div class="card-footer card-footer-stats">
-                <span class="due-badge-dark">NEW: <b id="due-new">0</b></span>
-                <span class="due-badge-dark">LRN: <b id="due-lrn">0</b></span>
-                <span class="due-badge-dark">MST: <b id="due-mst">0</b></span>
+              <div class="card-value-flex">
+                <div class="card-value card-value-large" id="due-count">0</div>
+                <div class="card-action-label" id="start-review-action">
+                  Start Review!
+                </div>
               </div>
             </div>
 
-            <div class="bento-card col-4 mobile-col-6">
-              <div class="card-label">Learning Load</div>
-              <div class="card-value" id="learning-load-count">0</div>
-              <div class="card-footer text-sub-label">Active learning</div>
-            </div>
-
-            <div class="bento-card col-8 mobile-col-6">
-              <div class="card-label">Mastered Quality</div>
-              <div class="card-value" id="mastered-count">0</div>
-              <div class="card-footer text-orange-label">
-                Demoted: <span id="demoted-30d-count">0</span> (30d)
+            <div
+              class="bento-card col-4 mobile-col-4 card-height-half"
+              id="card-new-container"
+            >
+              <div class="card-label">New</div>
+              <div class="flex-fill-bottom">
+                <div
+                  class="card-value card-value-large"
+                  id="dashboard-new-count"
+                >
+                  0
+                </div>
               </div>
             </div>
 
-            <!-- Action: Import -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn desktop-only"
-              data-target="import"
+              class="bento-card col-4 mobile-col-4 card-height-half"
+              id="card-lrn-container"
             >
-              <div class="card-label">Import CSV</div>
+              <div class="card-label">Learning</div>
+              <div class="flex-fill-bottom">
+                <div
+                  class="card-value card-value-large"
+                  id="dashboard-lrn-count"
+                >
+                  0
+                </div>
+              </div>
             </div>
 
-            <!-- Action: Add Card -->
             <div
-              class="bento-card col-4 mobile-col-6 action-card nav-btn desktop-only"
-              data-target="add-card"
+              class="bento-card col-4 mobile-col-4 card-height-half"
+              id="card-mst-container"
             >
-              <div class="card-label">Add Card</div>
-            </div>
-
-            <!-- Action: Start Review -->
-            <div
-              class="bento-card col-4 action-card nav-btn orange desktop-only"
-              data-target="review-setup"
-            >
-              <div class="card-label">Start Review</div>
+              <div class="card-label">Mastered</div>
+              <div class="flex-fill-bottom">
+                <div
+                  class="card-value card-value-large"
+                  id="dashboard-mst-count"
+                >
+                  0
+                </div>
+              </div>
             </div>
           </div>
           <!-- End Bento Grid -->
-
-          <!-- Fixed Navigation Bar (Mobile) -->
-          <div class="form-actions form-actions-fixed mobile-only">
-            <button
-              class="btn white nav-btn btn-flex-grow-1"
-              data-target="import"
-            >
-              Import
-            </button>
-            <button
-              class="btn white nav-btn btn-flex-grow-1"
-              data-target="add-card"
-            >
-              Add Card
-            </button>
-            <button
-              class="btn btn-primary nav-btn orange btn-flex-grow-2"
-              data-target="review-setup"
-            >
-              Start Review
-            </button>
-          </div>
         </section>
 
         <!-- Words View -->
@@ -218,13 +190,13 @@
           <!-- Fixed Navigation Bar (Mobile) -->
           <div class="form-actions form-actions-fixed mobile-only">
             <button
-              class="btn white nav-btn btn-flex-grow-1"
+              class="btn btn-tonal nav-btn btn-flex-grow-1"
               data-target="import"
             >
               Import
             </button>
             <button
-              class="btn white nav-btn btn-flex-grow-1"
+              class="btn btn-tonal nav-btn btn-flex-grow-1"
               data-target="add-card"
             >
               Add Card

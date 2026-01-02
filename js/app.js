@@ -17,6 +17,32 @@ const App = {
   allCards: [],
   currentPage: 1, // Pagination State
   userInfo: null,
+  editingCardId: null, // Track editing state
+
+  // Animation Helper
+  countUp: (el, start, end, duration) => {
+    if (!el) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      // Ease-in-Out Cubic
+      const ease =
+        progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      el.textContent = Math.floor(ease * (end - start) + start);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        el.textContent = end;
+      }
+    };
+    window.requestAnimationFrame(step);
+  },
 
   // UI Helpers for Examples
   addExampleInput: (value = '') => {
@@ -171,6 +197,11 @@ const App = {
           $('#add-card-form').reset();
           $('#examples-container').innerHTML = '';
           App.addExampleInput();
+
+          // Reset Edit State
+          App.editingCardId = null;
+          $('.view-header-flex h1').textContent = 'Add New Card';
+          $('button[form="add-card-form"]').textContent = 'Save Card';
         }
 
         if (target === 'dashboard' || target === 'words') {
@@ -254,9 +285,10 @@ const App = {
       }
 
       // Duplicate Check (Case-insensitive)
-      const isDuplicate = App.allCards.some(
-        (c) => c.word_en.toLowerCase() === card.word_en.toLowerCase()
-      );
+      const isDuplicate = App.allCards.some((c) => {
+        if (App.editingCardId && c.id === App.editingCardId) return false;
+        return c.word_en.toLowerCase() === card.word_en.toLowerCase();
+      });
 
       if (isDuplicate) {
         showPopup(
@@ -270,16 +302,27 @@ const App = {
       }
 
       try {
-        await DataService.addCard(card);
+        if (App.editingCardId) {
+          // Update Existing Card
+          await DataService.updateCard(App.editingCardId, card);
+          showPopup('Updated!', '<p>Card updated successfully.</p>', true);
+        } else {
+          // Add New Card
+          await DataService.addCard(card);
+          showPopup(
+            'Saved!',
+            '<p>New vocabulary card added successfully.</p>',
+            true
+          );
+        }
+
         e.target.reset();
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
+        App.editingCardId = null; // Reset state
+        $('.view-header-flex h1').textContent = 'Add New Card'; // Reset Title
+
         await App.refreshData(); // Refresh list
-        showPopup(
-          'Saved!',
-          '<p>New vocabulary card added successfully.</p>',
-          true
-        );
         showView('dashboard');
       } catch (err) {
         showPopup('Error', `<p>${err.message}</p>`);
@@ -320,6 +363,8 @@ const App = {
             App.toggleStar(id, isStarred);
           } else if (btn.classList.contains('btn-delete')) {
             App.handleDelete(id);
+          } else if (btn.classList.contains('btn-edit')) {
+            App.handleEdit(id);
           }
           return;
         }
@@ -573,6 +618,36 @@ const App = {
     on($('#btn-next-card'), 'click', () => ReviewManager.next());
   },
 
+  handleEdit: (id) => {
+    const card = App.allCards.find((c) => c.id === id);
+    if (!card) return;
+
+    // Populate Form
+    $('#word_en').value = card.word_en;
+    $('#meaning_zh').value = card.meaning_zh;
+    $('#is_starred').checked = card.is_starred;
+
+    // Populate Examples
+    $('#examples-container').innerHTML = '';
+    if (card.example_en && card.example_en.length > 0) {
+      card.example_en.forEach((ex) => App.addExampleInput(ex));
+    } else {
+      App.addExampleInput();
+    }
+
+    // Set State
+    App.editingCardId = id;
+
+    // Update View Title
+    // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
+    document.querySelector('#add-card .view-header-flex h1').textContent =
+      'Edit Card';
+    document.querySelector('button[form="add-card-form"]').textContent =
+      'Update Card';
+
+    showView('add-card');
+  },
+
   renderDashboard: () => {
     const dashboardCards = App.allCards;
 
@@ -617,18 +692,18 @@ const App = {
 
     // Update Dashboard DOM
     if ($('#dashboard-new-count'))
-      $('#dashboard-new-count').textContent = totalNew;
+      App.countUp($('#dashboard-new-count'), 0, totalNew, 1000);
     if ($('#dashboard-lrn-count'))
-      $('#dashboard-lrn-count').textContent = totalLrn;
+      App.countUp($('#dashboard-lrn-count'), 0, totalLrn, 1000);
     if ($('#dashboard-mst-count'))
-      $('#dashboard-mst-count').textContent = totalMst;
+      App.countUp($('#dashboard-mst-count'), 0, totalMst, 1000);
 
     const elDueCount = $('#due-count');
     const elDueCard = $('#card-due-container');
     const elActionLabel = $('#start-review-action');
 
     if (elDueCount) {
-      elDueCount.textContent = dueTotal;
+      App.countUp(elDueCount, 0, dueTotal, 1000);
     }
 
     if (elDueCard && elActionLabel) {
@@ -678,6 +753,7 @@ const App = {
     });
 
     // Pagination Logic
+    App.currentList = filteredCards; // Save for navigation
     App.lastFilteredCount = filteredCards.length;
     const isMobile = window.innerWidth <= 899;
     const ITEMS_PER_PAGE = 15;
@@ -782,6 +858,9 @@ const App = {
                 : 'star_border'
             }</span>
           </button>
+           <button class="icon-btn btn-edit">
+            <span class="material-icons icon-table-action">drive_file_rename_outline</span>
+          </button>
           <button class="icon-btn btn-delete">
             <span class="material-icons icon-table-action">delete_outline</span>
           </button>
@@ -801,23 +880,26 @@ const App = {
         <div class="vocab-card-side">
           <span class="level-indicator ${level.class}">${level.label}</span>
           <div class="vocab-card-actions">
-            <button class="icon-btn btn-star ${
-              card.is_starred === true || String(card.is_starred) === 'true'
-                ? 'starred'
-                : ''
-            }" data-starred="${
+           <button class="icon-btn btn-star ${
+             card.is_starred === true || String(card.is_starred) === 'true'
+               ? 'starred'
+               : ''
+           }" data-starred="${
         card.is_starred === true || String(card.is_starred) === 'true'
       }">
-              <span class="material-icons" style="font-size:20px;">${
-                card.is_starred === true || String(card.is_starred) === 'true'
-                  ? 'star'
-                  : 'star_border'
-              }</span>
-            </button>
-            <button class="icon-btn btn-delete">
-              <span class="material-icons" style="font-size:20px;">delete_outline</span>
-            </button>
-          </div>
+             <span class="material-icons" style="font-size:20px;">${
+               card.is_starred === true || String(card.is_starred) === 'true'
+                 ? 'star'
+                 : 'star_border'
+             }</span>
+           </button>
+            <button class="icon-btn btn-edit">
+             <span class="material-icons" style="font-size:20px;">drive_file_rename_outline</span>
+           </button>
+           <button class="icon-btn btn-delete">
+             <span class="material-icons" style="font-size:20px;">delete_outline</span>
+           </button>
+         </div>
         </div>
       `;
       listEl.appendChild(cardEl);
@@ -871,25 +953,63 @@ const App = {
       <button class="icon-btn preview-star-btn ${
         card.is_starred ? 'starred' : ''
       }"
-              style="color: ${
-                card.is_starred ? '#fbbf24' : '#666'
-              }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-          <span class="material-icons" style="font-size:24px;">${
-            card.is_starred ? 'star' : 'star_border'
-          }</span>
+            style="color: ${
+              card.is_starred ? '#fbbf24' : '#666'
+            }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+        <span class="material-icons" style="font-size:24px;">${
+          card.is_starred ? 'star' : 'star_border'
+        }</span>
+    </button>
+      <button class="icon-btn preview-edit-btn"
+              style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+          <span class="material-icons" style="font-size:24px;">drive_file_rename_outline</span>
       </button>
-      <button class="icon-btn preview-delete-btn"
-              style="color: #ef4444; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-          <span class="material-icons" style="font-size:24px;">delete_outline</span>
-      </button>
+    <button class="icon-btn preview-delete-btn"
+            style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+        <span class="material-icons" style="font-size:24px;">delete_outline</span>
+    </button>
+  `;
+
+    const list = App.currentList || App.allCards;
+    const currentIndex = list.findIndex((c) => c.id === id);
+    const prevIndex = (currentIndex - 1 + list.length) % list.length;
+    const nextIndex = (currentIndex + 1) % list.length;
+
+    const customFooter = `
+      <div style="display:flex; gap:0.5rem; width:100%; justify-content:flex-end;">
+        <button class="btn btn-tonal" id="preview-prev-btn" style="min-width:40px; padding:0 1rem;">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button class="btn btn-primary" id="preview-next-btn" style="min-width:40px; padding:0 1rem;">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
     `;
 
-    showPopup('Card Detail', html, { footerLeft });
+    showPopup('Card Detail', html, { footerLeft, customFooter });
 
     // Bind popup actions
     setTimeout(() => {
       const starBtn = $('.preview-star-btn');
       const deleteBtn = $('.preview-delete-btn');
+      const editBtn = $('.preview-edit-btn');
+      const prevBtn = $('#preview-prev-btn');
+      const nextBtn = $('#preview-next-btn');
+
+      if (prevBtn) {
+        on(prevBtn, 'click', () => App.showCardPreview(list[prevIndex].id));
+      }
+
+      if (nextBtn) {
+        on(nextBtn, 'click', () => App.showCardPreview(list[nextIndex].id));
+      }
+
+      if (editBtn) {
+        on(editBtn, 'click', () => {
+          closeModal();
+          App.handleEdit(card.id);
+        });
+      }
 
       if (starBtn) {
         on(starBtn, 'click', async (e) => {

@@ -30,7 +30,9 @@ export const showPopup = (title, content, options = {}) => {
   if (!contentArea) return;
 
   let footerHTML = '';
-  if (onConfirm) {
+  if (options.customFooter) {
+    footerHTML = options.customFooter;
+  } else if (onConfirm) {
     footerHTML = `
       <button class="btn btn-tonal" id="modal-cancel-btn">${cancelText}</button>
       <button class="btn btn-primary" id="modal-confirm-btn">${confirmText}</button>

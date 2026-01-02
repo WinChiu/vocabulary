@@ -106,6 +106,23 @@ const DataService = {
     }
   },
 
+  // Update card details
+  updateCard: async (id, cardData) => {
+    try {
+      const cardRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(cardRef, {
+        word_en: cardData.word_en,
+        meaning_zh: cardData.meaning_zh,
+        example_en: cardData.example_en,
+        is_starred: cardData.is_starred,
+        updated_at: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Error updating card: ', error);
+      throw error;
+    }
+  },
+
   // Delete a card
   deleteCard: async (id) => {
     try {

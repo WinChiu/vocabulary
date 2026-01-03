@@ -101,7 +101,21 @@ export const showView = (viewId) => {
   const navElements = $$(
     `.nav-btn[data-target="${viewId}"], .nav-item[data-target="${viewId}"]`
   );
-  navElements.forEach((el) => el.classList.add('active'));
+  navElements.forEach((el) => {
+    el.classList.add('active');
+  });
+
+  // Icon Swapping Logic for Bottom Nav
+  $$('.nav-item').forEach((el) => {
+    const icon = el.querySelector('.nav-icon');
+    if (icon && icon.dataset.iconDefault && icon.dataset.iconActive) {
+      if (el.classList.contains('active')) {
+        icon.src = icon.dataset.iconActive;
+      } else {
+        icon.src = icon.dataset.iconDefault;
+      }
+    }
+  });
 
   // Dashboard specific: hide mobile bottom actions
   const mobileActions = $('#mobile-bottom-actions');

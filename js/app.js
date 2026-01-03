@@ -862,17 +862,24 @@ const App = {
           }" data-starred="${
         card.is_starred === true || String(card.is_starred) === 'true'
       }">
-            <span class="material-icons icon-table-action">${
+          <button class="icon-btn btn-star ${
+            card.is_starred === true || String(card.is_starred) === 'true'
+              ? 'starred'
+              : ''
+          }" data-starred="${
+        card.is_starred === true || String(card.is_starred) === 'true'
+      }">
+            <img src="${
               card.is_starred === true || String(card.is_starred) === 'true'
-                ? 'star'
-                : 'star_border'
-            }</span>
+                ? 'assets/star-filled.svg'
+                : 'assets/star.svg'
+            }" class="action-icon" alt="star" />
           </button>
            <button class="icon-btn btn-edit">
-            <span class="material-icons icon-table-action">drive_file_rename_outline</span>
+            <img src="assets/edit.svg" class="action-icon" alt="edit" />
           </button>
           <button class="icon-btn btn-delete">
-            <span class="material-icons icon-table-action">delete_outline</span>
+            <img src="assets/trash.svg" class="action-icon" alt="delete" />
           </button>
         </td>
       `;
@@ -897,17 +904,24 @@ const App = {
            }" data-starred="${
         card.is_starred === true || String(card.is_starred) === 'true'
       }">
-             <span class="material-icons" style="font-size:20px;">${
+           <button class="icon-btn btn-star ${
+             card.is_starred === true || String(card.is_starred) === 'true'
+               ? 'starred'
+               : ''
+           }" data-starred="${
+        card.is_starred === true || String(card.is_starred) === 'true'
+      }">
+             <img src="${
                card.is_starred === true || String(card.is_starred) === 'true'
-                 ? 'star'
-                 : 'star_border'
-             }</span>
+                 ? 'assets/star-filled.svg'
+                 : 'assets/star.svg'
+             }" class="action-icon" alt="star" />
            </button>
             <button class="icon-btn btn-edit">
-             <span class="material-icons" style="font-size:20px;">drive_file_rename_outline</span>
+             <img src="assets/edit.svg" class="action-icon" alt="edit" />
            </button>
            <button class="icon-btn btn-delete">
-             <span class="material-icons" style="font-size:20px;">delete_outline</span>
+             <img src="assets/trash.svg" class="action-icon" alt="delete" />
            </button>
          </div>
         </div>
@@ -966,17 +980,23 @@ const App = {
             style="color: ${
               card.is_starred ? '#fbbf24' : '#666'
             }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-        <span class="material-icons" style="font-size:24px;">${
-          card.is_starred ? 'star' : 'star_border'
-        }</span>
+      <button class="icon-btn preview-star-btn ${
+        card.is_starred ? 'starred' : ''
+      }"
+            style="color: ${
+              card.is_starred ? '#fbbf24' : '#666'
+            }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+        <img src="${
+          card.is_starred ? 'assets/star-filled.svg' : 'assets/star.svg'
+        }" class="action-icon" style="width:24px; height:24px;" alt="star" />
     </button>
       <button class="icon-btn preview-edit-btn"
               style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-          <span class="material-icons" style="font-size:24px;">drive_file_rename_outline</span>
+          <img src="assets/edit.svg" class="action-icon" style="width:24px; height:24px;" alt="edit" />
       </button>
     <button class="icon-btn preview-delete-btn"
             style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-        <span class="material-icons" style="font-size:24px;">delete_outline</span>
+        <img src="assets/trash.svg" class="action-icon" style="width:24px; height:24px;" alt="delete" />
     </button>
   `;
 

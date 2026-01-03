@@ -572,8 +572,26 @@
 
         <!-- Shared Bottom Navigation -->
         <nav id="main-nav" class="view-header-flex bottom-nav">
-          <h1 class="nav-item active" data-target="dashboard">Dashboard</h1>
-          <h1 class="nav-item" data-target="words">Words</h1>
+          <div class="nav-item active" data-target="dashboard">
+            <img
+              src="assets/layout-dashboard-filled.svg"
+              alt="Dashboard"
+              class="nav-icon"
+              data-icon-default="assets/layout-dashboard.svg"
+              data-icon-active="assets/layout-dashboard-filled.svg"
+            />
+            <span class="nav-label">Dashboard</span>
+          </div>
+          <div class="nav-item" data-target="words">
+            <img
+              src="assets/word-list.svg"
+              alt="Words"
+              class="nav-icon"
+              data-icon-default="assets/word-list.svg"
+              data-icon-active="assets/word-list-fill.svg"
+            />
+            <span class="nav-label">Words</span>
+          </div>
         </nav>
       </main>
     </div>

@@ -1047,12 +1047,6 @@ textarea:focus {
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.2s;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  font-size: 2rem;
-  margin-bottom: 0;
-  width: 100%;
-  text-align: center;
 }
 
 .nav-item.active {
@@ -2104,8 +2098,50 @@ textarea:focus {
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   flex-direction: row;
+}
+
+.bottom-nav .nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: flex-end; /* Align bottom to keep labels aligned */
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  cursor: pointer;
+  flex: 1;
+}
+
+.bottom-nav .nav-item.active {
+  opacity: 1;
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.action-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Adjust button padding to accommodate images if needed */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Ensure content isn't hidden behind nav */

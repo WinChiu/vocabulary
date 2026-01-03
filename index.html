@@ -51,11 +51,6 @@
 
         <!-- Dashboard View -->
         <section id="dashboard" class="view">
-          <div class="view-header-flex">
-            <h1 class="nav-item active" data-target="dashboard">Dashboard</h1>
-            <h1 class="nav-item" data-target="words">Words</h1>
-          </div>
-
           <div class="bento-grid full-height dashboard">
             <!-- Summary Stats -->
             <div
@@ -101,16 +96,10 @@
               </div>
             </div>
           </div>
-          <!-- End Bento Grid -->
         </section>
 
         <!-- Words View -->
         <section id="words" class="view">
-          <div class="view-header-flex">
-            <h1 class="nav-item" data-target="dashboard">Dashboard</h1>
-            <h1 class="nav-item active" data-target="words">Words</h1>
-          </div>
-
           <!-- Vocabulary List Section (Full Width) -->
           <div
             class="full-width-list-container vocab-section-container"
@@ -171,9 +160,8 @@
               </button>
             </div>
           </div>
-
           <!-- Fixed Navigation Bar (Mobile) -->
-          <div class="form-actions form-actions-fixed mobile-only">
+          <!-- <div class="form-actions form-actions-fixed mobile-only">
             <button
               class="btn btn-tonal nav-btn btn-flex-grow-1"
               data-target="import"
@@ -192,7 +180,7 @@
             >
               Start Review
             </button>
-          </div>
+          </div> -->
         </section>
 
         <!-- Add Card View -->
@@ -581,6 +569,12 @@
             </button>
           </div>
         </section>
+
+        <!-- Shared Bottom Navigation -->
+        <nav id="main-nav" class="view-header-flex bottom-nav">
+          <h1 class="nav-item active" data-target="dashboard">Dashboard</h1>
+          <h1 class="nav-item" data-target="words">Words</h1>
+        </nav>
       </main>
     </div>
 

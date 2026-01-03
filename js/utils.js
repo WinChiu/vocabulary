@@ -112,6 +112,16 @@ export const showView = (viewId) => {
       mobileActions.classList.remove('hidden');
     }
   }
+
+  // Toggle Main Nav visibility (Only show on Dashboard & Words)
+  const mainNav = $('#main-nav');
+  if (mainNav) {
+    if (viewId === 'dashboard' || viewId === 'words') {
+      mainNav.classList.remove('hidden');
+    } else {
+      mainNav.classList.add('hidden');
+    }
+  }
 };
 
 window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove

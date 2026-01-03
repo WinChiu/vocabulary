@@ -86,7 +86,7 @@ class ReviewSession {
     this.cards = cards; // Filtered list of cards
     this.mode = parseInt(mode); // 1, 2, 3, or 4
     this.currentIndex = 0;
-    this.results = { total: cards.length, correct: 0, wrong: 0 };
+    this.incorrectCardIds = new Set();
     this.isCardRevealed = false;
     this.modifiedCards = new Map(); // Store modified cards (id -> card)
 
@@ -203,14 +203,14 @@ class ReviewSession {
 
         if (this.isCardRevealed) {
           return `
-                        <div class="flashcard">
+                       <div class="flashcard">
                            <div class="sub-content" style="margin-bottom:1rem;">${
                              card.meaning_zh
                            }</div>
                            <div class="content" style="font-size:1.5rem">${sentence.replace(
                              regex,
                              (match) =>
-                               `<span style="color:var(--danger-color)">${match}</span>`
+                               `<input type="text" class="cloze-input" value="${match}" disabled style="width:${match.length}ch; color:var(--danger-color); border-color:var(--danger-color); background:transparent;">`
                            )}</div>
                         </div>
                     `;
@@ -337,7 +337,7 @@ const ReviewManager = {
       (session.mode === 3 || session.mode === 4) &&
       !session.isCardRevealed
     ) {
-      session.results.wrong++;
+      session.incorrectCardIds.add(session.getCurrentCard().id);
       const card = session.getCurrentCard();
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
@@ -361,8 +361,7 @@ const ReviewManager = {
     const session = ReviewManager.session;
 
     // Track Stats
-    if (isCorrect) session.results.correct++;
-    else session.results.wrong++;
+    if (!isCorrect) session.incorrectCardIds.add(session.getCurrentCard().id);
 
     const card = session.getCurrentCard();
     const modeKey = MODE_MAP[session.mode];
@@ -396,9 +395,12 @@ const ReviewManager = {
     const session = ReviewManager.session;
     $('#summary-total').textContent = session.cards.length;
 
+    const forgotCount = session.incorrectCardIds.size;
+    const rememberedCount = session.cards.length - forgotCount;
+
     // Update Breakdown
-    $('#summary-correct').textContent = session.results.correct;
-    $('#summary-wrong').textContent = session.results.wrong;
+    $('#summary-correct').textContent = rememberedCount;
+    $('#summary-wrong').textContent = forgotCount;
 
     // Batch Save
     const cardsToSave = Array.from(session.modifiedCards.values());
@@ -433,7 +435,6 @@ const ReviewManager = {
     const card = session.getCurrentCard();
 
     if (normalize(input.value) === normalize(card.word_en)) {
-      session.results.correct++;
       feedback.textContent = 'Correct!';
       feedback.className = 'feedback-msg correct';
       const modeKey = MODE_MAP[session.mode];
@@ -452,7 +453,7 @@ const ReviewManager = {
         ReviewManager.reveal(true);
       }, 500);
     } else {
-      session.results.wrong++;
+      session.incorrectCardIds.add(card.id);
       feedback.textContent = 'Try again!';
       feedback.className = 'feedback-msg incorrect';
       const modeKey = MODE_MAP[session.mode];
@@ -490,7 +491,6 @@ const ReviewManager = {
     );
 
     if (val === word || matches.includes(val)) {
-      session.results.correct++;
       feedback.textContent = ''; // UI feedback via color is enough, cleaner
       input.classList.add('correct');
       // input.disabled = true; // Prevent further typing (Fixed syntax from previous edit)
@@ -514,7 +514,7 @@ const ReviewManager = {
       }, 700);
     } else {
       // Turn text red, no feedback text
-      session.results.wrong++;
+      session.incorrectCardIds.add(card.id);
       feedback.textContent = '';
       input.classList.add('error');
 

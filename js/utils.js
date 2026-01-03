@@ -136,6 +136,19 @@ export const showView = (viewId) => {
       bottomNav.classList.add('hidden');
     }
   }
+
+  // Context FAB Logic
+  const fabReview = $('#fab-review');
+  const fabAdd = $('#fab-add-card');
+
+  if (fabReview) fabReview.classList.add('hidden');
+  if (fabAdd) fabAdd.classList.add('hidden');
+
+  if (viewId === 'dashboard' && fabReview) {
+    fabReview.classList.remove('hidden');
+  } else if (viewId === 'words' && fabAdd) {
+    fabAdd.classList.remove('hidden');
+  }
 };
 
 window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove

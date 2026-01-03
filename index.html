@@ -61,7 +61,7 @@
               <div class="card-value-flex">
                 <div class="card-value card-value-large" id="due-count">0</div>
                 <div class="card-action-label" id="start-review-action">
-                  Start Review!
+                  Loading...
                 </div>
               </div>
             </div>
@@ -100,6 +100,12 @@
 
         <!-- Words View -->
         <section id="words" class="view">
+          <div
+            class="view-header-flex"
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h1 style="margin: 0">Words</h1>
+          </div>
           <!-- Vocabulary List Section (Full Width) -->
           <div
             class="full-width-list-container vocab-section-container"
@@ -185,8 +191,41 @@
 
         <!-- Add Card View -->
         <section id="add-card" class="view">
-          <div class="view-header-flex">
-            <h1>Add New Card</h1>
+          <div
+            class="view-header-flex"
+            style="
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              justify-items: center;
+            "
+          >
+            <button
+              id="btn-back-add-card"
+              class="btn btn-tonal btn-text"
+              style="justify-self: start"
+            >
+              <img
+                src="assets/back.svg"
+                style="width: 32px; height: 32px"
+                alt="Back"
+              />
+            </button>
+            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
+              Add New Card
+            </h1>
+            <button
+              class="btn btn-tonal btn-text"
+              id="btn-goto-import"
+              data-target="import"
+              style="justify-self: end"
+            >
+              <img
+                src="assets/import.svg"
+                style="width: 32px; height: 32px"
+                alt="Import"
+              />
+            </button>
           </div>
           <div class="bento-card full-height">
             <form id="add-card-form">
@@ -258,15 +297,9 @@
           </div>
           <div class="form-actions form-actions-fixed">
             <button
-              type="button"
-              class="btn btn-tonal cancel-nav btn-flex-grow-1"
-            >
-              Cancel
-            </button>
-            <button
               form="add-card-form"
               type="submit"
-              class="btn btn-primary btn-flex-grow-2"
+              class="btn btn-primary btn-full-width"
             >
               Save Card
             </button>
@@ -275,8 +308,31 @@
 
         <!-- Import View -->
         <section id="import" class="view">
-          <div class="view-header-flex">
-            <h1>Import Vocabulary</h1>
+          <div
+            class="view-header-flex"
+            style="
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              justify-items: center;
+            "
+          >
+            <button
+              id="btn-back-import"
+              class="btn btn-tonal btn-text"
+              style="justify-self: start"
+            >
+              <img
+                src="assets/back.svg"
+                style="width: 32px; height: 32px"
+                alt="Back"
+              />
+            </button>
+            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
+              Import Vocabulary
+            </h1>
+            <!-- Empty element for grid balance -->
+            <div style="width: 40px"></div>
           </div>
           <div class="bento-card full-height" style="padding: 0rem">
             <div
@@ -312,35 +368,48 @@
           >
             <button
               type="button"
-              class="btn btn-tonal cancel-nav btn-full-width"
-              id="import-cancel-initial"
+              class="btn btn-primary btn-full-width"
+              id="confirm-import-btn"
+              disabled
             >
-              Cancel
+              Confirm Import
             </button>
           </div>
           <div
             id="import-actions-container"
             class="form-actions form-actions-fixed hidden"
           >
-            <button
-              type="button"
-              class="btn btn-tonal cancel-nav btn-flex-grow-1"
-            >
-              Cancel
-            </button>
-            <button
-              id="confirm-import-btn"
-              class="btn btn-primary btn-flex-grow-2"
-            >
-              Confirm Import
-            </button>
+            <!-- Redundant container, kept empty/hidden or re-used if needed later, but cleared for now -->
           </div>
         </section>
 
         <!-- Review Configuration View -->
         <section id="review-setup" class="view">
-          <div class="view-header-flex">
-            <h1>Review Session</h1>
+          <div
+            class="view-header-flex"
+            style="
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              justify-items: center;
+            "
+          >
+            <button
+              id="btn-back-review-setup"
+              class="btn btn-tonal btn-text"
+              style="justify-self: start"
+            >
+              <img
+                src="assets/back.svg"
+                style="width: 32px; height: 32px"
+                alt="Back"
+              />
+            </button>
+            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
+              Review Session
+            </h1>
+            <!-- Empty element for grid balance -->
+            <div style="width: 40px"></div>
           </div>
           <div class="bento-card full-height">
             <form id="review-setup-form">
@@ -460,15 +529,9 @@
           </div>
           <div class="form-actions form-actions-fixed">
             <button
-              type="button"
-              class="btn btn-tonal cancel-nav btn-flex-grow-1"
-            >
-              Cancel
-            </button>
-            <button
               form="review-setup-form"
               type="submit"
-              class="btn btn-primary btn-flex-grow-2"
+              class="btn btn-primary btn-full-width"
             >
               Start Session
             </button>
@@ -476,12 +539,34 @@
         </section>
 
         <section id="review-session" class="view">
-          <div class="view-header-flex">
-            <div class="review-session-header">
-              <div id="review-progress" class="review-progress-text">0 / 0</div>
-              <button id="exit-review-btn" class="btn btn-tonal btn-text">
-                Exit Session
-              </button>
+          <div
+            class="view-header-flex"
+            style="
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              justify-items: center;
+            "
+          >
+            <button
+              id="exit-review-btn"
+              class="btn btn-tonal btn-text"
+              style="justify-self: start; padding: 0"
+            >
+              <img
+                src="assets/back.svg"
+                style="width: 32px; height: 32px"
+                alt="Exit Session"
+              />
+            </button>
+            <!-- Empty center -->
+            <div></div>
+            <div
+              id="review-progress"
+              class="review-progress-text"
+              style="justify-self: end"
+            >
+              0 / 0
             </div>
           </div>
 
@@ -539,20 +624,28 @@
           </div>
           <div class="bento-grid full-height">
             <div class="bento-card col-12 dark">
-              <div class="card-label">Review Session Result</div>
+              <div class="card-label">Remembered</div>
+              <div class="flex-fill-bottom">
+                <div class="card-value card-value-large" id="summary-correct">
+                  0
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bento-card col-6 white mobile-col-6"
+              style="padding-bottom: 64px"
+            >
+              <div class="card-label">Total</div>
               <div class="flex-fill-bottom">
                 <div class="card-value" id="summary-total">0</div>
               </div>
             </div>
 
-            <div class="bento-card col-6 green mobile-col-6">
-              <div class="card-label">Remembered</div>
-              <div class="flex-fill-bottom">
-                <div class="card-value" id="summary-correct">0</div>
-              </div>
-            </div>
-
-            <div class="bento-card col-6 white mobile-col-6">
+            <div
+              class="bento-card col-6 white mobile-col-6"
+              style="padding-bottom: 64px"
+            >
               <div class="card-label">Forgot</div>
               <div class="flex-fill-bottom">
                 <div class="card-value" id="summary-wrong">0</div>
@@ -596,33 +689,21 @@
 
           <!-- FAB Container (Right) -->
           <div id="fab-container">
-            <!-- Expandable Menu -->
-            <div id="fab-menu">
-              <button
-                class="fab-action-btn orange-btn"
-                id="fab-import"
-                data-target="import"
-              >
-                <img src="assets/import.svg" alt="Import" />
-              </button>
-              <button
-                class="fab-action-btn orange-btn"
-                id="fab-add"
-                data-target="add-card"
-              >
-                <img src="assets/add-card.svg" alt="Add Card" />
-              </button>
-              <button
-                class="fab-action-btn dark-orange-btn"
-                id="fab-review"
-                data-target="review-setup"
-              >
-                <img src="assets/start-session.svg" alt="Review" />
-              </button>
-            </div>
-            <!-- Main Trigger -->
-            <button id="fab-main" class="fab-btn">
-              <img src="assets/moresvg.svg" alt="More" />
+            <!-- Review FAB (Visible on Dashboard) -->
+            <button
+              id="fab-review"
+              class="fab-btn orange-btn hidden"
+              data-target="review-setup"
+            >
+              <img src="assets/start-session.svg" alt="Start Review" />
+            </button>
+            <!-- Add FAB (Visible on Words) -->
+            <button
+              id="fab-add-card"
+              class="fab-btn orange-btn hidden"
+              data-target="add-card"
+            >
+              <img src="assets/add-card.svg" alt="Add Card" />
             </button>
           </div>
         </div>

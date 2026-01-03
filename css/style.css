@@ -36,7 +36,7 @@
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg-workspace);
+  background-color: white;
   color: var(--text-main);
   line-height: 1.5;
 }
@@ -255,7 +255,7 @@ body {
 .card-action-label {
   font-size: 1.25rem;
   font-weight: 700;
-  cursor: pointer;
+  cursor: default;
   white-space: nowrap;
 }
 
@@ -1059,7 +1059,7 @@ textarea:focus {
 
 .section-header-label {
   position: sticky;
-  top: 0;
+  top: 67px;
   margin-bottom: 1.5rem;
 }
 
@@ -1250,7 +1250,11 @@ textarea:focus {
 .btn-full-width {
   width: 100%;
   margin-top: 1.5rem;
+  /* position: fixed;
+  bottom: 0;
+  border-radius: 9999px; */
 }
+
 .flex-justify-between-center {
   display: flex;
   justify-content: space-between;
@@ -2106,11 +2110,17 @@ textarea:focus {
 /* --- Mobile Small (max-width: 600px) --- */
 @media (max-width: 600px) {
   .view {
-    padding-bottom: 83px !important;
     padding: 0;
+    padding-bottom: 120px !important;
   }
   #dashboard {
     height: calc(100vh);
+    padding-bottom: 0 !important;
+  }
+  #review-setup,
+  #review-session,
+  #review-summary {
+    height: 100dvh;
     padding-bottom: 0 !important;
   }
   .action-card:hover {
@@ -2142,7 +2152,7 @@ textarea:focus {
   }
 
   .view-header-flex {
-    padding: 16px 1.5rem 16px 1.5rem;
+    padding: 0.75rem 1.5rem;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -2162,11 +2172,11 @@ textarea:focus {
   }
   .bento-card.full-height {
     height: calc(100vh - 75px - 60px);
-    overflow-y: scroll;
+    /* overflow-y: scroll; */
   }
   .bento-grid.full-height {
     height: calc(100vh - 75px - 58px);
-    overflow-y: scroll;
+    overflow-y: clip;
   }
   .bento-grid.full-height.dashboard {
     height: calc(100vh - 75px);
@@ -2180,23 +2190,23 @@ textarea:focus {
   }
   .form-actions-fixed {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0;
-    gap: 0;
-    width: 100%;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 1rem;
+    width: calc(100% - 3rem);
     z-index: 1000;
     background: var(--card-bg);
-    border-top: 1px solid var(--border-gray);
   }
   .form-actions-fixed .btn {
     flex: 1;
     border-radius: 0;
     margin: 0;
-    padding: 1.25rem 1rem calc(1.25rem + 24px) 1rem;
+    padding: 1.25rem 1rem 1.25rem 1rem;
     height: auto;
     border: none;
+    border-radius: 999px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
   }
   .mobile-only {
     display: flex !important;

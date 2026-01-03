@@ -201,7 +201,7 @@ const App = {
 
           // Reset Edit State
           App.editingCardId = null;
-          $('.view-header-flex h1').textContent = 'Add New Card';
+          $('#add-card .view-header-flex h1').textContent = 'Add New Card';
           $('button[form="add-card-form"]').textContent = 'Save Card';
         }
 
@@ -218,24 +218,69 @@ const App = {
       });
     });
 
-    // FAB Menu Logic
-    const fabMain = $('#fab-main');
-    const fabContainer = $('#fab-container');
-    const fabMenu = $('#fab-menu');
+    // Context FAB Bindings
+    const fabReview = $('#fab-review');
+    const fabAdd = $('#fab-add-card');
+    const btnGotoImport = $('#btn-goto-import');
 
-    if (fabMain && fabContainer && fabMenu) {
-      on(fabMain, 'click', (e) => {
-        e.stopPropagation();
-        fabMenu.classList.toggle('visible');
-        fabContainer.classList.toggle('expanded');
+    if (fabReview) {
+      on(fabReview, 'click', () => {
+        showView('review-setup');
+        App.updateDueCount();
       });
+    }
 
-      // Close on outside click
-      on(document, 'click', (e) => {
-        if (!fabContainer.contains(e.target)) {
-          fabMenu.classList.remove('visible');
-          fabContainer.classList.remove('expanded');
-        }
+    if (fabAdd) {
+      on(fabAdd, 'click', () => {
+        // Reset and init form
+        $('#add-card-form').reset();
+        $('#examples-container').innerHTML = '';
+        App.addExampleInput();
+
+        App.editingCardId = null;
+        $('#add-card .view-header-flex h1').textContent = 'Add New Card';
+        $('button[form="add-card-form"]').textContent = 'Save Card';
+
+        showView('add-card');
+      });
+    }
+
+    if (btnGotoImport) {
+      on(btnGotoImport, 'click', () => {
+        $('#import-preview').classList.add('hidden');
+        $('#import-actions-container').classList.add('hidden');
+        $('#import-initial-actions').classList.remove('hidden');
+        $('#import-file-section').classList.remove('hidden');
+        $('#csv-file-input').value = '';
+        showView('import');
+      });
+    }
+
+    const btnBackAddCard = $('#btn-back-add-card');
+    if (btnBackAddCard) {
+      on(btnBackAddCard, 'click', () => {
+        // Reset form
+        $('#add-card-form').reset();
+        // Return to Words view
+        showView('words');
+      });
+    }
+
+    const btnBackImport = $('#btn-back-import');
+    if (btnBackImport) {
+      on(btnBackImport, 'click', () => {
+        // Reset Input
+        $('#csv-file-input').value = '';
+        // Return to Add Card view
+        showView('add-card');
+      });
+    }
+
+    const btnBackReviewSetup = $('#btn-back-review-setup');
+    if (btnBackReviewSetup) {
+      on(btnBackReviewSetup, 'click', () => {
+        // Return to Dashboard (standard back from Review Setup started from dashboard)
+        showView('dashboard');
       });
     }
 
@@ -424,22 +469,10 @@ const App = {
       });
     }
 
-    // Start Review Button
+    // Start Review Button (Global, e.g. in FAB now)
     on($('#start-review-btn'), 'click', () => {
       showView('review-setup');
     });
-
-    // Dashboard Quick Action
-    const quickReviewAction = $('#start-review-action');
-    if (quickReviewAction) {
-      on(quickReviewAction, 'click', () => {
-        // Only start if text implies there are items, or check style
-        // Simplest: Check if text is 'Start Review!'
-        if (quickReviewAction.textContent.includes('Start Review')) {
-          showView('review-setup');
-        }
-      });
-    }
 
     // Review Setup Start
     on($('#review-setup-form'), 'submit', (e) => {
@@ -501,60 +534,79 @@ const App = {
 
     on(fileInput, 'change', (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      const confirmBtn = $('#confirm-import-btn');
+
+      if (!file) {
+        if (confirmBtn) confirmBtn.disabled = true;
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = (evt) => {
         const data = evt.target.result;
-        const workbook = XLSX.read(data, { type: 'string' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+        try {
+          const workbook = XLSX.read(data, { type: 'string' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-        // Normalize Keys (Spec 3.4 & robustness)
-        const normalizedData = jsonData.map((row) => {
-          const newRow = {};
-          Object.keys(row).forEach((key) => {
-            const lowKey = key.toLowerCase().trim();
-            if (
-              lowKey.includes('word') ||
-              lowKey === 'en' ||
-              lowKey === 'english' ||
-              lowKey === '單字' ||
-              lowKey === '英文'
-            ) {
-              newRow.word_en = row[key];
-            } else if (
-              lowKey.includes('mean') ||
-              lowKey === 'zh' ||
-              lowKey === 'chinese' ||
-              lowKey === '意思' ||
-              lowKey === '中文'
-            ) {
-              newRow.meaning_zh = row[key];
-            } else if (
-              lowKey.includes('example') ||
-              lowKey.includes('sentence') ||
-              lowKey.includes('例句')
-            ) {
-              // Aggregate examples
-              if (!newRow.example_en) newRow.example_en = [];
-              const val = row[key].toString().trim();
-              if (val) newRow.example_en.push(val);
-            } else {
-              newRow[key] = row[key]; // Keep original for preview
-            }
+          // Normalize Keys (Spec 3.4 & robustness)
+          const normalizedData = jsonData.map((row) => {
+            const newRow = {};
+            Object.keys(row).forEach((key) => {
+              const lowKey = key.toLowerCase().trim();
+              if (
+                lowKey.includes('word') ||
+                lowKey === 'en' ||
+                lowKey === 'english' ||
+                lowKey === '單字' ||
+                lowKey === '英文'
+              ) {
+                newRow.word_en = row[key];
+              } else if (
+                lowKey.includes('mean') ||
+                lowKey === 'zh' ||
+                lowKey === 'chinese' ||
+                lowKey === '意思' ||
+                lowKey === '中文'
+              ) {
+                newRow.meaning_zh = row[key];
+              } else if (
+                lowKey.includes('example') ||
+                lowKey.includes('sentence') ||
+                lowKey.includes('例句')
+              ) {
+                // Aggregate examples
+                if (!newRow.example_en) newRow.example_en = [];
+                const val = row[key].toString().trim();
+                if (val) newRow.example_en.push(val);
+              } else {
+                newRow[key] = row[key]; // Keep original for preview
+              }
+            });
+
+            // Ensure example_en is an array even if empty found
+            if (!newRow.example_en) newRow.example_en = [];
+
+            return newRow;
           });
 
-          // Ensure example_en is an array even if empty found
-          if (!newRow.example_en) newRow.example_en = [];
+          pendingImportData = normalizedData;
+          App.renderImportPreview(normalizedData);
 
-          return newRow;
-        });
-
-        pendingImportData = normalizedData;
-        App.renderImportPreview(normalizedData);
+          // Enable Confirm Button
+          if (confirmBtn && pendingImportData.length > 0) {
+            confirmBtn.disabled = false;
+          }
+        } catch (err) {
+          console.error('Parse Error', err);
+          if (confirmBtn) confirmBtn.disabled = true;
+          showPopup(
+            'Notification',
+            `<p>Failed to parse file. Please ensure it is a valid CSV.</p>`
+          );
+        }
       };
-      reader.readAsText(file); // Read as text for CSV
+      reader.readAsText(file);
     });
 
     on($('#confirm-import-btn'), 'click', async () => {
@@ -736,7 +788,7 @@ const App = {
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');
-        elActionLabel.textContent = 'Start Review!';
+        elActionLabel.textContent = 'Time to start a review!';
       }
     }
 

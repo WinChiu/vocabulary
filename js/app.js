@@ -387,7 +387,7 @@ const App = {
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
         App.editingCardId = null; // Reset state
-        $('.view-header-flex h1').textContent = 'Add New Card'; // Reset Title
+        $('#add-card .view-header-flex h1').textContent = 'Add New Card'; // Reset Title
 
         await App.refreshData(); // Refresh list
         showView('dashboard');

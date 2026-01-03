@@ -421,6 +421,7 @@ button {
 .full-width-list-container {
   width: 100%;
   margin-top: 5rem;
+  overflow-y: hidden;
 }
 
 .vocab-card {
@@ -1058,8 +1059,8 @@ textarea:focus {
 }
 
 .section-header-label {
-  position: sticky;
-  top: 67px;
+  /* position: sticky;
+  top: 67px; */
   margin-bottom: 1.5rem;
 }
 
@@ -2119,9 +2120,15 @@ textarea:focus {
   }
   #review-setup,
   #review-session,
-  #review-summary {
+  #review-summary,
+  #words {
     height: 100dvh;
     padding-bottom: 0 !important;
+  }
+  #card-list-modern {
+    height: calc(100vh - 136px);
+    padding-bottom: 120px !important;
+    overflow-y: scroll;
   }
   .action-card:hover {
     transform: none;

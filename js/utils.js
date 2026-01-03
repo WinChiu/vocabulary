@@ -128,12 +128,12 @@ export const showView = (viewId) => {
   }
 
   // Toggle Main Nav visibility (Only show on Dashboard & Words)
-  const mainNav = $('#main-nav');
-  if (mainNav) {
+  const bottomNav = $('#bottom-nav-container');
+  if (bottomNav) {
     if (viewId === 'dashboard' || viewId === 'words') {
-      mainNav.classList.remove('hidden');
+      bottomNav.classList.remove('hidden');
     } else {
-      mainNav.classList.add('hidden');
+      bottomNav.classList.add('hidden');
     }
   }
 };

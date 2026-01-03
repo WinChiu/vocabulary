@@ -50,6 +50,103 @@ const callWithTimeout = async (promise, timeoutMs = 5000) => {
   });
 };
 
+// --- New SRS Formula Implementation (Pure Function) ---
+export const calculateNextReviewStats = (
+  currentStats,
+  modeKey,
+  isCorrect,
+  weight
+) => {
+  // Clone to avoid mutation side-effects if any
+  const stats = JSON.parse(JSON.stringify(currentStats || INITIAL_STATS()));
+
+  // Ensure structure
+  if (!stats.mode_stats) stats.mode_stats = INITIAL_STATS().mode_stats;
+
+  const INTERVAL_STEPS = [0, 1, 3, 7, 14, 30];
+  const now = new Date();
+
+  // Check if Due (or New)
+  let isDue = true;
+  if (stats.next_review_date) {
+    const nextDate = stats.next_review_date.toDate
+      ? stats.next_review_date.toDate()
+      : new Date(stats.next_review_date);
+    if (nextDate > now) {
+      isDue = false; // Early Review (Cramming)
+    }
+  }
+
+  // Only update SRS schedule if it IS due
+  if (isDue) {
+    if (isCorrect) {
+      // PASS Rule
+      stats.success_streak = (stats.success_streak || 0) + 1;
+
+      // Find current step and move to next
+      let currentStepIndex = INTERVAL_STEPS.indexOf(stats.interval_days || 0);
+      if (currentStepIndex === -1) currentStepIndex = 0;
+
+      const nextStepIndex = Math.min(
+        currentStepIndex + 1,
+        INTERVAL_STEPS.length - 1
+      );
+      stats.interval_days = INTERVAL_STEPS[nextStepIndex];
+
+      // MASTERED check: streak >= 3 AND interval >= 14
+      if (stats.success_streak >= 3 && stats.interval_days >= 14) {
+        if (stats.state !== 'MASTERED') {
+          stats.mastered_at = serverTimestamp(); // Note: serverTimestamp won't work in pure function for local preview unless handled, but for batch it's fine if we generate it there?
+          // Actually, for local preview we can use new Date(), for DB we want serverTimestamp.
+          // Let's use new Date() for now, Firestore accepts Date objects.
+          stats.mastered_at = new Date();
+        }
+        stats.state = 'MASTERED';
+      } else if (stats.state === 'NEW') {
+        stats.state = 'LEARNING';
+      }
+    } else {
+      // FAIL Rule
+      if (stats.state === 'MASTERED') {
+        // Track demotion
+        if (!stats.demotions) stats.demotions = [];
+        stats.demotions.push(new Date().toISOString());
+        stats.state = 'LEARNING';
+      } else if (stats.state === 'NEW') {
+        stats.state = 'NEW';
+      } else {
+        stats.state = 'LEARNING';
+      }
+
+      stats.success_streak = 0;
+      stats.interval_days = 1;
+    }
+
+    // Calculate next review date
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + stats.interval_days);
+    stats.next_review_date = nextDate;
+  }
+  // ----------------------------------------
+
+  stats.total_attempts += weight;
+  if (stats.mode_stats[modeKey]) {
+    stats.mode_stats[modeKey].attempts += 1;
+  }
+  stats.last_reviewed_at = new Date(); // Use local time for optimstic, batch will convert if needed
+
+  if (isCorrect) {
+    stats.correct_attempts += weight;
+    stats.consecutive_correct += 1;
+    if (stats.mode_stats[modeKey]) stats.mode_stats[modeKey].correct += 1;
+  } else {
+    stats.consecutive_correct = 0;
+    stats.last_wrong_at = new Date();
+  }
+
+  return stats;
+};
+
 const DataService = {
   // Add a single card
   addCard: async (card) => {
@@ -188,104 +285,57 @@ const DataService = {
     return totalCount;
   },
 
-  // Update statistics after a review
+  // Update statistics after a review (Legacy Single Call - kept for robustness or other uses)
   updateReviewStats: async (cardId, modeKey, isCorrect, weight) => {
+    // ... Implement using the helper above would be cleaner but let's just use batch for review
+    // For specific single updates (like "I Know" single action outside review?), we might need this.
     try {
       const cardRef = doc(db, COLLECTION_NAME, cardId);
-
       const snapshot = await getDoc(cardRef);
       if (!snapshot.exists()) return;
 
       const data = snapshot.data();
-      const stats = data.review_stats || INITIAL_STATS();
-
-      // --- New SRS Formula Implementation ---
-      const INTERVAL_STEPS = [0, 1, 3, 7, 14, 30];
-      const now = new Date();
-
-      // Check if Due (or New)
-      let isDue = true;
-      if (stats.next_review_date) {
-        const nextDate = stats.next_review_date.toDate
-          ? stats.next_review_date.toDate()
-          : new Date(stats.next_review_date);
-        if (nextDate > now) {
-          isDue = false; // Early Review (Cramming)
-        }
-      }
-
-      // Only update SRS schedule if it IS due
-      if (isDue) {
-        if (isCorrect) {
-          // PASS Rule
-          stats.success_streak = (stats.success_streak || 0) + 1;
-
-          // Find current step and move to next
-          let currentStepIndex = INTERVAL_STEPS.indexOf(
-            stats.interval_days || 0
-          );
-          if (currentStepIndex === -1) currentStepIndex = 0;
-
-          const nextStepIndex = Math.min(
-            currentStepIndex + 1,
-            INTERVAL_STEPS.length - 1
-          );
-          stats.interval_days = INTERVAL_STEPS[nextStepIndex];
-
-          // MASTERED check: streak >= 3 AND interval >= 14
-          if (stats.success_streak >= 3 && stats.interval_days >= 14) {
-            if (stats.state !== 'MASTERED') {
-              stats.mastered_at = serverTimestamp();
-            }
-            stats.state = 'MASTERED';
-          } else if (stats.state === 'NEW') {
-            stats.state = 'LEARNING';
-          }
-        } else {
-          // FAIL Rule
-          if (stats.state === 'MASTERED') {
-            // Track demotion
-            if (!stats.demotions) stats.demotions = [];
-            stats.demotions.push(new Date().toISOString());
-            stats.state = 'LEARNING';
-          } else if (stats.state === 'NEW') {
-            stats.state = 'NEW';
-          } else {
-            stats.state = 'LEARNING';
-          }
-
-          stats.success_streak = 0;
-          stats.interval_days = 1;
-        }
-
-        // Calculate next review date
-        const nextDate = new Date();
-        nextDate.setDate(nextDate.getDate() + stats.interval_days);
-        stats.next_review_date = nextDate;
-      }
-      // ----------------------------------------
-
-      stats.total_attempts += weight;
-      stats.mode_stats[modeKey].attempts += 1;
-      stats.last_reviewed_at = serverTimestamp();
-
-      if (isCorrect) {
-        stats.correct_attempts += weight;
-        stats.consecutive_correct += 1;
-        stats.mode_stats[modeKey].correct += 1;
-      } else {
-        stats.consecutive_correct = 0;
-        stats.last_wrong_at = serverTimestamp();
-      }
+      const newStats = calculateNextReviewStats(
+        data.review_stats,
+        modeKey,
+        isCorrect,
+        weight
+      );
 
       await updateDoc(cardRef, {
-        review_stats: stats,
+        review_stats: newStats,
         updated_at: serverTimestamp(),
       });
-      return stats;
-    } catch (error) {
-      console.error('Error updating review stats:', error);
+      return newStats;
+    } catch (e) {
+      console.error(e);
     }
+  },
+
+  // Batch Update Stats (New)
+  batchUpdateStats: async (cards) => {
+    let totalCount = 0;
+    const CHUNK_SIZE = 450;
+
+    for (let i = 0; i < cards.length; i += CHUNK_SIZE) {
+      const batch = writeBatch(db);
+      const chunk = cards.slice(i, i + CHUNK_SIZE);
+
+      chunk.forEach((card) => {
+        const docRef = doc(db, COLLECTION_NAME, card.id);
+        // We only update review_stats and updated_at
+        batch.update(docRef, {
+          review_stats: card.review_stats,
+          updated_at: serverTimestamp(),
+        });
+        totalCount++;
+      });
+
+      if (chunk.length > 0) {
+        await callWithTimeout(batch.commit(), 20000);
+      }
+    }
+    return totalCount;
   },
 };
 

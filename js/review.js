@@ -1,6 +1,6 @@
 // Review Logic (ES Module)
-import { $, $$, showView } from './utils.js';
-import DataService from './data.js';
+import { $, $$, showView, showPopup } from './utils.js';
+import DataService, { calculateNextReviewStats } from './data.js';
 
 const MODE_MAP = {
   1: 'flip_en',
@@ -88,6 +88,7 @@ class ReviewSession {
     this.currentIndex = 0;
     this.results = { total: cards.length, correct: 0, wrong: 0 };
     this.isCardRevealed = false;
+    this.modifiedCards = new Map(); // Store modified cards (id -> card)
 
     // Shuffle cards on init
     this.shuffleCards();
@@ -149,10 +150,10 @@ class ReviewSession {
                         <div class="sub-content ${
                           this.isCardRevealed ? '' : 'hidden'
                         }">
-                            <div class="meaning">${back}</div>
-                            <div class="example">${
-                              this.currentReviewSentence
-                            }</div>
+                             <div class="meaning">${back}</div>
+                             <div class="example">${
+                               this.currentReviewSentence
+                             }</div>
                         </div>
                         ${
                           !this.isCardRevealed
@@ -192,12 +193,6 @@ class ReviewSession {
         // If no example matches (rare), allow any (will just show text without blank)
         const candidates =
           validExamples.length > 0 ? validExamples : allExamples;
-        // Random selection (Stateful per card render? Ideally yes, but here re-render calls getting random again is chaos.
-        // We should store selected example index in the session/card state if we want persistence across reveal.
-        // But for now, let's pick one based on a hash or simple random if render is stable)
-        // Actually, renderCard is called multiple times? No, mainly once per state change.
-        // To be safe, let's use a stable selection if possible or just random.
-        // Random is fine, but when revealing, we want the SAME sentence.
 
         if (!this.currentClozeSentence || this.currentClozeCardId !== card.id) {
           this.currentClozeCardId = card.id;
@@ -332,7 +327,7 @@ const ReviewManager = {
     }
   },
 
-  reveal: async (isAuto = false) => {
+  reveal: (isAuto = false) => {
     const session = ReviewManager.session;
     if (!session) return;
 
@@ -346,20 +341,23 @@ const ReviewManager = {
       const card = session.getCurrentCard();
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      const newStats = await DataService.updateReviewStats(
-        card.id,
+
+      // Local calculation (Optimistic/Batch)
+      const newStats = calculateNextReviewStats(
+        card.review_stats,
         modeKey,
         false,
         weight
       );
-      if (newStats) card.review_stats = newStats;
+      card.review_stats = newStats;
+      session.modifiedCards.set(card.id, card);
     }
 
     session.isCardRevealed = true;
     ReviewManager.updateUI();
   },
 
-  assess: async (isCorrect) => {
+  assess: (isCorrect) => {
     const session = ReviewManager.session;
 
     // Track Stats
@@ -370,14 +368,15 @@ const ReviewManager = {
     const modeKey = MODE_MAP[session.mode];
     const weight = MODE_WEIGHTS[session.mode];
 
-    // Update Backend
-    const newStats = await DataService.updateReviewStats(
-      card.id,
+    // Local calculation (Optimistic/Batch)
+    const newStats = calculateNextReviewStats(
+      card.review_stats,
       modeKey,
       isCorrect,
       weight
     );
-    if (newStats) card.review_stats = newStats;
+    card.review_stats = newStats;
+    session.modifiedCards.set(card.id, card);
 
     // Move next
     ReviewManager.next();
@@ -393,7 +392,7 @@ const ReviewManager = {
     }
   },
 
-  finish: () => {
+  finish: async () => {
     const session = ReviewManager.session;
     $('#summary-total').textContent = session.cards.length;
 
@@ -401,12 +400,33 @@ const ReviewManager = {
     $('#summary-correct').textContent = session.results.correct;
     $('#summary-wrong').textContent = session.results.wrong;
 
+    // Batch Save
+    const cardsToSave = Array.from(session.modifiedCards.values());
+    if (cardsToSave.length > 0) {
+      // We do this in background or await?
+      // To be safe and ensure data persistence, lets trigger it.
+      // If we want it fast, we can don't await, but user might exit app.
+      // Let's await it but show a non-blocking toast?
+      // Or show popup "Partial success" etc if fail?
+
+      try {
+        await DataService.batchUpdateStats(cardsToSave);
+        // console.log("Batch sync successful");
+      } catch (e) {
+        console.error('Batch sync failed', e);
+        showPopup(
+          'Sync Error',
+          '<p>Failed to save review progress. Please check connection.</p>'
+        );
+      }
+    }
+
     showView('review-summary');
 
     ReviewManager.session = null;
   },
 
-  checkSpelling: async () => {
+  checkSpelling: () => {
     const session = ReviewManager.session;
     const input = $('#spelling-input');
     const feedback = $('#spelling-feedback');
@@ -418,13 +438,16 @@ const ReviewManager = {
       feedback.className = 'feedback-msg correct';
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      const newStats = await DataService.updateReviewStats(
-        card.id,
+
+      const newStats = calculateNextReviewStats(
+        card.review_stats,
         modeKey,
         true,
         weight
       );
-      if (newStats) card.review_stats = newStats;
+      card.review_stats = newStats;
+      session.modifiedCards.set(card.id, card);
+
       setTimeout(() => {
         ReviewManager.reveal(true);
       }, 500);
@@ -434,19 +457,22 @@ const ReviewManager = {
       feedback.className = 'feedback-msg incorrect';
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      const newStats = await DataService.updateReviewStats(
-        card.id,
+
+      const newStats = calculateNextReviewStats(
+        card.review_stats,
         modeKey,
         false,
         weight
       );
-      if (newStats) card.review_stats = newStats;
+      card.review_stats = newStats;
+      session.modifiedCards.set(card.id, card);
+
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
     }
   },
 
-  checkCloze: async () => {
+  checkCloze: () => {
     const session = ReviewManager.session;
     const input = $('#cloze-input');
     const feedback = $('#cloze-feedback');
@@ -467,17 +493,22 @@ const ReviewManager = {
       session.results.correct++;
       feedback.textContent = ''; // UI feedback via color is enough, cleaner
       input.classList.add('correct');
-      input.disabled = true; // Prevent further typing
+      // input.disabled = true; // Prevent further typing (Fixed syntax from previous edit)
+      const el = input;
+      el.disabled = true;
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      const newStats = await DataService.updateReviewStats(
-        card.id,
+
+      const newStats = calculateNextReviewStats(
+        card.review_stats,
         modeKey,
         true,
         weight
       );
-      if (newStats) card.review_stats = newStats;
+      card.review_stats = newStats;
+      session.modifiedCards.set(card.id, card);
+
       setTimeout(() => {
         ReviewManager.next();
       }, 700);
@@ -489,13 +520,15 @@ const ReviewManager = {
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      const newStats = await DataService.updateReviewStats(
-        card.id,
+
+      const newStats = calculateNextReviewStats(
+        card.review_stats,
         modeKey,
         false,
         weight
       );
-      if (newStats) card.review_stats = newStats;
+      card.review_stats = newStats;
+      session.modifiedCards.set(card.id, card);
 
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);

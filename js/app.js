@@ -179,7 +179,8 @@ const App = {
 
   bindEvents: () => {
     // Navigation Interception
-    $$('.nav-btn, .nav-item').forEach((btn) => {
+    // Navigation Interception
+    $$('.nav-btn, .nav-item, .fab-action-btn').forEach((btn) => {
       on(btn, 'click', () => {
         const target = btn.getAttribute('data-target');
 
@@ -216,6 +217,27 @@ const App = {
         showView(target);
       });
     });
+
+    // FAB Menu Logic
+    const fabMain = $('#fab-main');
+    const fabContainer = $('#fab-container');
+    const fabMenu = $('#fab-menu');
+
+    if (fabMain && fabContainer && fabMenu) {
+      on(fabMain, 'click', (e) => {
+        e.stopPropagation();
+        fabMenu.classList.toggle('visible');
+        fabContainer.classList.toggle('expanded');
+      });
+
+      // Close on outside click
+      on(document, 'click', (e) => {
+        if (!fabContainer.contains(e.target)) {
+          fabMenu.classList.remove('visible');
+          fabContainer.classList.remove('expanded');
+        }
+      });
+    }
 
     // Handle Review Scope Filter Change
     on($('select[name="scope"]'), 'change', () => {
@@ -974,12 +996,7 @@ const App = {
     `;
 
     const footerLeft = `
-      <button class="icon-btn preview-star-btn ${
-        card.is_starred ? 'starred' : ''
-      }"
-            style="color: ${
-              card.is_starred ? '#fbbf24' : '#666'
-            }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+
       <button class="icon-btn preview-star-btn ${
         card.is_starred ? 'starred' : ''
       }"

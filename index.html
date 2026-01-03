@@ -571,28 +571,61 @@
         </section>
 
         <!-- Shared Bottom Navigation -->
-        <nav id="main-nav" class="view-header-flex bottom-nav">
-          <div class="nav-item active" data-target="dashboard">
-            <img
-              src="assets/layout-dashboard-filled.svg"
-              alt="Dashboard"
-              class="nav-icon"
-              data-icon-default="assets/layout-dashboard.svg"
-              data-icon-active="assets/layout-dashboard-filled.svg"
-            />
-            <span class="nav-label">Dashboard</span>
+        <div id="bottom-nav-container">
+          <!-- Pill Navigation (Left) -->
+          <div id="nav-pill">
+            <div class="nav-item active" data-target="dashboard">
+              <img
+                src="assets/layout-dashboard-filled.svg"
+                alt="Dashboard"
+                class="nav-icon"
+                data-icon-default="assets/layout-dashboard.svg"
+                data-icon-active="assets/layout-dashboard-filled.svg"
+              />
+            </div>
+            <div class="nav-item" data-target="words">
+              <img
+                src="assets/word-list.svg"
+                alt="Words"
+                class="nav-icon"
+                data-icon-default="assets/word-list.svg"
+                data-icon-active="assets/word-list-fill.svg"
+              />
+            </div>
           </div>
-          <div class="nav-item" data-target="words">
-            <img
-              src="assets/word-list.svg"
-              alt="Words"
-              class="nav-icon"
-              data-icon-default="assets/word-list.svg"
-              data-icon-active="assets/word-list-fill.svg"
-            />
-            <span class="nav-label">Words</span>
+
+          <!-- FAB Container (Right) -->
+          <div id="fab-container">
+            <!-- Expandable Menu -->
+            <div id="fab-menu" class="hidden">
+              <button
+                class="fab-action-btn orange-btn"
+                id="fab-import"
+                data-target="import"
+              >
+                <img src="assets/import.svg" alt="Import" />
+              </button>
+              <button
+                class="fab-action-btn orange-btn"
+                id="fab-add"
+                data-target="add-card"
+              >
+                <img src="assets/add-card.svg" alt="Add Card" />
+              </button>
+              <button
+                class="fab-action-btn dark-orange-btn"
+                id="fab-review"
+                data-target="review-setup"
+              >
+                <img src="assets/start-session.svg" alt="Review" />
+              </button>
+            </div>
+            <!-- Main Trigger -->
+            <button id="fab-main" class="fab-btn">
+              <img src="assets/moresvg.svg" alt="More" />
+            </button>
           </div>
-        </nav>
+        </div>
       </main>
     </div>
 

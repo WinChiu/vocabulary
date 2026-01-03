@@ -346,7 +346,13 @@ const ReviewManager = {
       const card = session.getCurrentCard();
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      await DataService.updateReviewStats(card.id, modeKey, false, weight);
+      const newStats = await DataService.updateReviewStats(
+        card.id,
+        modeKey,
+        false,
+        weight
+      );
+      if (newStats) card.review_stats = newStats;
     }
 
     session.isCardRevealed = true;
@@ -365,7 +371,13 @@ const ReviewManager = {
     const weight = MODE_WEIGHTS[session.mode];
 
     // Update Backend
-    await DataService.updateReviewStats(card.id, modeKey, isCorrect, weight);
+    const newStats = await DataService.updateReviewStats(
+      card.id,
+      modeKey,
+      isCorrect,
+      weight
+    );
+    if (newStats) card.review_stats = newStats;
 
     // Move next
     ReviewManager.next();
@@ -406,7 +418,13 @@ const ReviewManager = {
       feedback.className = 'feedback-msg correct';
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      await DataService.updateReviewStats(card.id, modeKey, true, weight);
+      const newStats = await DataService.updateReviewStats(
+        card.id,
+        modeKey,
+        true,
+        weight
+      );
+      if (newStats) card.review_stats = newStats;
       setTimeout(() => {
         ReviewManager.reveal(true);
       }, 500);
@@ -416,7 +434,13 @@ const ReviewManager = {
       feedback.className = 'feedback-msg incorrect';
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      await DataService.updateReviewStats(card.id, modeKey, false, weight);
+      const newStats = await DataService.updateReviewStats(
+        card.id,
+        modeKey,
+        false,
+        weight
+      );
+      if (newStats) card.review_stats = newStats;
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
     }
@@ -447,7 +471,13 @@ const ReviewManager = {
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      await DataService.updateReviewStats(card.id, modeKey, true, weight);
+      const newStats = await DataService.updateReviewStats(
+        card.id,
+        modeKey,
+        true,
+        weight
+      );
+      if (newStats) card.review_stats = newStats;
       setTimeout(() => {
         ReviewManager.next();
       }, 700);
@@ -459,7 +489,13 @@ const ReviewManager = {
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
-      await DataService.updateReviewStats(card.id, modeKey, false, weight);
+      const newStats = await DataService.updateReviewStats(
+        card.id,
+        modeKey,
+        false,
+        weight
+      );
+      if (newStats) card.review_stats = newStats;
 
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);

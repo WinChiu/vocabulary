@@ -728,29 +728,40 @@ const App = {
     const statusFilter = $('#filter-status').value;
 
     // Apply filtering
-    const filteredCards = App.allCards.filter((card) => {
-      // Starred filter
-      const isStarred =
-        card.is_starred === true || String(card.is_starred) === 'true';
-      if (showStarredOnly && !isStarred) return false;
+    const filteredCards = App.allCards
+      .filter((card) => {
+        // Starred filter
+        const isStarred =
+          card.is_starred === true || String(card.is_starred) === 'true';
+        if (showStarredOnly && !isStarred) return false;
 
-      // Search filter (word or meaning)
-      if (
-        searchQuery &&
-        !card.word_en.toLowerCase().includes(searchQuery) &&
-        !card.meaning_zh.toLowerCase().includes(searchQuery)
-      ) {
-        return false;
-      }
+        // Search filter (word or meaning)
+        if (
+          searchQuery &&
+          !card.word_en.toLowerCase().includes(searchQuery) &&
+          !card.meaning_zh.toLowerCase().includes(searchQuery)
+        ) {
+          return false;
+        }
 
-      // Status filter
-      if (statusFilter !== 'all') {
-        const level = getFamiliarityLevel(card.review_stats);
-        if (level.class.replace('level-', '') !== statusFilter) return false;
-      }
+        // Status filter
+        if (statusFilter !== 'all') {
+          const level = getFamiliarityLevel(card.review_stats);
+          if (level.class.replace('level-', '') !== statusFilter) return false;
+        }
 
-      return true;
-    });
+        return true;
+      })
+      .sort((a, b) => {
+        // Sort Starred First
+        const aStarred =
+          a.is_starred === true || String(a.is_starred) === 'true';
+        const bStarred =
+          b.is_starred === true || String(b.is_starred) === 'true';
+        if (aStarred && !bStarred) return -1;
+        if (!aStarred && bStarred) return 1;
+        return 0; // Preserve existing order (updated_at desc)
+      });
 
     // Pagination Logic
     App.currentList = filteredCards; // Save for navigation

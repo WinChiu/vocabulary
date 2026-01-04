@@ -4,7 +4,16 @@ import ReviewManager, {
   calculateFamiliarity,
   getFamiliarityLevel,
 } from './review.js';
-import { $, $$, on, showView, showPopup, closeModal } from './utils.js';
+import {
+  $,
+  $$,
+  on,
+  showView,
+  showPopup,
+  closeModal,
+  showLoading,
+  hideLoading,
+} from './utils.js';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -124,6 +133,16 @@ const App = {
   },
 
   refreshData: async () => {
+    // Show loading covering the entire workspace (including navbar)
+    const workspace = document.querySelector('.main-workspace');
+    if (workspace) {
+      showLoading('.main-workspace');
+    }
+
+    // Hide Navigation & FABs during load (User Request)
+    const bottomNav = $('#bottom-nav-container');
+    if (bottomNav) bottomNav.classList.add('hidden');
+
     try {
       const cards = await DataService.fetchCards();
       App.allCards = cards;
@@ -149,6 +168,12 @@ const App = {
         'Network Error',
         `<p>Could not load cards. Details: <br><b>${e.message}</b></p>`
       );
+    } finally {
+      if (workspace) {
+        hideLoading('.main-workspace');
+      }
+      // Restore Navigation & FABs
+      if (bottomNav) bottomNav.classList.remove('hidden');
     }
   },
 
@@ -204,6 +229,10 @@ const App = {
           App.editingCardId = null;
           $('#add-card .view-header-flex h1').textContent = 'Add New Card';
           $('button[form="add-card-form"]').textContent = 'Save Card';
+
+          // Show Import Button
+          const importBtn = $('#btn-goto-import');
+          if (importBtn) importBtn.style.display = 'flex';
         }
 
         if (target === 'dashboard' || target === 'words') {
@@ -241,6 +270,10 @@ const App = {
         App.editingCardId = null;
         $('#add-card .view-header-flex h1').textContent = 'Add New Card';
         $('button[form="add-card-form"]').textContent = 'Save Card';
+
+        // Show Import Button
+        const importBtn = $('#btn-goto-import');
+        if (importBtn) importBtn.style.display = 'flex';
 
         showView('add-card');
       });
@@ -761,9 +794,13 @@ const App = {
     // Update View Title
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
     document.querySelector('#add-card .view-header-flex h1').textContent =
-      'Edit Card';
+      'Edit Word';
     document.querySelector('button[form="add-card-form"]').textContent =
-      'Update Card';
+      'Update Word';
+
+    // Hide Import Button
+    const importBtn = $('#btn-goto-import');
+    if (importBtn) importBtn.style.display = 'none';
 
     showView('add-card');
   },
@@ -834,7 +871,7 @@ const App = {
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');
-        elActionLabel.textContent = 'Time to start a review!';
+        elActionLabel.textContent = "Let's start!";
       }
     }
 
@@ -1064,7 +1101,8 @@ const App = {
             <div style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em; margin-bottom: 0.5rem; color: var(--text-main);">${
               card.word_en
             }</div>
-            <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:2rem; font-weight: 500;">${
+
+            <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:3.5rem; font-weight: 500;">${
               card.meaning_zh
             }</div>
 
@@ -1074,14 +1112,16 @@ const App = {
                     <div class="status-value" style="font-size: 1.25rem; font-weight: 800;">${level.label.toUpperCase()}</div>
                 </div>
                 <div style="flex: 1; background:var(--bg-workspace); padding:1rem 1.5rem; border-radius:16px; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px; text-transform: uppercase;">ATTEMPTS</div>
-                    <div style="font-weight:800; color:var(--text-main); font-size: 1.25rem;">${
-                      card.review_stats?.total_attempts || 0
-                    }</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px; text-transform: uppercase;">PHONETIC</div>
+                    <div id="preview-phonetic-badge" style="font-weight:800; color:var(--text-main); font-size: 1.25rem; font-family:'Lucida Sans Unicode', 'Arial Unicode MS', sans-serif;">-</div>
                 </div>
             </div>
 
-            <div style="border-radius:20px; text-align:left">
+
+
+
+
+            <div style="border-radius:20px; text-align:left; margin-bottom: 2rem;">
                 <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">Example Sentences</div>
                 <div style="font-size:1.1rem; line-height:1.6; display: flex; flex-direction: column; gap: 12px; color: var(--text-main);">
                     ${
@@ -1093,6 +1133,14 @@ const App = {
                         : '<i style="color: var(--text-muted);">No example provided.</i>'
                     }
                 </div>
+            </div>
+            <div style="border-radius:20px; text-align:left">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">SYNONYMS</div>
+                <div id="preview-synonyms-value" style="font-size:1.1rem; line-height:1.6; color: var(--text-main);">-</div>
+            </div>
+
+            <div id="preview-definitions-container" style="border-radius:20px; text-align:left; margin-top: 2rem; margin-bottom: 2rem; display: none;">
+                <!-- Injected via JS -->
             </div>
         </div>
     `;
@@ -1116,6 +1164,159 @@ const App = {
 
     // 3. Switch View
     showView('card-preview');
+
+    // 4. Reset Audio Button & Fetch Data
+    const audioBtn = $('#preview-audio-btn');
+    if (audioBtn) {
+      audioBtn.disabled = true;
+      audioBtn.style.opacity = '0.3';
+      audioBtn.style.cursor = 'default';
+      const img = audioBtn.querySelector('img');
+      if (img) img.src = 'assets/audio-off.svg';
+      audioBtn.onclick = null;
+    }
+
+    App.fetchDictionaryData(card.word_en);
+  },
+
+  fetchDictionaryData: async (word) => {
+    // const phoneticContainer = $('#preview-phonetic-container'); // Removed
+    const phoneticBadge = $('#preview-phonetic-badge');
+    // const posValue = $('#preview-pos-value'); // Removed
+    const synonymsValue = $('#preview-synonyms-value');
+    const definitionsContainer = $('#preview-definitions-container');
+    const audioBtn = $('#preview-audio-btn');
+
+    // Show full page loading with delay
+    showLoading('#card-preview', { delay: 300 });
+
+    try {
+      if (definitionsContainer) {
+        definitionsContainer.innerHTML = '';
+        definitionsContainer.style.display = 'block';
+        definitionsContainer.style.minHeight = '140px';
+      }
+
+      const cleanWord = word.trim().toLowerCase();
+      const response = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${cleanWord}`
+      );
+      if (!response.ok) throw new Error('Not found');
+
+      const data = await response.json();
+      if (!Array.isArray(data) || data.length === 0) return;
+
+      const entry = data[0];
+
+      // 1. Phonetics & Audio
+      let phoneticText = entry.phonetic || '';
+      let audioUrl = '';
+
+      if (entry.phonetics) {
+        const audioEntry = entry.phonetics.find(
+          (p) => p.audio && p.audio.length > 0
+        );
+        const textEntry = entry.phonetics.find(
+          (p) => p.text && p.text.length > 0
+        );
+
+        if (audioEntry) audioUrl = audioEntry.audio;
+        if (!phoneticText && textEntry) phoneticText = textEntry.text;
+      }
+
+      // if (phoneticContainer && phoneticText) ... Removed subtitle logic
+
+      if (audioBtn) {
+        const img = audioBtn.querySelector('img');
+        if (audioUrl) {
+          audioBtn.disabled = false;
+          audioBtn.style.opacity = '1';
+          audioBtn.style.cursor = 'pointer';
+          if (img) img.src = 'assets/audio.svg';
+          audioBtn.onclick = () => {
+            new Audio(audioUrl).play();
+          };
+        } else {
+          audioBtn.disabled = true;
+          audioBtn.style.opacity = '0.3';
+          audioBtn.style.cursor = 'default';
+          if (img) img.src = 'assets/audio-off.svg';
+        }
+      }
+
+      // 2. Populate Phonetic Badge
+      if (phoneticBadge) {
+        phoneticBadge.textContent = phoneticText || '-';
+      }
+
+      // 3. Definitions (Grouped by POS)
+      if (definitionsContainer && entry.meanings.length > 0) {
+        const posMap = {
+          noun: 'n.',
+          verb: 'v.',
+          adjective: 'adj.',
+          adverb: 'adv.',
+          pronoun: 'pron.',
+          preposition: 'prep.',
+          conjunction: 'conj.',
+          interjection: 'interj.',
+          determiner: 'det.',
+          article: 'art.',
+        };
+
+        let defsHtml = `
+            <div onclick="const content = this.nextElementSibling; const icon = this.querySelector('.material-icons'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';"
+                 style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">
+                <span>OTHER DEFINITIONS</span>
+                <span class="material-icons" style="font-size:16px; transition: transform 0.2s;">chevron_right</span>
+            </div>
+        `;
+        defsHtml += `<div style="font-size:1.1rem; line-height:1.6; color: var(--text-main); display: none; flex-direction: column; gap: 0.75rem;">`;
+
+        entry.meanings.forEach((m) => {
+          // Limit definitions to top 2 per POS to avoid clutter
+          const topDefs = m.definitions.slice(0, 2);
+          const posAbbr =
+            posMap[m.partOfSpeech.toLowerCase()] || m.partOfSpeech;
+
+          topDefs.forEach((d) => {
+            defsHtml += `
+                <div>
+                   <span style="color:var(--text-muted); font-weight:500; margin-right:4px; font-size:1 rem; font-style: italic;">${posAbbr}</span>
+                   <span>${d.definition}</span>
+                </div>
+             `;
+          });
+        });
+
+        defsHtml += `</div>`;
+        definitionsContainer.innerHTML = defsHtml;
+        definitionsContainer.style.display = 'block';
+      }
+
+      // 3. Synonyms
+      const synonyms = entry.meanings.flatMap((m) => m.synonyms).slice(0, 5);
+      if (synonymsValue) {
+        synonymsValue.textContent =
+          synonyms.length > 0 ? synonyms.join(', ') : '-';
+      }
+    } catch (err) {
+      console.log('Dictionary data not found:', err);
+      // Optional: show a "Not found" message in definitions container?
+      if (definitionsContainer) {
+        // If we want to hide it completely when not found:
+        definitionsContainer.style.display = 'none';
+      }
+    } finally {
+      hideLoading('#card-preview');
+      if (definitionsContainer) {
+        definitionsContainer.style.minHeight = '';
+        // If innerHTML is empty (no defs found or error), hide it
+        if (!definitionsContainer.innerHTML) {
+          definitionsContainer.style.display = 'none';
+        }
+      }
+    }
   },
 
   // Exposed for onclick handlers

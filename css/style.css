@@ -2277,3 +2277,30 @@ textarea:focus {
     padding: 1rem 2rem;
   }
 }
+
+/* Ensure view acts as positioning context */
+.view {
+  position: relative;
+}
+
+/* Loading Animation */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  animation: fadeIn 0.3s ease;
+}
+
+.lottie-container {
+  width: 120px;
+  height: 120px;
+}

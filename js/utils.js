@@ -151,4 +151,72 @@ export const showView = (viewId) => {
   }
 };
 
-window.utils = { $, $$, on, showView, showPopup, closeModal }; // Keep global for debugging if needed, or remove
+// Loading Animation Helper
+export const showLoading = (selector, options = {}) => {
+  const container = $(selector);
+  if (!container) return;
+
+  const { delay = 0 } = options;
+
+  // Clear any pending timer on this container to restart or just ensure clean slate
+  if (container._loadingTimer) {
+    clearTimeout(container._loadingTimer);
+    container._loadingTimer = null;
+  }
+
+  // Prevent multiple overlays
+  if (container.querySelector('.loading-overlay')) return;
+
+  const render = () => {
+    const overlay = document.createElement('div');
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = '<div class="lottie-container"></div>';
+    container.appendChild(overlay);
+
+    // Ensure Lottie is loaded
+    if (window.lottie) {
+      window.lottie.loadAnimation({
+        container: overlay.querySelector('.lottie-container'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'assets/loading.json',
+      });
+    }
+  };
+
+  if (delay > 0) {
+    container._loadingTimer = setTimeout(() => {
+      render();
+      container._loadingTimer = null;
+    }, delay);
+  } else {
+    render();
+  }
+};
+
+export const hideLoading = (selector) => {
+  const container = $(selector);
+  if (!container) return;
+
+  if (container._loadingTimer) {
+    clearTimeout(container._loadingTimer);
+    container._loadingTimer = null;
+  }
+
+  const overlay = container.querySelector('.loading-overlay');
+  if (overlay) {
+    overlay.remove();
+  }
+};
+
+window.utils = {
+  $,
+  $$,
+  on,
+  showView,
+  showPopup,
+  closeModal,
+  showLoading,
+  hideLoading,
+}; // Keep global for debugging if needed, or remove

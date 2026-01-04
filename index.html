@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vocab Master</title>
+    <title>Just Word</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,6 +20,8 @@
     />
     <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- Lottie Web -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   </head>
   <body class="light-mode">
     <div class="app-shell">
@@ -206,7 +208,7 @@
               />
             </button>
             <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
-              Add New Card
+              Add New Word
             </h1>
             <button
               class="btn btn-tonal btn-text"
@@ -682,7 +684,19 @@
             <!-- No Title as requested -->
             <div></div>
             <!-- Empty right side -->
-            <div style="width: 40px"></div>
+            <!-- Audio Button (Right) -->
+            <button
+              id="preview-audio-btn"
+              class="icon-btn"
+              style="opacity: 0.3; cursor: default; justify-self: end"
+              disabled
+            >
+              <img
+                src="assets/audio-off.svg"
+                alt="Audio"
+                style="width: 32px; height: 32px"
+              />
+            </button>
           </div>
           <div
             id="card-preview-container"
@@ -777,7 +791,7 @@
         </section>
 
         <!-- Shared Bottom Navigation -->
-        <div id="bottom-nav-container">
+        <div id="bottom-nav-container" class="hidden">
           <!-- Pill Navigation (Left) -->
           <div id="nav-pill">
             <div class="nav-item active" data-target="dashboard">

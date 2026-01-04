@@ -532,8 +532,13 @@ const App = {
       if (dueOnly) {
         const now = new Date();
         cardsToReview = cardsToReview.filter((card) => {
-          const stats = card.review_stats;
-          if (!stats || !stats.next_review_date) return true;
+          const stats = card.review_stats || {};
+          const state = stats.state || 'NEW';
+
+          // Exclude NEW cards from Due Only review
+          if (state === 'NEW') return false;
+
+          if (!stats.next_review_date) return true; // Should be covered by NEW check, but safeguard
 
           const nextDate = stats.next_review_date.toDate
             ? stats.next_review_date.toDate()

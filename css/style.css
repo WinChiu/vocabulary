@@ -1,6 +1,6 @@
 :root {
   /* Bento Color Tokens */
-  --bg-workspace: #ffffff;
+  --bg-workspace: rgb(245, 245, 245);
   --bg-sidebar: #0e0e0e;
   --accent-orange: #d35400; /* Terracotta / Burned Orange */
   --accent-orange-soft: rgba(211, 84, 0, 0.1);
@@ -654,8 +654,8 @@ button {
 }
 
 .level-indicator.level-new {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .level-indicator.level-learning {
@@ -1399,11 +1399,11 @@ textarea:focus {
 
 /* New Status - Grey/Blue Theme */
 .status-new {
-  background-color: rgba(148, 163, 184, 0.1);
+  background-color: rgba(239, 68, 68, 0.1);
 }
 .status-new .status-label,
 .status-new .status-value {
-  color: #64748b;
+  color: #ef4444;
 }
 
 /* Learning Status - Blue Theme */
@@ -2111,6 +2111,7 @@ textarea:focus {
 /* --- Mobile Small (max-width: 600px) --- */
 @media (max-width: 600px) {
   .view {
+    height: 100dvh;
     padding: 0;
     padding-bottom: 120px !important;
   }
@@ -2121,13 +2122,17 @@ textarea:focus {
   #review-setup,
   #review-session,
   #review-summary,
-  #words {
+  #words,
+  #card-preview {
     height: 100dvh;
     padding-bottom: 0 !important;
   }
   #card-list-modern {
     height: calc(100vh - 136px);
     padding-bottom: 120px !important;
+    overflow-y: scroll;
+  }
+  #add-card-container {
     overflow-y: scroll;
   }
   .action-card:hover {

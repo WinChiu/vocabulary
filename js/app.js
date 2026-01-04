@@ -18,6 +18,7 @@ const App = {
   currentPage: 1, // Pagination State
   userInfo: null,
   editingCardId: null, // Track editing state
+  currentPreviewId: null, // Track current preview card
 
   // Animation Helper
   countUp: (el, start, end, duration) => {
@@ -690,6 +691,51 @@ const App = {
     on($('#btn-assess-forgot'), 'click', () => ReviewManager.assess(false));
     on($('#btn-assess-know'), 'click', () => ReviewManager.assess(true));
     on($('#btn-next-card'), 'click', () => ReviewManager.next());
+
+    // --- Card Preview Page Events ---
+    on($('#btn-back-card-preview'), 'click', () => {
+      showView('words');
+    });
+
+    on($('.preview-star-btn'), 'click', async () => {
+      if (App.currentPreviewId) {
+        const card = App.allCards.find((c) => c.id === App.currentPreviewId);
+        if (card) {
+          await App.toggleStar(card.id, card.is_starred);
+          App.showCardPreview(card.id); // Refresh view state
+        }
+      }
+    });
+
+    on($('.preview-edit-btn'), 'click', () => {
+      if (App.currentPreviewId) {
+        App.handleEdit(App.currentPreviewId);
+      }
+    });
+
+    on($('.preview-delete-btn'), 'click', () => {
+      if (App.currentPreviewId) {
+        App.handleDelete(App.currentPreviewId);
+      }
+    });
+
+    const navigatePreview = (direction) => {
+      if (!App.currentPreviewId) return;
+      const list = App.currentList || App.allCards;
+      const currentIndex = list.findIndex((c) => c.id === App.currentPreviewId);
+      if (currentIndex === -1) return;
+
+      let nextIndex;
+      if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % list.length;
+      } else {
+        nextIndex = (currentIndex - 1 + list.length) % list.length;
+      }
+      App.showCardPreview(list[nextIndex].id);
+    };
+
+    on($('#preview-prev-btn'), 'click', () => navigatePreview('prev'));
+    on($('#preview-next-btn'), 'click', () => navigatePreview('next'));
   },
 
   handleEdit: (id) => {
@@ -1008,124 +1054,68 @@ const App = {
     const card = App.allCards.find((c) => c.id === id);
     if (!card) return;
 
+    App.currentPreviewId = id;
     const level = getFamiliarityLevel(card.review_stats);
 
-    const html = `
-        <div style="text-align:center; padding-top:1rem;">
-            <div style="font-size:2rem; font-weight:800; letter-spacing:-0.03em;">${
+    // 1. Render Content into the new view container
+    const container = $('#card-preview-container');
+    container.innerHTML = `
+        <div style="text-align:center; padding-top:2rem; width: 100%;">
+            <div style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em; margin-bottom: 0.5rem; color: var(--text-main);">${
               card.word_en
             }</div>
-            <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:1.5rem;">${
+            <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:2rem; font-weight: 500;">${
               card.meaning_zh
             }</div>
 
-            <div style="display:flex; gap:1rem; margin-bottom: 1.5rem;">
-                <div class="status-badge-container status-${level.label.toLowerCase()}">
-                    <div class="status-label">STATUS</div>
-                    <div class="status-value">${level.label.toUpperCase()}</div>
+            <div style="display:flex; gap:1rem; margin-bottom: 2rem; justify-content: center; width: 100%;">
+                <div class="status-badge-container status-${level.label.toLowerCase()}" style="flex: 1; padding: 1rem 1.5rem; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div class="status-label" style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">STATUS</div>
+                    <div class="status-value" style="font-size: 1.25rem; font-weight: 800;">${level.label.toUpperCase()}</div>
                 </div>
-                <div style="flex:1; background:#f4f4f4; padding:1rem; border-radius:1rem;">
-                    <div style="font-size:0.7rem; color:#666; font-weight:700; margin-bottom:4px;">ATTEMPTS</div>
-                    <div style="font-weight:800; color:#1a1a1a;">${
-                      card.review_stats.total_attempts || 0
+                <div style="flex: 1; background:var(--bg-workspace); padding:1rem 1.5rem; border-radius:16px; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px; text-transform: uppercase;">ATTEMPTS</div>
+                    <div style="font-weight:800; color:var(--text-main); font-size: 1.25rem;">${
+                      card.review_stats?.total_attempts || 0
                     }</div>
                 </div>
             </div>
 
-            <div style="background:var(--bg-workspace); padding:1.5rem; border-radius:20px; text-align:left;">
-                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">Example Sentences</div>
-                <div style="font-size:1.1rem; line-height:1.5; display: flex; flex-direction: column; gap: 8px;">
+            <div style="border-radius:20px; text-align:left">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">Example Sentences</div>
+                <div style="font-size:1.1rem; line-height:1.6; display: flex; flex-direction: column; gap: 12px; color: var(--text-main);">
                     ${
-                      Array.isArray(card.example_en)
+                      Array.isArray(card.example_en) &&
+                      card.example_en.length > 0
                         ? card.example_en
                             .map((ex) => `<div>${ex}</div>`)
                             .join('')
-                        : card.example_en || '<i>No example provided.</i>'
+                        : '<i style="color: var(--text-muted);">No example provided.</i>'
                     }
                 </div>
             </div>
         </div>
     `;
 
-    const footerLeft = `
-
-      <button class="icon-btn preview-star-btn ${
-        card.is_starred ? 'starred' : ''
-      }"
-            style="color: ${
-              card.is_starred ? '#fbbf24' : '#666'
-            }; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-        <img src="${
-          card.is_starred ? 'assets/star-filled.svg' : 'assets/star.svg'
-        }" class="action-icon" style="width:24px; height:24px;" alt="star" />
-    </button>
-      <button class="icon-btn preview-edit-btn"
-              style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-          <img src="assets/edit.svg" class="action-icon" style="width:24px; height:24px;" alt="edit" />
-      </button>
-    <button class="icon-btn preview-delete-btn"
-            style="color: #666; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-        <img src="assets/trash.svg" class="action-icon" style="width:24px; height:24px;" alt="delete" />
-    </button>
-  `;
-
-    const list = App.currentList || App.allCards;
-    const currentIndex = list.findIndex((c) => c.id === id);
-    const prevIndex = (currentIndex - 1 + list.length) % list.length;
-    const nextIndex = (currentIndex + 1) % list.length;
-
-    const customFooter = `
-      <div style="display:flex; gap:0.5rem; width:100%; justify-content:flex-end;">
-        <button class="btn btn-tonal" id="preview-prev-btn" style="min-width:40px; padding:0 1rem;">
-          <span class="material-icons">chevron_left</span>
-        </button>
-        <button class="btn btn-primary" id="preview-next-btn" style="min-width:40px; padding:0 1rem;">
-          <span class="material-icons">chevron_right</span>
-        </button>
-      </div>
-    `;
-
-    showPopup('Card Detail', html, { footerLeft, customFooter });
-
-    // Bind popup actions
-    setTimeout(() => {
-      const starBtn = $('.preview-star-btn');
-      const deleteBtn = $('.preview-delete-btn');
-      const editBtn = $('.preview-edit-btn');
-      const prevBtn = $('#preview-prev-btn');
-      const nextBtn = $('#preview-next-btn');
-
-      if (prevBtn) {
-        on(prevBtn, 'click', () => App.showCardPreview(list[prevIndex].id));
+    // 2. Update Footer States (Star Icon)
+    const starBtn = document.querySelector(
+      '#card-preview-footer .preview-star-btn'
+    );
+    if (starBtn) {
+      const isStarred =
+        card.is_starred === true || String(card.is_starred) === 'true';
+      const img = starBtn.querySelector('img');
+      if (isStarred) {
+        img.src = 'assets/star-filled.svg';
+        // img.style.filter = 'none';
+      } else {
+        img.src = 'assets/star.svg';
+        // img.style.filter = 'grayscale(100%) opacity(0.5)';
       }
+    }
 
-      if (nextBtn) {
-        on(nextBtn, 'click', () => App.showCardPreview(list[nextIndex].id));
-      }
-
-      if (editBtn) {
-        on(editBtn, 'click', () => {
-          closeModal();
-          App.handleEdit(card.id);
-        });
-      }
-
-      if (starBtn) {
-        on(starBtn, 'click', async (e) => {
-          e.stopPropagation();
-          await App.toggleStar(card.id, card.is_starred);
-          // Refresh popup
-          App.showCardPreview(card.id);
-        });
-      }
-
-      if (deleteBtn) {
-        on(deleteBtn, 'click', async (e) => {
-          e.stopPropagation();
-          App.handleDelete(card.id);
-        });
-      }
-    }, 100);
+    // 3. Switch View
+    showView('card-preview');
   },
 
   // Exposed for onclick handlers
@@ -1153,6 +1143,9 @@ const App = {
             await DataService.deleteCard(id);
             await App.refreshData();
             showPopup('Deleted', '<p>Card has been removed.</p>');
+            if ($('#card-preview').classList.contains('active')) {
+              showView('words');
+            }
           } catch (err) {
             showPopup('Error', 'Failed to delete card.');
             console.error(err);

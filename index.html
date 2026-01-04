@@ -221,7 +221,7 @@
               />
             </button>
           </div>
-          <div class="bento-card full-height">
+          <div id="add-card-container" class="bento-card full-height">
             <form id="add-card-form">
               <div class="input-wrapper-flex">
                 <label for="word_en">English Word</label>
@@ -654,6 +654,125 @@
             >
               Back to Dashboard
             </button>
+          </div>
+        </section>
+
+        <!-- Card Preview View -->
+        <section id="card-preview" class="view">
+          <div
+            class="view-header-flex"
+            style="
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              justify-items: center;
+            "
+          >
+            <button
+              id="btn-back-card-preview"
+              class="btn btn-tonal btn-text"
+              style="justify-self: start"
+            >
+              <img
+                src="assets/back.svg"
+                style="width: 32px; height: 32px"
+                alt="Back"
+              />
+            </button>
+            <!-- No Title as requested -->
+            <div></div>
+            <!-- Empty right side -->
+            <div style="width: 40px"></div>
+          </div>
+          <div
+            id="card-preview-container"
+            class="bento-card full-height"
+            style="text-align: center; position: relative; overflow-y: auto"
+          >
+            <!-- Content injected here -->
+          </div>
+
+          <!-- Footer Actions -->
+          <div id="card-preview-footer" class="form-actions form-actions-fixed">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                align-items: center;
+              "
+            >
+              <!-- Left: Actions (Star, Edit, Delete) -->
+              <div style="display: flex; gap: 0.5rem">
+                <button
+                  class="icon-btn preview-star-btn"
+                  style="padding: 12px; border-radius: 50%"
+                >
+                  <img
+                    src="assets/star.svg"
+                    class="action-icon"
+                    style="width: 24px; height: 24px"
+                    alt="star"
+                  />
+                </button>
+                <button
+                  class="icon-btn preview-edit-btn"
+                  style="padding: 12px; border-radius: 50%"
+                >
+                  <img
+                    src="assets/edit.svg"
+                    class="action-icon"
+                    style="width: 24px; height: 24px"
+                    alt="edit"
+                  />
+                </button>
+                <button
+                  class="icon-btn preview-delete-btn"
+                  style="padding: 12px; border-radius: 50%"
+                >
+                  <img
+                    src="assets/trash.svg"
+                    class="action-icon"
+                    style="width: 24px; height: 24px"
+                    alt="delete"
+                  />
+                </button>
+              </div>
+
+              <!-- Right: Navigation -->
+              <div style="display: flex; gap: 0.5rem">
+                <button
+                  class="btn btn-tonal"
+                  id="preview-prev-btn"
+                  style="
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <span class="material-icons">chevron_left</span>
+                </button>
+                <button
+                  class="btn btn-primary"
+                  id="preview-next-btn"
+                  style="
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <span class="material-icons">chevron_right</span>
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 

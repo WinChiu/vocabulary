@@ -187,8 +187,13 @@ const App = {
     }
 
     const dueCards = baseCards.filter((card) => {
-      const stats = card.review_stats;
-      if (!stats || !stats.next_review_date) return true;
+      const stats = card.review_stats || {}; // Ensure object exists
+      const state = stats.state || 'NEW';
+
+      // Exclude NEW cards from Due Count
+      if (state === 'NEW') return false;
+
+      if (!stats || !stats.next_review_date) return true; // Fallback for data inconsistency if state != NEW
 
       const nextDate = stats.next_review_date.toDate
         ? stats.next_review_date.toDate()
@@ -830,13 +835,18 @@ const App = {
 
       // Due Calculation
       let isDue = false;
-      if (!stats.next_review_date) {
-        isDue = true;
-      } else {
-        const nextDate = stats.next_review_date.toDate
-          ? stats.next_review_date.toDate()
-          : new Date(stats.next_review_date);
-        if (nextDate <= now) isDue = true;
+
+      // New cards are not "Due" for review until they have been learned at least once
+      if (state !== 'NEW') {
+        if (!stats.next_review_date) {
+          // Should rarely happen for non-NEW, but treat as due if state says learned/mastered but no date
+          isDue = true;
+        } else {
+          const nextDate = stats.next_review_date.toDate
+            ? stats.next_review_date.toDate()
+            : new Date(stats.next_review_date);
+          if (nextDate <= now) isDue = true;
+        }
       }
 
       if (isDue) {

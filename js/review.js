@@ -176,7 +176,7 @@ class ReviewSession {
         return `
                     <div class="flashcard">
                         <div class="content">${card.meaning_zh}</div>
-                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off"  >
+                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" >
                          <div id="spelling-feedback" class="feedback-msg"></div>
                     </div>
                 `;
@@ -210,7 +210,7 @@ class ReviewSession {
                            <div class="content" style="font-size:1.5rem">${sentence.replace(
                              regex,
                              (match) =>
-                               `<input type="text" class="cloze-input" value="${match}" disabled style="width:${match.length}ch; color:var(--danger-color); border-color:var(--danger-color); background:transparent;">`
+                               `<input type="text" class="cloze-input" value="${match}" disabled style="width:${match.length}ch; color:var(--danger-color); border-color:var(--danger-color); background:transparent;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
                            )}</div>
                         </div>
                     `;
@@ -230,10 +230,10 @@ class ReviewSession {
                                 ? sentence.replace(
                                     regex,
                                     (match) =>
-                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" style="width:${match.length}ch" >`
+                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:${match.length}ch" >`
                                   )
                                 : sentence +
-                                  `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" placeholder="Type word..." >`
+                                  `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type word..." >`
                             }
                         </div>
                         <div id="cloze-feedback" class="feedback-msg"></div>

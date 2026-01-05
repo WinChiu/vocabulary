@@ -393,14 +393,70 @@ const ReviewManager = {
 
   finish: async () => {
     const session = ReviewManager.session;
-    $('#summary-total').textContent = session.cards.length;
+
+    // $('#summary-total').textContent = session.cards.length; // Removed from DOM
 
     const forgotCount = session.incorrectCardIds.size;
-    const rememberedCount = session.cards.length - forgotCount;
+    const totalCount = session.cards.length;
+    const rememberedCount = totalCount - forgotCount;
 
-    // Update Breakdown
-    $('#summary-correct').textContent = rememberedCount;
-    $('#summary-wrong').textContent = forgotCount;
+    // 1. Update Score Display (Remembered / Total)
+    $('#summary-correct').textContent = `${rememberedCount} / ${totalCount}`;
+
+    // 2. Update Card Color (Green if all correct, Orange otherwise)
+    const statusCard = $('#summary-status-card');
+    if (statusCard) {
+      if (forgotCount === 0) {
+        statusCard.classList.remove('orange');
+        statusCard.classList.add('green');
+      } else {
+        statusCard.classList.remove('green');
+        statusCard.classList.add('orange');
+      }
+    }
+
+    // 3. Render Forgotten Words List or Congratulations
+    const forgottenContainer = $('#summary-forgotten-container');
+
+    if (forgottenContainer) {
+      if (forgotCount > 0) {
+        // Render List Structure
+        forgottenContainer.innerHTML = `
+            <div class="card-label" style="color: var(--danger-color)">Review These Words</div>
+            <div id="summary-forgotten-list" class="vocab-list-modern" style="box-shadow: none; width: 100%;"></div>
+        `;
+        forgottenContainer.style.display = 'flex';
+        forgottenContainer.style.justifyContent = 'flex-start';
+
+        const listDiv = forgottenContainer.querySelector(
+          '#summary-forgotten-list'
+        );
+        let listHTML = '';
+        session.cards.forEach((card) => {
+          if (session.incorrectCardIds.has(card.id)) {
+            listHTML += `
+              <div class="vocab-card-modern" style="border-bottom: 1px solid var(--border-gray); padding: 1rem 0;">
+                <div class="vocab-card-main">
+                  <div class="vocab-card-word" style="font-size: 1.1rem;">${card.word_en}</div>
+                  <div class="vocab-card-meaning" style="font-size: 0.9rem;">${card.meaning_zh}</div>
+                </div>
+              </div>
+            `;
+          }
+        });
+        if (listDiv) listDiv.innerHTML = listHTML;
+      } else {
+        // Render Congratulations
+        forgottenContainer.innerHTML = `
+            <div style="width:100%; text-align:center; padding: 1rem 0;">
+                <h2 style="margin:0; font-size:1.5rem; color:var(--success-color);">Congratulations!</h2>
+                <p style="color:var(--text-muted); margin-top:0.5rem;">You remembered all words correctly.</p>
+            </div>
+        `;
+        forgottenContainer.style.display = 'flex';
+        forgottenContainer.style.justifyContent = 'center';
+      }
+    }
 
     // Batch Save
     const cardsToSave = Array.from(session.modifiedCards.values());

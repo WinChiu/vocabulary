@@ -877,7 +877,7 @@ const App = {
       if (dueTotal === 0) {
         elDueCard.classList.remove('orange');
         elDueCard.classList.add('green');
-        elActionLabel.textContent = 'Congratulation!';
+        elActionLabel.textContent = 'Well Done!';
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');

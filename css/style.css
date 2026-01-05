@@ -2127,7 +2127,9 @@ textarea:focus {
     height: 100dvh;
     padding-bottom: 0 !important;
   }
-  #card-list-modern {
+
+  #card-list-modern,
+  #preview-list {
     height: calc(100vh - 136px);
     padding-bottom: 120px !important;
     overflow-y: scroll;

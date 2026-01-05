@@ -113,7 +113,7 @@ export const calculateNextReviewStats = (
         stats.demotions.push(new Date().toISOString());
         stats.state = 'LEARNING';
       } else if (stats.state === 'NEW') {
-        stats.state = 'NEW';
+        stats.state = 'LEARNING';
       } else {
         stats.state = 'LEARNING';
       }

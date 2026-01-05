@@ -218,8 +218,6 @@ const App = {
         // Reset Import View State
         if (target === 'import') {
           $('#import-preview').classList.add('hidden');
-          $('#import-actions-container').classList.add('hidden'); // Also hide the external actions
-          $('#import-initial-actions').classList.remove('hidden');
           $('#import-file-section').classList.remove('hidden');
           $('#csv-file-input').value = '';
         }
@@ -287,8 +285,6 @@ const App = {
     if (btnGotoImport) {
       on(btnGotoImport, 'click', () => {
         $('#import-preview').classList.add('hidden');
-        $('#import-actions-container').classList.add('hidden');
-        $('#import-initial-actions').classList.remove('hidden');
         $('#import-file-section').classList.remove('hidden');
         $('#csv-file-input').value = '';
         showView('import');
@@ -708,7 +704,6 @@ const App = {
         $('#csv-file-input').value = '';
         $('#csv-file-input').value = '';
         $('#import-preview').classList.add('hidden');
-        $('#import-actions-container').classList.add('hidden');
         showView('dashboard');
       }
     });
@@ -1384,8 +1379,6 @@ const App = {
 
     if (importPreviewContainer) {
       importPreviewContainer.classList.remove('hidden');
-      $('#import-actions-container').classList.remove('hidden'); // Show external actions
-      $('#import-initial-actions').classList.add('hidden');
       $('#import-file-section').classList.add('hidden');
     }
 

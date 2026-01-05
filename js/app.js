@@ -324,6 +324,30 @@ const App = {
       App.updateDueCount();
     });
 
+    // Handle Review Type Change (Disable Cloze for Phrases)
+    const reviewTypeSelect = $('#review-setup-type');
+    if (reviewTypeSelect) {
+      on(reviewTypeSelect, 'change', () => {
+        const isPhrase = reviewTypeSelect.value === 'phrase';
+        const clozeLabel = $('#grade-mode-cloze');
+        const clozeInput = clozeLabel.querySelector('input');
+
+        if (isPhrase) {
+          clozeLabel.style.opacity = '0.5';
+          clozeLabel.style.pointerEvents = 'none';
+          if (clozeInput.checked) {
+            // Switch to Flip EN if Cloze was selected
+            document.querySelector(
+              'input[name="mode"][value="1"]'
+            ).checked = true;
+          }
+        } else {
+          clozeLabel.style.opacity = '1';
+          clozeLabel.style.pointerEvents = 'auto';
+        }
+      });
+    }
+
     // Pagination Listeners
     on($('#prev-page-btn'), 'click', () => {
       if (App.currentPage > 1) {
@@ -350,6 +374,7 @@ const App = {
     on($('#filter-starred-only'), 'change', resetPage);
     on($('#search-input'), 'input', resetPage);
     on($('#filter-status'), 'change', resetPage);
+    on($('#filter-type'), 'change', resetPage);
 
     // Cancel buttons
     $$('.cancel-nav').forEach((btn) => {
@@ -518,8 +543,16 @@ const App = {
       const limit = parseInt(formData.get('limit') || '10', 10);
 
       const dueOnly = formData.get('dueOnly') === 'on';
+      const type = formData.get('type') || 'word';
 
       let cardsToReview = [...App.allCards];
+
+      // Type Filter
+      cardsToReview = cardsToReview.filter((c) => {
+        const isPhrase = c.word_en.trim().split(/\s+/).length > 1;
+        return type === 'phrase' ? isPhrase : !isPhrase;
+      });
+
       if (scope === 'starred') {
         cardsToReview = cardsToReview.filter((c) => c.is_starred);
       }
@@ -916,6 +949,12 @@ const App = {
           const level = getFamiliarityLevel(card.review_stats);
           if (level.class.replace('level-', '') !== statusFilter) return false;
         }
+
+        // Type filter
+        const typeFilter = $('#filter-type') ? $('#filter-type').value : 'word';
+        const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
+        if (typeFilter === 'word' && isPhrase) return false;
+        if (typeFilter === 'phrase' && !isPhrase) return false;
 
         return true;
       })

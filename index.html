@@ -130,6 +130,11 @@
                     <option value="new">New</option>
                   </select>
 
+                  <select id="filter-type" class="vocab-select-pill">
+                    <option value="word" selected>Word</option>
+                    <option value="phrase">Phrase</option>
+                  </select>
+
                   <!-- Starred Toggle -->
                   <label class="toggle-switch" style="margin-bottom: 0">
                     <span class="filter-label">Starred</span>
@@ -417,6 +422,17 @@
                   </select>
                 </div>
                 <div class="input-wrapper-flex">
+                  <label>Type</label>
+                  <select
+                    name="type"
+                    class="input-pill select-rounded select-with-chevron"
+                    id="review-setup-type"
+                  >
+                    <option value="word" selected>Word</option>
+                    <option value="phrase">Phrase</option>
+                  </select>
+                </div>
+                <div class="input-wrapper-flex">
                   <label>Limit</label>
                   <select
                     name="limit"
@@ -504,7 +520,7 @@
                       <span>Spelling</span>
                     </div>
                   </label>
-                  <label class="mode-option">
+                  <label class="mode-option" id="grade-mode-cloze">
                     <input
                       type="radio"
                       name="mode"

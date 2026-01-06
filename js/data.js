@@ -102,7 +102,7 @@ export const calculateNextReviewStats = (
           stats.mastered_at = new Date();
         }
         stats.state = 'MASTERED';
-      } else if (stats.state === 'NEW') {
+      } else if (!stats.state || stats.state === 'NEW') {
         stats.state = 'LEARNING';
       }
     } else {

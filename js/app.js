@@ -209,6 +209,37 @@ const App = {
   },
 
   bindEvents: () => {
+    // Global Keydown Listener for Review Navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+
+      // Ensure Review Session is Active
+      const reviewView = $('#review-session');
+      if (!reviewView || !reviewView.classList.contains('active')) return;
+
+      // Ensure NO Modal is Open (prevent accidental skips when confirming exit)
+      const overlay = $('#modal-overlay');
+      if (
+        overlay &&
+        overlay.style.display &&
+        overlay.style.display !== 'none'
+      ) {
+        return;
+      }
+
+      const session = ReviewManager.session;
+      if (!session) return;
+
+      // Only for Spelling (3) and Cloze (4)
+      if (session.mode === 3 || session.mode === 4) {
+        // "Enter" represents "Next Card" ONLY if card is already revealed
+        if (session.isCardRevealed) {
+          e.preventDefault();
+          ReviewManager.next();
+        }
+      }
+    });
+
     // Navigation Interception
     // Navigation Interception
     $$('.nav-btn, .nav-item, .fab-action-btn').forEach((btn) => {
@@ -544,8 +575,18 @@ const App = {
 
       const dueOnly = formData.get('dueOnly') === 'on';
       const type = formData.get('type') || 'word';
+      const status = formData.get('status') || 'all';
 
       let cardsToReview = [...App.allCards];
+
+      // Status Filter
+      if (status !== 'all') {
+        cardsToReview = cardsToReview.filter((c) => {
+          // Use shared helper to match UI label logic (handles legacy data missing 'state')
+          const currentLevel = getFamiliarityLevel(c.review_stats);
+          return currentLevel.label.toLowerCase() === status;
+        });
+      }
 
       // Type Filter
       cardsToReview = cardsToReview.filter((c) => {
@@ -558,7 +599,8 @@ const App = {
       }
 
       // SRS Filtering: Only include DUE cards if toggle is ON
-      if (dueOnly) {
+      // Exception: If user explicitly selects "New", we ignore Due limit (since New cards aren't "Due")
+      if (dueOnly && status !== 'new') {
         const now = new Date();
         cardsToReview = cardsToReview.filter((card) => {
           const stats = card.review_stats || {};

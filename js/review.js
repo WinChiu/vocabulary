@@ -491,8 +491,10 @@ const ReviewManager = {
     const card = session.getCurrentCard();
 
     if (normalize(input.value) === normalize(card.word_en)) {
-      feedback.textContent = 'Correct!';
-      feedback.className = 'feedback-msg correct';
+      feedback.textContent = '';
+      input.classList.add('correct');
+      input.disabled = true;
+
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
 
@@ -507,11 +509,12 @@ const ReviewManager = {
 
       setTimeout(() => {
         ReviewManager.reveal(true);
-      }, 500);
+      }, 700);
     } else {
       session.incorrectCardIds.add(card.id);
-      feedback.textContent = 'Try again!';
-      feedback.className = 'feedback-msg incorrect';
+      feedback.textContent = '';
+      input.classList.add('error');
+
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
 
@@ -526,6 +529,12 @@ const ReviewManager = {
 
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
+
+      // Remove error when typing
+      input.oninput = () => {
+        input.classList.remove('error');
+        input.oninput = null;
+      };
     }
   },
 

@@ -125,6 +125,7 @@ export const calculateNextReviewStats = (
     // Calculate next review date
     const nextDate = new Date();
     nextDate.setDate(nextDate.getDate() + stats.interval_days);
+    nextDate.setHours(0, 0, 0, 0); // Reset to midnight for date-based scheduling
     stats.next_review_date = nextDate;
   }
   // ----------------------------------------

@@ -52,8 +52,11 @@ export const getFamiliarityLevel = (stats) => {
     }
   }
   // Base on score if state is not available
+  // Base on score if state is not available (Legacy Fallback)
   const score = calculateFamiliarity(stats);
-  if (score >= 0.75) return { label: 'Mastered', class: 'level-mastered' };
+  // Stricter fallback: Must have at least 5 attempts to be considered Mastered by score alone
+  if (score >= 0.8 && (stats.total_attempts || 0) > 5)
+    return { label: 'Mastered', class: 'level-mastered' };
   if (score >= 0.4) return { label: 'Learning', class: 'level-learning' };
   return { label: 'New', class: 'level-new' };
 };

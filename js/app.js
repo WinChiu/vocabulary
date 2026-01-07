@@ -960,20 +960,26 @@ const App = {
 
     dashboardCards.forEach((card) => {
       const stats = card.review_stats || {};
-      const state = stats.state || 'NEW';
+
+      // Use the exact same logic as card display to count states
+      const level = getFamiliarityLevel(stats);
+      const label = level.label.toUpperCase(); // 'NEW', 'LEARNING', 'MASTERED'
 
       // Total State Count
-      if (state === 'NEW') totalNew++;
-      else if (state === 'LEARNING') totalLrn++;
-      else if (state === 'MASTERED') totalMst++;
+      if (label === 'NEW') totalNew++;
+      else if (label === 'LEARNING') totalLrn++;
+      else if (label === 'MASTERED') totalMst++;
 
       // Due Calculation
       let isDue = false;
 
       // New cards are not "Due" for review until they have been learned at least once
-      if (state !== 'NEW') {
+      // Actually, if we use the label 'NEW', it maps to state NEW.
+      // Logic: If label matches, we increment.
+      // For Due: We check the date.
+
+      if (label !== 'NEW') {
         if (!stats.next_review_date) {
-          // Should rarely happen for non-NEW, but treat as due if state says learned/mastered but no date
           isDue = true;
         } else {
           const nextDate = stats.next_review_date.toDate
@@ -985,9 +991,9 @@ const App = {
 
       if (isDue) {
         dueTotal++;
-        if (state === 'NEW') dueNew++;
-        else if (state === 'LEARNING') dueLrn++;
-        else if (state === 'MASTERED') dueMst++;
+        if (label === 'NEW') dueNew++;
+        else if (label === 'LEARNING') dueLrn++;
+        else if (label === 'MASTERED') dueMst++;
       }
     });
 

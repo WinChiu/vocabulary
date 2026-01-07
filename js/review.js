@@ -184,6 +184,10 @@ class ReviewSession {
         const word = card.word_en;
         const regex = createFlexibleRegex(word);
 
+        if (!regex) {
+          return `<div class="flashcard"><div class="content">Error: Invalid Word Content</div></div>`;
+        }
+
         // Pick a random example that contains the word
         const allExamples = getExamples(card);
         // We prefer examples that actually match the word for Cloze
@@ -261,69 +265,77 @@ const ReviewManager = {
   },
 
   updateUI: () => {
-    const session = ReviewManager.session;
-    if (!session) return;
+    try {
+      const session = ReviewManager.session;
+      if (!session) return;
 
-    // Update Progress
-    const progEl = $('#review-progress');
-    if (progEl)
-      progEl.textContent = `${session.currentIndex + 1} / ${
-        session.cards.length
-      }`;
+      // Update Progress
+      const progEl = $('#review-progress');
+      if (progEl)
+        progEl.textContent = `${session.currentIndex + 1} / ${
+          session.cards.length
+        }`;
 
-    // Render Card
-    const contentEl = $('#review-content');
-    if (contentEl) contentEl.innerHTML = session.renderCard();
+      // Render Card
+      const contentEl = $('#review-content');
+      if (contentEl) contentEl.innerHTML = session.renderCard();
 
-    // Bind events for dynamic content
-    const flashcard = $('#active-flashcard');
-    if (flashcard) {
-      flashcard.onclick = () => ReviewManager.reveal();
-    }
-
-    const spellingInput = $('#spelling-input');
-    if (spellingInput) {
-      spellingInput.focus();
-      spellingInput.onkeydown = (e) => {
-        if (e.key === 'Enter') ReviewManager.checkSpelling();
-      };
-    }
-
-    const clozeInput = $('#cloze-input');
-    if (clozeInput) {
-      clozeInput.focus();
-      clozeInput.onkeydown = (e) => {
-        if (e.key === 'Enter') ReviewManager.checkCloze();
-      };
-    }
-
-    // Update Buttons
-    const revealBtnContainer = $('#reveal-btn-container'); // Wrapper
-    const revealBtn = $('#reveal-btn'); // Button for text
-    const gradingBtns = $('#grading-btns');
-    const selfAssessBtns = $('#self-assess-btns'); // NEW
-
-    if (session.mode === 1 || session.mode === 2) {
-      if (session.isCardRevealed) {
-        revealBtnContainer.classList.add('hidden');
-        gradingBtns.classList.add('hidden'); // We use selfAssessBtns instead
-        selfAssessBtns.classList.remove('hidden');
-      } else {
-        revealBtnContainer.classList.add('hidden'); // No "I don't know" button, tap card to reveal
-        gradingBtns.classList.add('hidden');
-        selfAssessBtns.classList.add('hidden');
+      // Bind events for dynamic content
+      const flashcard = $('#active-flashcard');
+      if (flashcard) {
+        flashcard.onclick = () => ReviewManager.reveal();
       }
-    } else {
-      if (session.isCardRevealed) {
-        revealBtnContainer.classList.add('hidden');
-        gradingBtns.classList.remove('hidden');
-        selfAssessBtns.classList.add('hidden');
-      } else {
-        revealBtn.textContent = "I don't know";
-        revealBtnContainer.classList.remove('hidden');
-        gradingBtns.classList.add('hidden');
-        selfAssessBtns.classList.add('hidden');
+
+      const spellingInput = $('#spelling-input');
+      if (spellingInput) {
+        spellingInput.focus();
+        spellingInput.onkeydown = (e) => {
+          if (e.key === 'Enter') ReviewManager.checkSpelling();
+        };
       }
+
+      const clozeInput = $('#cloze-input');
+      if (clozeInput) {
+        clozeInput.focus();
+        clozeInput.onkeydown = (e) => {
+          if (e.key === 'Enter') ReviewManager.checkCloze();
+        };
+      }
+
+      // Update Buttons
+      const revealBtnContainer = $('#reveal-btn-container'); // Wrapper
+      const revealBtn = $('#reveal-btn'); // Button for text
+      const gradingBtns = $('#grading-btns');
+      const selfAssessBtns = $('#self-assess-btns'); // NEW
+
+      if (session.mode === 1 || session.mode === 2) {
+        if (session.isCardRevealed) {
+          revealBtnContainer.classList.add('hidden');
+          gradingBtns.classList.add('hidden'); // We use selfAssessBtns instead
+          selfAssessBtns.classList.remove('hidden');
+        } else {
+          revealBtnContainer.classList.add('hidden'); // No "I don't know" button, tap card to reveal
+          gradingBtns.classList.add('hidden');
+          selfAssessBtns.classList.add('hidden');
+        }
+      } else {
+        if (session.isCardRevealed) {
+          revealBtnContainer.classList.add('hidden');
+          gradingBtns.classList.remove('hidden');
+          selfAssessBtns.classList.add('hidden');
+        } else {
+          revealBtn.textContent = "I don't know";
+          revealBtnContainer.classList.remove('hidden');
+          gradingBtns.classList.add('hidden');
+          selfAssessBtns.classList.add('hidden');
+        }
+      }
+    } catch (err) {
+      console.error('Review Render Error:', err);
+      showPopup(
+        'Render Error',
+        `<p>Something went wrong displaying this card.<br><small>${err.message}</small></p>`
+      );
     }
   },
 

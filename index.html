@@ -408,7 +408,7 @@
             <!-- Empty element for grid balance -->
             <div style="width: 40px"></div>
           </div>
-          <div class="bento-card full-height">
+          <div id="review-session-setup" class="bento-card full-height">
             <form id="review-setup-form">
               <div class="form-group input-group-flex">
                 <div class="input-wrapper-flex">
@@ -440,7 +440,8 @@
                     class="input-pill select-rounded select-with-chevron"
                     id="review-setup-type"
                   >
-                    <option value="word" selected>Word</option>
+                    <option value="all" selected>All Types</option>
+                    <option value="word">Word</option>
                     <option value="phrase">Phrase</option>
                   </select>
                 </div>
@@ -662,6 +663,7 @@
                 padding: 1.5rem;
                 justify-content: flex-start;
                 gap: 1rem;
+                overflow-y: scroll;
               "
             >
               <div class="card-label" style="color: var(--text-main)">

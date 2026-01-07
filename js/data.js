@@ -231,28 +231,6 @@ const DataService = {
     }
   },
 
-  // Batch Delete
-  batchDeleteCards: async (ids) => {
-    let totalCount = 0;
-    const CHUNK_SIZE = 450; // Firestore limit is 500
-
-    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
-      const batch = writeBatch(db);
-      const chunk = ids.slice(i, i + CHUNK_SIZE);
-
-      chunk.forEach((id) => {
-        const docRef = doc(db, COLLECTION_NAME, id);
-        batch.delete(docRef);
-        totalCount++;
-      });
-
-      if (chunk.length > 0) {
-        await callWithTimeout(batch.commit(), 10000);
-      }
-    }
-    return totalCount;
-  },
-
   // Batch Add (for Import)
   batchAddCards: async (cards) => {
     let totalCount = 0;
@@ -284,33 +262,6 @@ const DataService = {
       }
     }
     return totalCount;
-  },
-
-  // Update statistics after a review (Legacy Single Call - kept for robustness or other uses)
-  updateReviewStats: async (cardId, modeKey, isCorrect, weight) => {
-    // ... Implement using the helper above would be cleaner but let's just use batch for review
-    // For specific single updates (like "I Know" single action outside review?), we might need this.
-    try {
-      const cardRef = doc(db, COLLECTION_NAME, cardId);
-      const snapshot = await getDoc(cardRef);
-      if (!snapshot.exists()) return;
-
-      const data = snapshot.data();
-      const newStats = calculateNextReviewStats(
-        data.review_stats,
-        modeKey,
-        isCorrect,
-        weight
-      );
-
-      await updateDoc(cardRef, {
-        review_stats: newStats,
-        updated_at: serverTimestamp(),
-      });
-      return newStats;
-    } catch (e) {
-      console.error(e);
-    }
   },
 
   // Batch Update Stats (New)

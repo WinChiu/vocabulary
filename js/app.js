@@ -179,18 +179,66 @@ const App = {
 
   updateDueCount: () => {
     const scope = $('select[name="scope"]').value; // 'all' or 'starred'
+    const statusFilter = $('select[name="status"]').value; // 'all', 'new', 'learning', 'mastered'
+    const typeFilter = $('select[name="type"]').value; // 'word' or 'phrase'
     const now = new Date();
 
     let baseCards = [...App.allCards];
+
+    // Filter by Scope
     if (scope === 'starred') {
       baseCards = baseCards.filter((c) => c.is_starred);
+    }
+
+    // Filter by Status
+    if (statusFilter !== 'all') {
+      baseCards = baseCards.filter((c) => {
+        const level = getFamiliarityLevel(c.review_stats);
+        return level.label.toLowerCase() === statusFilter;
+      });
+    }
+
+    // Filter by Type
+    if (typeFilter !== 'all') {
+      baseCards = baseCards.filter((c) => {
+        const isPhrase = c.word_en.trim().split(/\s+/).length > 1;
+        return typeFilter === 'phrase' ? isPhrase : !isPhrase;
+      });
+    }
+
+    // special UI handling for NEW status
+    const dueCheckbox = $('#review-due-only');
+    const dueLabel = dueCheckbox
+      ? dueCheckbox.closest('.checkbox-wrapper')
+      : null;
+
+    if (dueCheckbox && dueLabel) {
+      if (statusFilter === 'new') {
+        dueCheckbox.disabled = true;
+        dueLabel.style.opacity = '0.5';
+        dueLabel.title = 'New cards do not have due dates';
+      } else {
+        dueCheckbox.disabled = false;
+        dueLabel.style.opacity = '1';
+        dueLabel.title = '';
+      }
     }
 
     const dueCards = baseCards.filter((card) => {
       const stats = card.review_stats || {}; // Ensure object exists
       const state = stats.state || 'NEW';
 
-      // Exclude NEW cards from Due Count
+      // Special Case: If Status is specifically "NEW", we count NEW cards
+      // regardless of "Due" logic (since New cards are always available if filtered)
+      // BUT the badge says "Due Only - N cards". Use standard logic:
+      // If "Due Only" checkbox is checked, we usually exclude New.
+      // However, the function goal is to show count for "Due Only" label.
+      // If user selected "New", "Due Only" is conceptually moot or means "All New".
+      if (statusFilter === 'new') {
+        return state === 'NEW';
+      }
+
+      // Exclude NEW cards from standard Due Count
       if (state === 'NEW') return false;
 
       if (!stats || !stats.next_review_date) return true; // Fallback for data inconsistency if state != NEW
@@ -355,10 +403,19 @@ const App = {
       App.updateDueCount();
     });
 
-    // Handle Review Type Change (Disable Cloze for Phrases)
+    // Handle Review Status Filter Change (For Due Count Update)
+    on($('select[name="status"]'), 'change', () => {
+      App.updateDueCount();
+    });
+
+    // Handle Review Type Change (Disable Cloze for Phrases + Update Due Count)
     const reviewTypeSelect = $('#review-setup-type');
     if (reviewTypeSelect) {
       on(reviewTypeSelect, 'change', () => {
+        // 1. Update Due Count
+        App.updateDueCount();
+
+        // 2. Cloze Logic
         const isPhrase = reviewTypeSelect.value === 'phrase';
         const clozeLabel = $('#grade-mode-cloze');
         const clozeInput = clozeLabel.querySelector('input');
@@ -589,10 +646,12 @@ const App = {
       }
 
       // Type Filter
-      cardsToReview = cardsToReview.filter((c) => {
-        const isPhrase = c.word_en.trim().split(/\s+/).length > 1;
-        return type === 'phrase' ? isPhrase : !isPhrase;
-      });
+      if (type !== 'all') {
+        cardsToReview = cardsToReview.filter((c) => {
+          const isPhrase = c.word_en.trim().split(/\s+/).length > 1;
+          return type === 'phrase' ? isPhrase : !isPhrase;
+        });
+      }
 
       if (scope === 'starred') {
         cardsToReview = cardsToReview.filter((c) => c.is_starred);

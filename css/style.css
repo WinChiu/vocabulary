@@ -265,40 +265,6 @@ body {
   opacity: 0.8;
 }
 
-/* Action Cards */
-.action-card {
-  cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  min-height: auto !important; /* Restore 'hug content' behavior */
-  padding: 1.5rem 2rem !important; /* Optimized padding for hug */
-  justify-content: center;
-}
-.action-card:hover {
-  transform: translateY(-4px) scale(1.02);
-}
-
-.action-card .icon-circle {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-inner);
-  /* background: rgba(0, 0, 0, 0.04); */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.orange .icon-circle {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.action-card .card-label {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text-main);
-  opacity: 1;
-}
-
 /* Typography */
 h1 {
   font-weight: 800;
@@ -2120,14 +2086,17 @@ textarea:focus {
     padding-bottom: 0 !important;
   }
   #review-setup,
-  #review-session,
   #review-summary,
   #words,
-  #card-preview {
+  #card-preview,
+  #review-session {
     height: 100dvh;
     padding-bottom: 0 !important;
   }
-
+  #review-session-setup {
+    overflow-y: scroll;
+    padding-bottom: 0 !important;
+  }
   #card-list-modern,
   #preview-list {
     height: calc(100vh - 136px);

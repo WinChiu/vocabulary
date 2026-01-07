@@ -1060,14 +1060,19 @@ const App = {
         return true;
       })
       .sort((a, b) => {
-        // Sort Starred First
-        const aStarred =
-          a.is_starred === true || String(a.is_starred) === 'true';
-        const bStarred =
-          b.is_starred === true || String(b.is_starred) === 'true';
-        if (aStarred && !bStarred) return -1;
-        if (!aStarred && bStarred) return 1;
-        return 0; // Preserve existing order (updated_at desc)
+        // Primary Sort: Created At (Desc) - Join Time
+        const getTime = (t) => {
+          if (!t) return 0;
+          return t.toDate ? t.toDate().getTime() : new Date(t).getTime();
+        };
+        // Use ONLY created_at for stability. fallback to 0 if missing.
+        const aTime = getTime(a.created_at);
+        const bTime = getTime(b.created_at);
+
+        if (bTime !== aTime) return bTime - aTime;
+
+        // Secondary Sort: ID (Stable Tie-breaker for batch imports)
+        return (a.id || '').localeCompare(b.id || '');
       });
 
     // Pagination Logic

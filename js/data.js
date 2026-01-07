@@ -173,7 +173,7 @@ const DataService = {
     try {
       const q = query(
         collection(db, COLLECTION_NAME),
-        orderBy('updated_at', 'desc')
+        orderBy('created_at', 'desc')
       );
       // Using getDocs (One-time fetch), NOT onSnapshot
       const querySnapshot = await callWithTimeout(getDocs(q));

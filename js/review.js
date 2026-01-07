@@ -435,7 +435,13 @@ const ReviewManager = {
         // Render List Structure
         forgottenContainer.innerHTML = `
             <div class="card-label" style="color: var(--danger-color)">Review These Words</div>
-            <div id="summary-forgotten-list" class="vocab-list-modern" style="box-shadow: none; width: 100%;"></div>
+            <div id="summary-forgotten-list" style="
+                width: 100%;
+                font-size: 1.1rem;
+                line-height: 1.6;
+                color: var(--text-main);
+                font-weight: 500;
+            "></div>
         `;
         forgottenContainer.style.display = 'flex';
         forgottenContainer.style.justifyContent = 'flex-start';
@@ -443,20 +449,15 @@ const ReviewManager = {
         const listDiv = forgottenContainer.querySelector(
           '#summary-forgotten-list'
         );
-        let listHTML = '';
+
+        const forgottenWords = [];
         session.cards.forEach((card) => {
           if (session.incorrectCardIds.has(card.id)) {
-            listHTML += `
-              <div class="vocab-card-modern" style="border-bottom: 1px solid var(--border-gray); padding: 1rem 0;">
-                <div class="vocab-card-main">
-                  <div class="vocab-card-word" style="font-size: 1.1rem;">${card.word_en}</div>
-                  <div class="vocab-card-meaning" style="font-size: 0.9rem;">${card.meaning_zh}</div>
-                </div>
-              </div>
-            `;
+            forgottenWords.push(card.word_en);
           }
         });
-        if (listDiv) listDiv.innerHTML = listHTML;
+
+        if (listDiv) listDiv.textContent = forgottenWords.join(', ');
       } else {
         // Render Congratulations
         forgottenContainer.innerHTML = `

@@ -642,7 +642,10 @@
           <div class="view-header-flex" style="justify-content: center">
             <h1 style="text-align: center">Review Summary</h1>
           </div>
-          <div class="bento-grid full-height">
+          <div
+            class="bento-grid full-height"
+            style="grid-template-rows: auto 1fr"
+          >
             <div class="bento-card col-12 green" id="summary-status-card">
               <div class="card-label">Result</div>
               <div class="flex-fill-bottom">
@@ -657,12 +660,11 @@
               id="summary-forgotten-container"
               style="
                 display: none;
-                height: auto;
+                height: 100%;
                 min-height: 0;
                 padding: 1.5rem;
                 justify-content: flex-start;
                 gap: 1rem;
-                overflow-y: scroll;
               "
             >
               <div class="card-label" style="color: var(--text-main)">
@@ -671,7 +673,7 @@
               <div
                 id="summary-forgotten-list"
                 class="vocab-list-modern"
-                style="box-shadow: none; width: 100%"
+                style="box-shadow: none; width: 100%; overflow-y: scroll"
               >
                 <!-- Items injected here -->
               </div>

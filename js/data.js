@@ -50,6 +50,28 @@ const callWithTimeout = async (promise, timeoutMs = 5000) => {
   });
 };
 
+// Helper for parsing dates (handles Firestore Timestamp, Serialized Timestamp, Date, String)
+const parseNextReviewDate = (val) => {
+  if (!val) return null;
+
+  // 1. Is it already a Date?
+  if (val instanceof Date) return val;
+
+  // 2. Is it a Firestore Timestamp (has toDate)?
+  if (typeof val.toDate === 'function') {
+    return val.toDate();
+  }
+
+  // 3. Is it a serialized Timestamp (object with seconds)?
+  if (typeof val === 'object' && 'seconds' in val) {
+    return new Date(val.seconds * 1000);
+  }
+
+  // 4. String or Number
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 // --- New SRS Formula Implementation (Pure Function) ---
 export const calculateNextReviewStats = (
   currentStats,
@@ -69,10 +91,10 @@ export const calculateNextReviewStats = (
   // Check if Due (or New)
   let isDue = true;
   if (stats.next_review_date) {
-    const nextDate = stats.next_review_date.toDate
-      ? stats.next_review_date.toDate()
-      : new Date(stats.next_review_date);
-    if (nextDate > now) {
+    const nextDate = parseNextReviewDate(stats.next_review_date);
+
+    // If we have a valid future date, it is NOT due.
+    if (nextDate && nextDate > now) {
       isDue = false; // Early Review (Cramming)
     }
   }
@@ -96,9 +118,7 @@ export const calculateNextReviewStats = (
       // MASTERED check: streak >= 3 AND interval >= 14
       if (stats.success_streak >= 3 && stats.interval_days >= 14) {
         if (stats.state !== 'MASTERED') {
-          stats.mastered_at = serverTimestamp(); // Note: serverTimestamp won't work in pure function for local preview unless handled, but for batch it's fine if we generate it there?
-          // Actually, for local preview we can use new Date(), for DB we want serverTimestamp.
-          // Let's use new Date() for now, Firestore accepts Date objects.
+          // stats.mastered_at = serverTimestamp(); // Use Date for pure function
           stats.mastered_at = new Date();
         }
         stats.state = 'MASTERED';

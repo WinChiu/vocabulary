@@ -846,9 +846,13 @@ const App = {
     on($('#exit-review-btn'), 'click', () => {
       showPopup(
         'Exit Review',
-        '<p>Are you sure you want to exit the review session?</p>',
+        '<p>Are you sure you want to exit the review session? <br><small style="color:var(--text-muted)">Progress in this session will be discarded.</small></p>',
         {
-          onConfirm: () => showView('dashboard'),
+          onConfirm: () => {
+            ReviewManager.cancel();
+            showView('dashboard');
+            App.renderDashboard(); // Update stats (restored)
+          },
           confirmText: 'Exit',
           cancelText: 'Stay',
         }

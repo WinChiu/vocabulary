@@ -22,7 +22,6 @@ const normalize = (text) => {
   return text.toString().trim().toLowerCase().replace(/\s+/g, ' '); // collapse multiple spaces
 };
 
-// Familiarity Calculator (Spec 5)
 // Familiarity Calculator (Spec 5) - Updated for new state
 export const calculateFamiliarity = (stats) => {
   if (!stats) return 0;
@@ -51,7 +50,6 @@ export const getFamiliarityLevel = (stats) => {
         return { label: 'New', class: 'level-new' };
     }
   }
-  // Base on score if state is not available
   // Base on score if state is not available (Legacy Fallback)
   const score = calculateFamiliarity(stats);
   // Stricter fallback: Must have at least 5 attempts to be considered Mastered by score alone
@@ -92,6 +90,7 @@ class ReviewSession {
     this.incorrectCardIds = new Set();
     this.isCardRevealed = false;
     this.modifiedCards = new Map(); // Store modified cards (id -> card)
+    this.originalStats = new Map(); // Store original stats for revert (id -> stats)
 
     // Shuffle cards on init
     this.shuffleCards();
@@ -344,9 +343,24 @@ const ReviewManager = {
     }
   },
 
+  // Helper to backup stats before modification
+  _backupStats: (card) => {
+    const session = ReviewManager.session;
+    if (session && !session.originalStats.has(card.id)) {
+      // Deep copy stats
+      session.originalStats.set(
+        card.id,
+        JSON.parse(JSON.stringify(card.review_stats || {}))
+      );
+    }
+  },
+
   reveal: (isAuto = false) => {
     const session = ReviewManager.session;
     if (!session) return;
+
+    // Backup before any modification
+    ReviewManager._backupStats(session.getCurrentCard());
 
     // If it's a skip (I don't know) in Modes 3 or 4, record as wrong
     if (
@@ -376,6 +390,9 @@ const ReviewManager = {
 
   assess: (isCorrect) => {
     const session = ReviewManager.session;
+
+    // Backup before modification
+    ReviewManager._backupStats(session.getCurrentCard());
 
     // Track Stats
     if (!isCorrect) session.incorrectCardIds.add(session.getCurrentCard().id);
@@ -508,6 +525,9 @@ const ReviewManager = {
     const feedback = $('#spelling-feedback');
     const card = session.getCurrentCard();
 
+    // Backup before modification
+    ReviewManager._backupStats(card);
+
     if (normalize(input.value) === normalize(card.word_en)) {
       feedback.textContent = '';
       input.classList.add('correct');
@@ -573,6 +593,9 @@ const ReviewManager = {
       normalize(m)
     );
 
+    // Backup before modification
+    ReviewManager._backupStats(card);
+
     if (val === word || matches.includes(val)) {
       feedback.textContent = ''; // UI feedback via color is enough, cleaner
       input.classList.add('correct');
@@ -613,15 +636,32 @@ const ReviewManager = {
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
 
-      input.classList.add('shake');
-      setTimeout(() => input.classList.remove('shake'), 500);
+      // input.classList.add('shake');
+      // setTimeout(() => input.classList.remove('shake'), 500);
 
-      // Remove error when typing
-      input.oninput = () => {
-        input.classList.remove('error');
-        input.oninput = null;
-      };
+      // Just color text
     }
+  },
+
+  // NEW: Cancel Session and Revert Changes
+  cancel: () => {
+    const session = ReviewManager.session;
+    if (session) {
+      console.log(
+        'Cancelling session. Reverting ' +
+          session.originalStats.size +
+          ' cards.'
+      );
+      // Revert stats
+      session.originalStats.forEach((originalStats, cardId) => {
+        const card = session.cards.find((c) => c.id === cardId); // Or find in global App.allCards if we had ref
+        // Since session.cards are references to objects in App.allCards (mostly), updating them here updates the app state.
+        if (card) {
+          card.review_stats = originalStats;
+        }
+      });
+    }
+    ReviewManager.session = null;
   },
 };
 

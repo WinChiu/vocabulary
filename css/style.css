@@ -2275,3 +2275,67 @@ textarea:focus {
   width: 120px;
   height: 120px;
 }
+/* Due Count Breakdown Styles */
+.due-breakdown-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.due-breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.due-breakdown-item b {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.due-breakdown-divider {
+  opacity: 0.4;
+  font-size: 0.8rem;
+}
+/* Refined Due Count Layout */
+
+.due-card-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.due-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.due-breakdown-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  opacity: 0.9;
+  /* padding-bottom removed for center alignment */
+}
+
+.due-breakdown-item {
+  line-height: 1.2;
+}
+
+.due-breakdown-item b {
+  font-weight: 800;
+}
+
+/* Override previous styles if needed or they will be unused */
+.due-breakdown-container {
+  display: none;
+}

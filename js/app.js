@@ -974,10 +974,6 @@ const App = {
       let isDue = false;
 
       // New cards are not "Due" for review until they have been learned at least once
-      // Actually, if we use the label 'NEW', it maps to state NEW.
-      // Logic: If label matches, we increment.
-      // For Due: We check the date.
-
       if (label !== 'NEW') {
         if (!stats.next_review_date) {
           isDue = true;
@@ -994,6 +990,58 @@ const App = {
         if (label === 'NEW') dueNew++;
         else if (label === 'LEARNING') dueLrn++;
         else if (label === 'MASTERED') dueMst++;
+
+        // Separate Word vs Phrase Count
+        const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
+        if (isPhrase) {
+          // It's a phrase
+        } else {
+          // It's a word
+        }
+      }
+    });
+
+    // Re-loop for efficient breakdown or just integrate above?
+    // Integrated above is cleaner but need variables.
+    // Let's refactor the loop slightly to be cleaner.
+
+    // Reset counters
+    dueTotal = 0;
+    dueNew = 0;
+    dueLrn = 0;
+    dueMst = 0;
+    totalNew = 0;
+    totalLrn = 0;
+    totalMst = 0;
+    let dueWordCount = 0;
+    let duePhraseCount = 0;
+
+    dashboardCards.forEach((card) => {
+      const stats = card.review_stats || {};
+      const level = getFamiliarityLevel(stats);
+      const label = level.label.toUpperCase();
+
+      if (label === 'NEW') totalNew++;
+      else if (label === 'LEARNING') totalLrn++;
+      else if (label === 'MASTERED') totalMst++;
+
+      let isDue = false;
+      if (label !== 'NEW') {
+        if (!stats.next_review_date) {
+          isDue = true;
+        } else {
+          const nextDate = stats.next_review_date.toDate
+            ? stats.next_review_date.toDate()
+            : new Date(stats.next_review_date);
+          if (nextDate <= now) isDue = true;
+        }
+      }
+
+      if (isDue) {
+        dueTotal++;
+        const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
+        if (isPhrase) duePhraseCount++;
+        else dueWordCount++;
       }
     });
 
@@ -1009,9 +1057,16 @@ const App = {
     const elDueCard = $('#card-due-container');
     const elActionLabel = $('#start-review-action');
 
+    // Breakdown Elements
+    const elDueWord = $('#due-count-word');
+    const elDuePhrase = $('#due-count-phrase');
+
     if (elDueCount) {
       App.countUp(elDueCount, 0, dueTotal, 1000);
     }
+
+    if (elDueWord) elDueWord.textContent = dueWordCount;
+    if (elDuePhrase) elDuePhrase.textContent = duePhraseCount;
 
     if (elDueCard && elActionLabel) {
       if (dueTotal === 0) {

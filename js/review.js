@@ -323,18 +323,16 @@ const ReviewManager = {
         }
       } else {
         // Modes 3 (Spelling) & 4 (Cloze) - Auto Graded
-        gradingBtns.classList.add('hidden'); // ALWAYS HIDDEN for auto-graded modes
         selfAssessBtns.classList.add('hidden');
 
         if (session.isCardRevealed) {
           revealBtnContainer.classList.add('hidden');
-          // For these modes, we rely on auto-advance or a "Next" button if we add one later.
-          // Currently the UI seems to auto-advance or show feedback.
-          // If we need a manual "Next" arrow, it should be separate.
-          // For now, removing the manual grading buttons is the key fix.
+          // Show Next Card button when revealed so user can proceed manually if needed
+          gradingBtns.classList.remove('hidden');
         } else {
           revealBtn.textContent = "I don't know";
           revealBtnContainer.classList.remove('hidden');
+          gradingBtns.classList.add('hidden');
         }
       }
     } catch (err) {

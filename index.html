@@ -424,12 +424,23 @@
             <form id="review-setup-form">
               <div class="form-group input-group-flex">
                 <div class="input-wrapper-flex">
+                  <label>Type</label>
+                  <select
+                    name="type"
+                    class="input-pill select-rounded select-with-chevron"
+                    id="review-setup-type"
+                  >
+                    <option value="word" selected>Word</option>
+                    <option value="phrase">Phrase</option>
+                  </select>
+                </div>
+                <div class="input-wrapper-flex">
                   <label>Selection Scope</label>
                   <select
                     name="scope"
                     class="input-pill select-rounded select-with-chevron"
                   >
-                    <option value="all">All Vocabulary</option>
+                    <option value="all">All</option>
                     <option value="starred">Starred</option>
                   </select>
                 </div>
@@ -443,17 +454,6 @@
                     <option value="new">New</option>
                     <option value="learning">Learning</option>
                     <option value="mastered">Mastered</option>
-                  </select>
-                </div>
-                <div class="input-wrapper-flex">
-                  <label>Type</label>
-                  <select
-                    name="type"
-                    class="input-pill select-rounded select-with-chevron"
-                    id="review-setup-type"
-                  >
-                    <option value="word" selected>Word</option>
-                    <option value="phrase">Phrase</option>
                   </select>
                 </div>
                 <div class="input-wrapper-flex">

@@ -1,5 +1,10 @@
 // Main App Logic (ES Module)
 import DataService from './data.js';
+import {
+  getLanguageConfig,
+  LANGUAGE_STORAGE_KEY,
+  normalizeLanguageMode,
+} from './language.js';
 import ReviewManager, {
   calculateFamiliarity,
   getFamiliarityLevel,
@@ -28,6 +33,93 @@ const App = {
   userInfo: null,
   editingCardId: null, // Track editing state
   currentPreviewId: null, // Track current preview card
+  currentLanguageMode: normalizeLanguageMode(
+    localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en'
+  ),
+
+  getLanguageConfig: () => getLanguageConfig(App.currentLanguageMode),
+
+  applyLanguageCopy: () => {
+    const config = App.getLanguageConfig();
+
+    document.body.dataset.languageMode = config.mode;
+    DataService.setLanguageMode(config.mode);
+
+    $$('.language-mode-option').forEach((btn) => {
+      const isActive = btn.dataset.languageMode === config.mode;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
+
+    const sourceLabel = $('#source-word-label');
+    if (sourceLabel) sourceLabel.textContent = config.sourceLabel;
+
+    const sourceInput = $('#word_en');
+    if (sourceInput) sourceInput.placeholder = config.sourcePlaceholder;
+
+    const examplesLabel = $('#examples-field-label');
+    if (examplesLabel)
+      examplesLabel.textContent = `${config.exampleLabel} (Max 5)`;
+
+    const exampleInputs = $$('.example-input');
+    exampleInputs.forEach((input) => {
+      input.placeholder = config.examplePlaceholder;
+    });
+
+    const searchInput = $('#search-input');
+    if (searchInput) searchInput.placeholder = config.searchPlaceholder;
+
+    const importTitle = $('#import-title');
+    if (importTitle) importTitle.textContent = config.importTitle;
+
+    const addActionLabel = $('#words-add-label');
+    if (addActionLabel) addActionLabel.textContent = config.addActionLabel;
+
+    const modeFlipSource = $('#mode-flip-source-label');
+    if (modeFlipSource)
+      modeFlipSource.textContent = `Flip Card (${config.sourceShort})`;
+
+    if (!App.editingCardId) {
+      const addTitle = $('#add-card .view-header-flex h1');
+      if (addTitle) addTitle.textContent = config.addTitle;
+      const submitBtn = $('button[form="add-card-form"]');
+      if (submitBtn && submitBtn.textContent !== 'Saving...') {
+        submitBtn.textContent = 'Save Card';
+      }
+    }
+  },
+
+  switchLanguageMode: async (mode) => {
+    const nextMode = normalizeLanguageMode(mode);
+    if (nextMode === App.currentLanguageMode) return;
+
+    if (ReviewManager.session) {
+      showPopup(
+        'Review in Progress',
+        '<p>Please exit the current review session before switching language mode.</p>'
+      );
+      App.applyLanguageCopy();
+      return;
+    }
+
+    const activeView = Array.from($$('.view')).find((view) =>
+      view.classList.contains('active')
+    );
+    const activeViewId = activeView ? activeView.id : 'dashboard';
+    const shouldStay = activeViewId === 'dashboard' || activeViewId === 'words';
+
+    App.currentLanguageMode = nextMode;
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, nextMode);
+    App.currentPage = 1;
+    App.currentPreviewId = null;
+    App.editingCardId = null;
+    App.applyLanguageCopy();
+
+    if (App.userInfo) {
+      await App.refreshData();
+      showView(shouldStay ? activeViewId : 'dashboard');
+    }
+  },
 
   // Animation Helper
   countUp: (el, start, end, duration) => {
@@ -57,6 +149,7 @@ const App = {
   // UI Helpers for Examples
   addExampleInput: (value = '') => {
     const container = $('#examples-container');
+    const config = App.getLanguageConfig();
     const inputs = container.querySelectorAll('.example-row');
     if (inputs.length >= 5) {
       showPopup(
@@ -71,9 +164,8 @@ const App = {
     div.innerHTML = `
       <textarea
         rows="2"
-        placeholder="e.g., She is a resilient person."
+        placeholder="${config.examplePlaceholder}"
         class="input-pill example-input"
-        style="min-height: 80px; padding-right: 3rem;"
       >${value}</textarea>
       ${`<button type="button" class="btn-remove-example">
            <span class="material-icons icon-sm">close</span>
@@ -102,7 +194,26 @@ const App = {
     });
   },
 
+  prepareAddCardForm: () => {
+    const config = App.getLanguageConfig();
+    $('#add-card-form').reset();
+    $('#examples-container').innerHTML = '';
+    App.addExampleInput();
+
+    App.editingCardId = null;
+    $('#add-card .view-header-flex h1').textContent = config.addTitle;
+    $('button[form="add-card-form"]').textContent = 'Save Card';
+    App.applyLanguageCopy();
+  },
+
+  prepareImportView: () => {
+    $('#import-preview').classList.add('hidden');
+    $('#import-file-section').classList.remove('hidden');
+    $('#csv-file-input').value = '';
+  },
+
   init: async () => {
+    App.applyLanguageCopy();
     App.bindEvents();
 
     const auth = getAuth();
@@ -133,6 +244,7 @@ const App = {
   },
 
   refreshData: async () => {
+    DataService.setLanguageMode(App.currentLanguageMode);
     // Show loading covering the entire workspace (including navbar)
     const workspace = document.querySelector('.main-workspace');
     if (workspace) {
@@ -144,7 +256,7 @@ const App = {
     if (bottomNav) bottomNav.classList.add('hidden');
 
     try {
-      const cards = await DataService.fetchCards();
+      const cards = await DataService.fetchCards(App.currentLanguageMode);
       App.allCards = cards;
       App.currentPage = 1; // Reset to page 1 on full refresh
       App.renderDashboard();
@@ -158,7 +270,7 @@ const App = {
         await signOut(auth);
         showPopup(
           'Access Denied',
-          `<p>The account <b>${email}</b> is not authorized to access this database.</p><p style="font-size:0.85em; color:#666">Server Rejected Request.</p>`
+          `<p>The account <b>${email}</b> is not authorized to access this database.</p><p class="modal-note">Server Rejected Request.</p>`
         );
         showView('login');
         return;
@@ -257,6 +369,12 @@ const App = {
   },
 
   bindEvents: () => {
+    $$('.language-mode-option').forEach((btn) => {
+      on(btn, 'click', () => {
+        App.switchLanguageMode(btn.dataset.languageMode);
+      });
+    });
+
     // Global Keydown Listener for Review Navigation
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
@@ -290,31 +408,17 @@ const App = {
 
     // Navigation Interception
     // Navigation Interception
-    $$('.nav-btn, .nav-item, .fab-action-btn').forEach((btn) => {
+    $$('.nav-btn, .nav-item').forEach((btn) => {
       on(btn, 'click', () => {
         const target = btn.getAttribute('data-target');
 
         // Reset Import View State
         if (target === 'import') {
-          $('#import-preview').classList.add('hidden');
-          $('#import-file-section').classList.remove('hidden');
-          $('#csv-file-input').value = '';
+          App.prepareImportView();
         }
 
         if (target === 'add-card') {
-          // Reset and init form with one empty input
-          $('#add-card-form').reset();
-          $('#examples-container').innerHTML = '';
-          App.addExampleInput();
-
-          // Reset Edit State
-          App.editingCardId = null;
-          $('#add-card .view-header-flex h1').textContent = 'Add New Card';
-          $('button[form="add-card-form"]').textContent = 'Save Card';
-
-          // Show Import Button
-          const importBtn = $('#btn-goto-import');
-          if (importBtn) importBtn.style.display = 'flex';
+          App.prepareAddCardForm();
         }
 
         if (target === 'dashboard' || target === 'words') {
@@ -330,42 +434,19 @@ const App = {
       });
     });
 
-    // Context FAB Bindings
-    const fabReview = $('#fab-review');
-    const fabAdd = $('#fab-add-card');
-    const btnGotoImport = $('#btn-goto-import');
+    const wordsAddBtn = $('#words-add-btn');
+    const wordsImportBtn = $('#words-import-btn');
 
-    if (fabReview) {
-      on(fabReview, 'click', () => {
-        showView('review-setup');
-        App.updateDueCount();
-      });
-    }
-
-    if (fabAdd) {
-      on(fabAdd, 'click', () => {
-        // Reset and init form
-        $('#add-card-form').reset();
-        $('#examples-container').innerHTML = '';
-        App.addExampleInput();
-
-        App.editingCardId = null;
-        $('#add-card .view-header-flex h1').textContent = 'Add New Card';
-        $('button[form="add-card-form"]').textContent = 'Save Card';
-
-        // Show Import Button
-        const importBtn = $('#btn-goto-import');
-        if (importBtn) importBtn.style.display = 'flex';
-
+    if (wordsAddBtn) {
+      on(wordsAddBtn, 'click', () => {
+        App.prepareAddCardForm();
         showView('add-card');
       });
     }
 
-    if (btnGotoImport) {
-      on(btnGotoImport, 'click', () => {
-        $('#import-preview').classList.add('hidden');
-        $('#import-file-section').classList.remove('hidden');
-        $('#csv-file-input').value = '';
+    if (wordsImportBtn) {
+      on(wordsImportBtn, 'click', () => {
+        App.prepareImportView();
         showView('import');
       });
     }
@@ -385,8 +466,8 @@ const App = {
       on(btnBackImport, 'click', () => {
         // Reset Input
         $('#csv-file-input').value = '';
-        // Return to Add Card view
-        showView('add-card');
+        // Return to Words view
+        showView('words');
       });
     }
 
@@ -472,6 +553,7 @@ const App = {
     // Add Card Form
     on($('#add-card-form'), 'submit', async (e) => {
       e.preventDefault();
+      const config = App.getLanguageConfig();
       const btn = document.querySelector('button[form="add-card-form"]');
       btn.disabled = true;
       btn.textContent = 'Saving...';
@@ -492,7 +574,10 @@ const App = {
       if (card.example_en.length === 0) {
         showPopup(
           'Missing Info',
-          '<p>Please add at least one example sentence.</p>'
+          `<p>Please add at least one ${config.exampleLabel.toLowerCase().replace(
+            /s$/,
+            ''
+          )}.</p>`
         );
         btn.disabled = false;
         btn.textContent = 'Save Card';
@@ -507,7 +592,7 @@ const App = {
 
       if (isDuplicate) {
         showPopup(
-          'Duplicate Word',
+          `Duplicate ${config.sourceLabel}`,
           `<p>The word "<b>${card.word_en}</b>" is already in your vocabulary list.</p>`,
           true
         );
@@ -519,11 +604,15 @@ const App = {
       try {
         if (App.editingCardId) {
           // Update Existing Card
-          await DataService.updateCard(App.editingCardId, card);
+          await DataService.updateCard(
+            App.editingCardId,
+            card,
+            App.currentLanguageMode
+          );
           showPopup('Updated!', '<p>Card updated successfully.</p>', true);
         } else {
           // Add New Card
-          await DataService.addCard(card);
+          await DataService.addCard(card, App.currentLanguageMode);
           showPopup(
             'Saved!',
             '<p>New vocabulary card added successfully.</p>',
@@ -535,7 +624,7 @@ const App = {
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
         App.editingCardId = null; // Reset state
-        $('#add-card .view-header-flex h1').textContent = 'Add New Card'; // Reset Title
+        $('#add-card .view-header-flex h1').textContent = config.addTitle; // Reset Title
 
         await App.refreshData(); // Refresh list
         showView('dashboard');
@@ -618,8 +707,14 @@ const App = {
     }
 
     // Start Review Button (Global, e.g. in FAB now)
-    on($('#start-review-btn'), 'click', () => {
+    on($('#start-review-action'), 'click', (e) => {
+      e.stopPropagation();
       showView('review-setup');
+      App.updateDueCount();
+    });
+    on($('#card-due-container'), 'click', () => {
+      showView('review-setup');
+      App.updateDueCount();
     });
 
     // Review Setup Start
@@ -695,7 +790,7 @@ const App = {
       // Apply Limit
       cardsToReview = cardsToReview.slice(0, limit);
 
-      ReviewManager.start(cardsToReview, mode);
+      ReviewManager.start(cardsToReview, mode, App.currentLanguageMode);
     });
 
     // Bento Popup Overrides
@@ -732,8 +827,12 @@ const App = {
                 lowKey.includes('word') ||
                 lowKey === 'en' ||
                 lowKey === 'english' ||
+                lowKey === 'sv' ||
+                lowKey === 'swedish' ||
+                lowKey === 'svenska' ||
                 lowKey === '單字' ||
-                lowKey === '英文'
+                lowKey === '英文' ||
+                lowKey === '瑞典文'
               ) {
                 newRow.word_en = row[key];
               } else if (
@@ -816,14 +915,16 @@ const App = {
           return;
         }
 
-        const count = await DataService.batchAddCards(uniqueToImport);
+        const count = await DataService.batchAddCards(
+          uniqueToImport,
+          App.currentLanguageMode
+        );
         await App.refreshData();
 
         let message = `<p>Successfully processed <b>${count}</b> new cards!</p>`;
         if (duplicateCount > 0) {
-          message += `<p style="font-size:0.85rem; color:var(--accent-orange); margin-top:0.5rem;">Note: <b>${duplicateCount}</b> duplicate words were skipped.</p>`;
+          message += `<p class="modal-note-primary">Note: <b>${duplicateCount}</b> duplicate words were skipped.</p>`;
         }
-        // message += `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:1rem;">Offline changes sync automatically when connection is stable.</p>`;
 
         showPopup('Import Success', message);
       } catch (error) {
@@ -846,7 +947,7 @@ const App = {
     on($('#exit-review-btn'), 'click', () => {
       showPopup(
         'Exit Review',
-        '<p>Are you sure you want to exit the review session? <br><small style="color:var(--text-muted)">Progress in this session will be discarded.</small></p>',
+        '<p>Are you sure you want to exit the review session? <br><small class="modal-note">Progress in this session will be discarded.</small></p>',
         {
           onConfirm: () => {
             ReviewManager.cancel();
@@ -917,6 +1018,7 @@ const App = {
   handleEdit: (id) => {
     const card = App.allCards.find((c) => c.id === id);
     if (!card) return;
+    const config = App.getLanguageConfig();
 
     // Populate Form
     $('#word_en').value = card.word_en;
@@ -937,13 +1039,9 @@ const App = {
     // Update View Title
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
     document.querySelector('#add-card .view-header-flex h1').textContent =
-      'Edit Word';
+      config.editTitle;
     document.querySelector('button[form="add-card-form"]').textContent =
       'Update Word';
-
-    // Hide Import Button
-    const importBtn = $('#btn-goto-import');
-    if (importBtn) importBtn.style.display = 'none';
 
     showView('add-card');
   },
@@ -1145,6 +1243,7 @@ const App = {
     const isMobile = window.innerWidth <= 899;
     const ITEMS_PER_PAGE = 15;
     const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE) || 1;
+    App.lastFilteredCount = filteredCards.length;
 
     // Ensure current page is valid
     if (App.currentPage > totalPages) App.currentPage = totalPages;
@@ -1190,7 +1289,7 @@ const App = {
               <th>Word</th>
               <th class="desktop-only">Meaning</th>
               <th>Status</th>
-              <th style="width: 100px; text-align: right;">Actions</th>
+              <th class="actions-col">Actions</th>
             </tr>
           </thead>
           <tbody id="vocab-table-body"></tbody>
@@ -1207,7 +1306,7 @@ const App = {
 
     if (filteredCards.length === 0) {
       const emptyMsg =
-        '<div style="text-align:center; padding: 3rem; color: var(--text-muted); width: 100%;">No vocabulary found.</div>';
+        '<div class="empty-state">No vocabulary found.</div>';
       tbody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
       listEl.innerHTML = emptyMsg;
       return;
@@ -1239,13 +1338,6 @@ const App = {
           }" data-starred="${
         card.is_starred === true || String(card.is_starred) === 'true'
       }">
-          <button class="icon-btn btn-star ${
-            card.is_starred === true || String(card.is_starred) === 'true'
-              ? 'starred'
-              : ''
-          }" data-starred="${
-        card.is_starred === true || String(card.is_starred) === 'true'
-      }">
             <img src="${
               card.is_starred === true || String(card.is_starred) === 'true'
                 ? 'assets/star-filled.svg'
@@ -1253,10 +1345,10 @@ const App = {
             }" class="action-icon" alt="star" />
           </button>
            <button class="icon-btn btn-edit">
-            <img src="assets/edit.svg" class="action-icon" alt="edit" />
+            <span class="material-icons">edit</span>
           </button>
           <button class="icon-btn btn-delete">
-            <img src="assets/trash.svg" class="action-icon" alt="delete" />
+            <span class="material-icons">delete</span>
           </button>
         </td>
       `;
@@ -1281,13 +1373,6 @@ const App = {
            }" data-starred="${
         card.is_starred === true || String(card.is_starred) === 'true'
       }">
-           <button class="icon-btn btn-star ${
-             card.is_starred === true || String(card.is_starred) === 'true'
-               ? 'starred'
-               : ''
-           }" data-starred="${
-        card.is_starred === true || String(card.is_starred) === 'true'
-      }">
              <img src="${
                card.is_starred === true || String(card.is_starred) === 'true'
                  ? 'assets/star-filled.svg'
@@ -1295,10 +1380,10 @@ const App = {
              }" class="action-icon" alt="star" />
            </button>
             <button class="icon-btn btn-edit">
-             <img src="assets/edit.svg" class="action-icon" alt="edit" />
+             <span class="material-icons">edit</span>
            </button>
            <button class="icon-btn btn-delete">
-             <img src="assets/trash.svg" class="action-icon" alt="delete" />
+             <span class="material-icons">delete</span>
            </button>
          </div>
         </div>
@@ -1313,62 +1398,65 @@ const App = {
 
     App.currentPreviewId = id;
     const level = getFamiliarityLevel(card.review_stats);
+    const config = App.getLanguageConfig();
+    const dictionaryEnabled = config.dictionaryEnabled;
+    const dictionaryMetrics = dictionaryEnabled
+      ? `
+                <div class="preview-metric-card">
+                    <div class="preview-section-label">Phonetic</div>
+                    <div id="preview-phonetic-badge" class="preview-metric-value">-</div>
+                </div>
+      `
+      : '';
+    const dictionarySections = dictionaryEnabled
+      ? `
+            <div class="preview-section">
+                <div class="preview-section-label">Synonyms</div>
+                <div id="preview-synonyms-value" class="preview-section-content">-</div>
+            </div>
+
+            <div id="preview-definitions-container" class="preview-section">
+                <!-- Injected via JS -->
+            </div>
+      `
+      : '';
 
     // 1. Render Content into the new view container
     const container = $('#card-preview-container');
     container.innerHTML = `
-        <div style="text-align:center; padding-top:2rem; width: 100%;">
-            <div style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em; margin-bottom: 0.5rem; color: var(--text-main);">${
-              card.word_en
-            }</div>
-
-            <div style="font-size:1.25rem; color:var(--text-muted); margin-bottom:3.5rem; font-weight: 500;">${
-              card.meaning_zh
-            }</div>
-
-            <div style="display:flex; gap:1rem; margin-bottom: 2rem; justify-content: center; width: 100%;">
-                <div class="status-badge-container status-${level.label.toLowerCase()}" style="flex: 1; padding: 1rem 1.5rem; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div class="status-label" style="font-size: 0.75rem; font-weight: 700; margin-bottom: 4px;">STATUS</div>
-                    <div class="status-value" style="font-size: 1.25rem; font-weight: 800;">${level.label.toUpperCase()}</div>
-                </div>
-                <div style="flex: 1; background:var(--bg-workspace); padding:1rem 1.5rem; border-radius:16px; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:4px; text-transform: uppercase;">PHONETIC</div>
-                    <div id="preview-phonetic-badge" style="font-weight:800; color:var(--text-main); font-size: 1.25rem; font-family:'Lucida Sans Unicode', 'Arial Unicode MS', sans-serif;">-</div>
-                </div>
+        <div class="preview-page">
+            <div>
+              <div class="preview-title">${card.word_en}</div>
+              <div class="preview-meaning">${card.meaning_zh}</div>
             </div>
 
+            <div class="preview-metrics">
+                <div class="status-badge-container status-${level.label.toLowerCase()}">
+                    <div class="status-label">Status</div>
+                    <div class="status-value">${level.label.toUpperCase()}</div>
+                </div>
+                ${dictionaryMetrics}
+            </div>
 
-
-
-
-            <div style="border-radius:20px; text-align:left; margin-bottom: 2rem;">
-                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">Example Sentences</div>
-                <div style="font-size:1.1rem; line-height:1.6; display: flex; flex-direction: column; gap: 12px; color: var(--text-main);">
+            <div class="preview-section">
+                <div class="preview-section-label">${config.exampleLabel}</div>
+                <div class="preview-section-content">
                     ${
                       Array.isArray(card.example_en) &&
                       card.example_en.length > 0
                         ? card.example_en
                             .map((ex) => `<div>${ex}</div>`)
                             .join('')
-                        : '<i style="color: var(--text-muted);">No example provided.</i>'
+                        : '<i>No example provided.</i>'
                     }
                 </div>
             </div>
-            <div style="border-radius:20px; text-align:left">
-                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">SYNONYMS</div>
-                <div id="preview-synonyms-value" style="font-size:1.1rem; line-height:1.6; color: var(--text-main);">-</div>
-            </div>
-
-            <div id="preview-definitions-container" style="border-radius:20px; text-align:left; margin-top: 2rem; margin-bottom: 2rem; display: none;">
-                <!-- Injected via JS -->
-            </div>
+            ${dictionarySections}
         </div>
     `;
 
     // 2. Update Footer States (Star Icon)
-    const starBtn = document.querySelector(
-      '#card-preview-footer .preview-star-btn'
-    );
+    const starBtn = document.querySelector('.preview-star-btn');
     if (starBtn) {
       const isStarred =
         card.is_starred === true || String(card.is_starred) === 'true';
@@ -1391,15 +1479,19 @@ const App = {
       audioBtn.disabled = true;
       audioBtn.style.opacity = '0.3';
       audioBtn.style.cursor = 'default';
-      const img = audioBtn.querySelector('img');
-      if (img) img.src = 'assets/audio-off.svg';
+      const icon = audioBtn.querySelector('.material-icons');
+      if (icon) icon.textContent = 'volume_off';
       audioBtn.onclick = null;
     }
 
-    App.fetchDictionaryData(card.word_en);
+    if (dictionaryEnabled) {
+      App.fetchDictionaryData(card.word_en, config.dictionaryLanguage);
+    } else {
+      hideLoading('#card-preview');
+    }
   },
 
-  fetchDictionaryData: async (word) => {
+  fetchDictionaryData: async (word, language = 'en') => {
     // const phoneticContainer = $('#preview-phonetic-container'); // Removed
     const phoneticBadge = $('#preview-phonetic-badge');
     // const posValue = $('#preview-pos-value'); // Removed
@@ -1419,7 +1511,7 @@ const App = {
 
       const cleanWord = word.trim().toLowerCase();
       const response = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${cleanWord}`
+        `https://api.dictionaryapi.dev/api/v2/entries/${language}/${cleanWord}`
       );
       if (!response.ok) throw new Error('Not found');
 
@@ -1447,12 +1539,12 @@ const App = {
       // if (phoneticContainer && phoneticText) ... Removed subtitle logic
 
       if (audioBtn) {
-        const img = audioBtn.querySelector('img');
+        const icon = audioBtn.querySelector('.material-icons');
         if (audioUrl) {
           audioBtn.disabled = false;
           audioBtn.style.opacity = '1';
           audioBtn.style.cursor = 'pointer';
-          if (img) img.src = 'assets/audio.svg';
+          if (icon) icon.textContent = 'volume_up';
           audioBtn.onclick = () => {
             new Audio(audioUrl).play();
           };
@@ -1460,7 +1552,7 @@ const App = {
           audioBtn.disabled = true;
           audioBtn.style.opacity = '0.3';
           audioBtn.style.cursor = 'default';
-          if (img) img.src = 'assets/audio-off.svg';
+          if (icon) icon.textContent = 'volume_off';
         }
       }
 
@@ -1485,13 +1577,12 @@ const App = {
         };
 
         let defsHtml = `
-            <div onclick="const content = this.nextElementSibling; const icon = this.querySelector('.material-icons'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';"
-                 style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.75rem;">
+            <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('.material-icons'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
                 <span>OTHER DEFINITIONS</span>
-                <span class="material-icons" style="font-size:16px; transition: transform 0.2s;">chevron_right</span>
+                <span class="material-icons">chevron_right</span>
             </div>
         `;
-        defsHtml += `<div style="font-size:1.1rem; line-height:1.6; color: var(--text-main); display: none; flex-direction: column; gap: 0.75rem;">`;
+        defsHtml += `<div class="definition-list">`;
 
         entry.meanings.forEach((m) => {
           // Limit definitions to top 2 per POS to avoid clutter
@@ -1502,7 +1593,7 @@ const App = {
           topDefs.forEach((d) => {
             defsHtml += `
                 <div>
-                   <span style="color:var(--text-muted); font-weight:500; margin-right:4px; font-size:1 rem; font-style: italic;">${posAbbr}</span>
+                   <span class="definition-pos">${posAbbr}</span>
                    <span>${d.definition}</span>
                 </div>
              `;
@@ -1549,7 +1640,7 @@ const App = {
       card.is_starred = !currentlyStarred;
       App.renderDashboard();
     }
-    await DataService.toggleStar(id, status);
+    await DataService.toggleStar(id, status, App.currentLanguageMode);
     // No need to full refresh for star, optimistic is fine.
   },
 
@@ -1561,7 +1652,7 @@ const App = {
         confirmText: 'Delete',
         onConfirm: async () => {
           try {
-            await DataService.deleteCard(id);
+            await DataService.deleteCard(id, App.currentLanguageMode);
             await App.refreshData();
             showPopup('Deleted', '<p>Card has been removed.</p>');
             if ($('#card-preview').classList.contains('active')) {
@@ -1584,7 +1675,7 @@ const App = {
     // Update Header with Count
     const sectionLabel = importPreviewContainer.querySelector('.section-label');
     if (sectionLabel) {
-      sectionLabel.innerHTML = `Data Preview <span style="font-size:0.9rem; color:var(--text-muted); font-weight:400; margin-left:8px;">(${data.length} vocabularies)</span>`;
+      sectionLabel.innerHTML = `Data Preview <span class="import-count">(${data.length} vocabularies)</span>`;
     }
 
     if (importPreviewContainer) {
@@ -1602,9 +1693,9 @@ const App = {
         let examplesHtml = '';
         if (Array.isArray(examples) && examples.length > 0) {
           examplesHtml = `
-            <div class="vocab-card-examples" style="font-size: 0.9rem; color: var(--text-muted); padding-top: 8px; width: 100%;">
+            <div class="vocab-card-examples">
               ${examples
-                .map((ex) => `<div style="margin-bottom: 6px;">• ${ex}</div>`)
+                .map((ex) => `<div>${ex}</div>`)
                 .join('')}
             </div>
           `;
@@ -1614,7 +1705,7 @@ const App = {
           <div class="preview-item">
             <div class="vocab-card-main">
               <div class="vocab-card-word">${word}</div>
-              <div class="vocab-card-meaning" style="color: var(--text-main); font-weight: 500;">${meaning}</div>
+              <div class="vocab-card-meaning">${meaning}</div>
             </div>
             ${examplesHtml}
           </div>

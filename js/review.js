@@ -83,9 +83,10 @@ const getExamples = (card) => {
 };
 
 class ReviewSession {
-  constructor(cards, mode) {
+  constructor(cards, mode, languageMode = 'en') {
     this.cards = cards; // Filtered list of cards
     this.mode = parseInt(mode); // 1, 2, 3, or 4
+    this.languageMode = languageMode;
     this.currentIndex = 0;
     this.incorrectCardIds = new Set();
     this.isCardRevealed = false;
@@ -125,10 +126,6 @@ class ReviewSession {
     const card = this.getCurrentCard();
     if (!card) return '<div class="flashcard">Error: No card</div>';
 
-    const level = getFamiliarityLevel(card.review_stats);
-
-    const levelBadge = `<div class="level-badge ${level.class}">${level.label}</div>`;
-
     switch (this.mode) {
       case 1: // EN -> ZH
       case 2: // ZH -> EN
@@ -148,6 +145,9 @@ class ReviewSession {
 
         return `
                     <div class="flashcard" id="active-flashcard">
+                        <div class="level-badge ${getFamiliarityLevel(card.review_stats).class}">${
+          getFamiliarityLevel(card.review_stats).label
+        }</div>
                         <div class="content">${front}</div>
                         <div class="sub-content ${
                           this.isCardRevealed ? '' : 'hidden'
@@ -169,7 +169,7 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                         <div class="flashcard">
-                            <div class="sub-content" style="margin-bottom:1rem;">${card.meaning_zh}</div>
+                            <div class="sub-content review-prompt">${card.meaning_zh}</div>
                             <div class="content">${card.word_en}</div>
                              <div class="sub-content"><small>${spellingEx}</small></div>
                         </div>
@@ -210,13 +210,13 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                        <div class="flashcard">
-                           <div class="sub-content" style="margin-bottom:1rem;">${
+                           <div class="sub-content review-prompt">${
                              card.meaning_zh
                            }</div>
-                           <div class="content" style="font-size:1.5rem">${sentence.replace(
+                           <div class="content cloze-content">${sentence.replace(
                              regex,
                              (match) =>
-                               `<input type="text" class="cloze-input" value="${match}" disabled style="width:${match.length}ch; color:var(--danger-color); border-color:var(--danger-color); background:transparent;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
+                               `<input type="text" class="cloze-input error" value="${match}" disabled style="width:${match.length}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
                            )}</div>
                         </div>
                     `;
@@ -227,10 +227,10 @@ class ReviewSession {
 
         return `
                     <div class="flashcard">
-                        <div class="sub-content" style="margin-bottom:1rem;">${
+                        <div class="sub-content review-prompt">${
                           card.meaning_zh
                         }</div>
-                        <div class="content" style="font-size:1.5rem">
+                        <div class="content cloze-content">
                             ${
                               hasMatch
                                 ? sentence.replace(
@@ -254,12 +254,12 @@ class ReviewSession {
 const ReviewManager = {
   session: null,
 
-  start: (cards, mode) => {
+  start: (cards, mode, languageMode = 'en') => {
     if (cards.length === 0) {
       showPopup('Review Setup', '<p>No cards found for this selection!</p>');
       return;
     }
-    ReviewManager.session = new ReviewSession(cards, mode);
+    ReviewManager.session = new ReviewSession(cards, mode, languageMode);
 
     showView('review-session');
 
@@ -456,14 +456,8 @@ const ReviewManager = {
       if (forgotCount > 0) {
         // Render List Structure
         forgottenContainer.innerHTML = `
-            <div class="card-label" style="color: var(--danger-color)">Review These Words</div>
-            <div id="summary-forgotten-list" style="
-                width: 100%;
-                font-size: 1.1rem;
-                line-height: 1.6;
-                color: var(--text-main);
-                font-weight: 500;
-            "></div>
+            <div class="card-label">Review These Words</div>
+            <div id="summary-forgotten-list" class="summary-forgotten-text"></div>
         `;
         forgottenContainer.style.display = 'flex';
         forgottenContainer.style.justifyContent = 'flex-start';
@@ -483,9 +477,9 @@ const ReviewManager = {
       } else {
         // Render Congratulations
         forgottenContainer.innerHTML = `
-            <div style="width:100%; text-align:center; padding: 1rem 0;">
-                <h2 style="margin:0; font-size:1.5rem; color:var(--success-color);">Congratulations!</h2>
-                <p style="color:var(--text-muted); margin-top:0.5rem;">You remembered all words correctly.</p>
+            <div class="summary-message">
+                <h2>Congratulations!</h2>
+                <p>You remembered all words correctly.</p>
             </div>
         `;
         forgottenContainer.style.display = 'flex';
@@ -503,7 +497,7 @@ const ReviewManager = {
       // Or show popup "Partial success" etc if fail?
 
       try {
-        await DataService.batchUpdateStats(cardsToSave);
+        await DataService.batchUpdateStats(cardsToSave, session.languageMode);
         // console.log("Batch sync successful");
       } catch (e) {
         console.error('Batch sync failed', e);

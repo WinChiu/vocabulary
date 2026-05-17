@@ -17,7 +17,7 @@
       rel="stylesheet"
     />
     <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=1.16" />
+    <link rel="stylesheet" href="css/style.css?v=2.0" />
     <!-- Material Icons -->
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -34,12 +34,12 @@
       <main class="main-workspace">
         <!-- Login View -->
         <section id="login" class="view active">
-          <div class="bento-card max-w-400-center">
-            <div class="mb-2rem">
+          <div class="bento-card auth-card max-w-400-center">
+            <div class="auth-icon-shell">
               <span class="material-icons icon-login-large">lock_person</span>
             </div>
             <h1>Welcome</h1>
-            <p class="text-muted-mb-2rem">
+            <p class="supporting-text">
               Please sign in to access your vocabulary.
             </p>
             <button
@@ -58,6 +58,35 @@
 
         <!-- Dashboard View -->
         <section id="dashboard" class="view">
+          <div class="home-topbar">
+            <div>
+              <div class="eyebrow-text">Today</div>
+              <h1>Just Word</h1>
+            </div>
+            <div
+              class="language-mode-switch"
+              role="radiogroup"
+              aria-label="Learning language"
+            >
+              <button
+                type="button"
+                class="language-mode-option active"
+                data-language-mode="en"
+                aria-pressed="true"
+              >
+                English
+              </button>
+              <button
+                type="button"
+                class="language-mode-option"
+                data-language-mode="sv"
+                aria-pressed="false"
+              >
+                Swedish
+              </button>
+            </div>
+            <div class="profile-dot" aria-label="Profile">J</div>
+          </div>
           <div class="bento-grid full-height dashboard">
             <!-- Summary Stats -->
             <div
@@ -67,9 +96,7 @@
               <div class="card-label">Today Due</div>
               <div class="due-card-bottom-row">
                 <div class="due-stats-group">
-                  <div class="card-value card-value-large" id="due-count">
-                    0
-                  </div>
+                  <div class="card-value card-value-large" id="due-count">0</div>
                   <div class="due-breakdown-column">
                     <div class="due-breakdown-item">
                       Words: <b id="due-count-word">0</b>
@@ -79,9 +106,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="card-action-label" id="start-review-action">
+                <button class="card-action-label" id="start-review-action">
                   Loading...
-                </div>
+                </button>
               </div>
             </div>
 
@@ -120,10 +147,7 @@
         <!-- Words View -->
         <section id="words" class="view">
           <!-- Vocabulary List Section (Full Width) -->
-          <div
-            class="full-width-list-container vocab-section-container"
-            style="margin-top: 0"
-          >
+          <div class="full-width-list-container vocab-section-container">
             <div class="section-label section-header-label">
               <div class="filter-controls-flex">
                 <div class="search-box-custom">
@@ -135,20 +159,21 @@
                   />
                 </div>
                 <div class="filter-group-row">
-                  <select id="filter-status" class="vocab-select-pill">
+                  <select id="filter-status" class="vocab-select-pill" aria-label="Filter status">
                     <option value="all">All Status</option>
                     <option value="mastered">Mastered</option>
                     <option value="learning">Learning</option>
                     <option value="new">New</option>
                   </select>
 
-                  <select id="filter-type" class="vocab-select-pill">
+                  <select id="filter-type" class="vocab-select-pill" aria-label="Filter type">
                     <option value="word" selected>Word</option>
                     <option value="phrase">Phrase</option>
                   </select>
-
+                </div>
+                <div class="filter-action-row">
                   <!-- Starred Toggle -->
-                  <label class="toggle-switch" style="margin-bottom: 0">
+                  <label class="toggle-switch">
                     <span class="filter-label">Starred</span>
                     <input
                       type="checkbox"
@@ -159,6 +184,24 @@
                       <span class="toggle-thumb"></span>
                     </div>
                   </label>
+                  <div class="words-toolbar-actions">
+                    <button
+                      id="words-import-btn"
+                      class="btn btn-tonal words-action-btn"
+                      type="button"
+                    >
+                      <span class="material-icons">upload_file</span>
+                      <span class="words-action-label">Import</span>
+                    </button>
+                    <button
+                      id="words-add-btn"
+                      class="btn btn-primary words-action-btn"
+                      type="button"
+                    >
+                      <span class="material-icons">add</span>
+                      <span id="words-add-label" class="words-action-label">Add Word</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -184,71 +227,25 @@
               </button>
             </div>
           </div>
-          <!-- Fixed Navigation Bar (Mobile) -->
-          <!-- <div class="form-actions form-actions-fixed mobile-only">
-            <button
-              class="btn btn-tonal nav-btn btn-flex-grow-1"
-              data-target="import"
-            >
-              Import
-            </button>
-            <button
-              class="btn btn-tonal nav-btn btn-flex-grow-1"
-              data-target="add-card"
-            >
-              Add Card
-            </button>
-            <button
-              class="btn btn-primary nav-btn orange btn-flex-grow-2"
-              data-target="review-setup"
-            >
-              Start Review
-            </button>
-          </div> -->
         </section>
 
         <!-- Add Card View -->
         <section id="add-card" class="view">
-          <div
-            class="view-header-flex"
-            style="
-              display: grid;
-              grid-template-columns: 1fr auto 1fr;
-              align-items: center;
-              justify-items: center;
-            "
-          >
+          <div class="view-header-flex app-bar">
             <button
               id="btn-back-add-card"
-              class="btn btn-tonal btn-text"
-              style="justify-self: start"
+              class="icon-btn surface-icon-btn"
+              aria-label="Back"
             >
-              <img
-                src="assets/back.svg"
-                style="width: 32px; height: 32px"
-                alt="Back"
-              />
+              <span class="material-icons">arrow_back</span>
             </button>
-            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
-              Add New Word
-            </h1>
-            <button
-              class="btn btn-tonal btn-text"
-              id="btn-goto-import"
-              data-target="import"
-              style="justify-self: end"
-            >
-              <img
-                src="assets/import.svg"
-                style="width: 32px; height: 32px"
-                alt="Import"
-              />
-            </button>
+            <h1>Add New Word</h1>
+            <div class="app-bar-spacer"></div>
           </div>
           <div id="add-card-container" class="bento-card full-height">
             <form id="add-card-form">
               <div class="input-wrapper-flex">
-                <label for="word_en">English Word</label>
+                <label for="word_en" id="source-word-label">English Word</label>
                 <input
                   type="text"
                   id="word_en"
@@ -268,7 +265,7 @@
                 />
               </div>
               <div class="input-wrapper-flex">
-                <label>Example Sentences (Max 5)</label>
+                <label id="examples-field-label">Example Sentences (Max 5)</label>
                 <div id="examples-container" class="flex-col-gap">
                   <!-- Dynamic inputs will be added here -->
                 </div>
@@ -276,8 +273,8 @@
                   type="button"
                   id="add-example-btn"
                   class="btn btn-tonal btn-text"
-                  style="margin: 0.5rem 0rem"
                 >
+                  <span class="material-icons icon-sm">add</span>
                   Add Sentence
                 </button>
               </div>
@@ -326,39 +323,22 @@
 
         <!-- Import View -->
         <section id="import" class="view">
-          <div
-            class="view-header-flex"
-            style="
-              display: grid;
-              grid-template-columns: 1fr auto 1fr;
-              align-items: center;
-              justify-items: center;
-            "
-          >
+          <div class="view-header-flex app-bar">
             <button
               id="btn-back-import"
-              class="btn btn-tonal btn-text"
-              style="justify-self: start"
+              class="icon-btn surface-icon-btn"
+              aria-label="Back"
             >
-              <img
-                src="assets/back.svg"
-                style="width: 32px; height: 32px"
-                alt="Back"
-              />
+              <span class="material-icons">arrow_back</span>
             </button>
-            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
-              Import Words
-            </h1>
+            <h1 id="import-title">Import Words</h1>
             <!-- Empty element for grid balance -->
-            <div style="width: 40px"></div>
+            <div class="app-bar-spacer"></div>
           </div>
-          <div class="bento-card full-height" style="padding: 0rem">
-            <div
-              id="import-file-section"
-              style="padding: 1.5rem 1.5rem 0rem 1.5rem"
-            >
+          <div class="bento-card full-height import-card">
+            <div id="import-file-section">
               <div class="section-label">Select CSV File</div>
-              <div class="form-group" style="margin-bottom: 0rem">
+              <div class="form-group">
                 <input
                   type="file"
                   id="csv-file-input"
@@ -369,10 +349,7 @@
             </div>
 
             <div id="import-preview" class="hidden">
-              <div
-                class="section-label"
-                style="padding: 1.5rem 1.5rem 0rem 1.5rem"
-              >
+              <div class="section-label import-preview-label">
                 Data Preview
               </div>
               <div id="preview-list" class="preview-list-container">
@@ -394,31 +371,17 @@
 
         <!-- Review Configuration View -->
         <section id="review-setup" class="view">
-          <div
-            class="view-header-flex"
-            style="
-              display: grid;
-              grid-template-columns: 1fr auto 1fr;
-              align-items: center;
-              justify-items: center;
-            "
-          >
+          <div class="view-header-flex app-bar">
             <button
               id="btn-back-review-setup"
-              class="btn btn-tonal btn-text"
-              style="justify-self: start"
+              class="icon-btn surface-icon-btn"
+              aria-label="Back"
             >
-              <img
-                src="assets/back.svg"
-                style="width: 32px; height: 32px"
-                alt="Back"
-              />
+              <span class="material-icons">arrow_back</span>
             </button>
-            <h1 style="margin: 0; font-size: 1.5rem; text-align: center">
-              Review Session
-            </h1>
+            <h1>Review Session</h1>
             <!-- Empty element for grid balance -->
-            <div style="width: 40px"></div>
+            <div class="app-bar-spacer"></div>
           </div>
           <div id="review-session-setup" class="bento-card full-height">
             <form id="review-setup-form">
@@ -497,13 +460,13 @@
                     </span>
                   </label>
                   <label class="checkbox-label-text" for="review-due-only">
-                    Due Only -
+                    Due Only&nbsp;-&nbsp;
                     <span
                       id="due-count-badge"
                       class="font-bold text-accent-orange"
                       >0</span
                     >
-                    cards
+                    &nbsp;cards
                   </label>
                 </div>
               </div>
@@ -519,7 +482,7 @@
                       checked
                     />
                     <div class="mode-title">
-                      <span>Flip Card (EN)</span>
+                      <span id="mode-flip-source-label">Flip Card (EN)</span>
                     </div>
                   </label>
                   <label class="mode-option">
@@ -571,32 +534,19 @@
         </section>
 
         <section id="review-session" class="view">
-          <div
-            class="view-header-flex"
-            style="
-              display: grid;
-              grid-template-columns: 1fr auto 1fr;
-              align-items: center;
-              justify-items: center;
-            "
-          >
+          <div class="view-header-flex app-bar">
             <button
               id="exit-review-btn"
-              class="btn btn-tonal btn-text"
-              style="justify-self: start; padding: 0"
+              class="icon-btn surface-icon-btn"
+              aria-label="Exit Session"
             >
-              <img
-                src="assets/back.svg"
-                style="width: 32px; height: 32px"
-                alt="Exit Session"
-              />
+              <span class="material-icons">arrow_back</span>
             </button>
             <!-- Empty center -->
             <div></div>
             <div
               id="review-progress"
               class="review-progress-text"
-              style="justify-self: end"
             >
               0 / 0
             </div>
@@ -651,13 +601,10 @@
 
         <!-- Review Summary View -->
         <section id="review-summary" class="view">
-          <div class="view-header-flex" style="justify-content: center">
-            <h1 style="text-align: center">Review Summary</h1>
+          <div class="view-header-flex app-bar app-bar-centered">
+            <h1>Review Summary</h1>
           </div>
-          <div
-            class="bento-grid full-height"
-            style="grid-template-rows: auto 1fr"
-          >
+          <div class="bento-grid full-height summary-grid">
             <div class="bento-card col-12 green" id="summary-status-card">
               <div class="card-label">Result</div>
               <div class="flex-fill-bottom">
@@ -670,32 +617,21 @@
             <div
               class="bento-card col-12 white"
               id="summary-forgotten-container"
-              style="
-                display: none;
-                height: 100%;
-                min-height: 0;
-                padding: 1.5rem;
-                justify-content: flex-start;
-                gap: 1rem;
-              "
             >
-              <div class="card-label" style="color: var(--text-main)">
-                Review These Words
-              </div>
+              <div class="card-label">Review These Words</div>
               <div
                 id="summary-forgotten-list"
                 class="vocab-list-modern"
-                style="box-shadow: none; width: 100%; overflow-y: scroll"
               >
                 <!-- Items injected here -->
               </div>
             </div>
 
             <!-- Spacer for visual balance if list is empty or short -->
-            <div style="height: 60px"></div>
+            <div class="summary-spacer"></div>
           </div>
 
-          <div class="form-actions form-actions-fixed" style="border: none">
+          <div class="form-actions form-actions-fixed">
             <button
               class="btn btn-primary nav-btn btn-full-width"
               data-target="dashboard"
@@ -707,127 +643,64 @@
 
         <!-- Card Preview View -->
         <section id="card-preview" class="view">
-          <div
-            class="view-header-flex"
-            style="
-              display: grid;
-              grid-template-columns: 1fr auto 1fr;
-              align-items: center;
-              justify-items: center;
-            "
-          >
+          <div class="view-header-flex app-bar">
             <button
               id="btn-back-card-preview"
-              class="btn btn-tonal btn-text"
-              style="justify-self: start"
+              class="icon-btn surface-icon-btn"
+              aria-label="Back"
             >
-              <img
-                src="assets/back.svg"
-                style="width: 32px; height: 32px"
-                alt="Back"
-              />
+              <span class="material-icons">arrow_back</span>
             </button>
             <!-- No Title as requested -->
             <div></div>
             <!-- Empty right side -->
-            <!-- Audio Button (Right) -->
-            <button
-              id="preview-audio-btn"
-              class="icon-btn"
-              style="opacity: 0.3; cursor: default; justify-self: end"
-              disabled
-            >
-              <img
-                src="assets/audio-off.svg"
-                alt="Audio"
-                style="width: 32px; height: 32px"
-              />
-            </button>
+            <div class="preview-top-actions">
+              <button
+                id="preview-audio-btn"
+                class="icon-btn surface-icon-btn preview-audio-btn"
+                disabled
+                aria-label="Audio"
+              >
+                <span class="material-icons">volume_off</span>
+              </button>
+              <button class="icon-btn preview-star-btn surface-icon-btn" aria-label="Star">
+                <img
+                  src="assets/star.svg"
+                  class="action-icon"
+                  alt="star"
+                />
+              </button>
+              <button class="icon-btn preview-edit-btn surface-icon-btn" aria-label="Edit">
+                <span class="material-icons">edit</span>
+              </button>
+              <button class="icon-btn preview-delete-btn surface-icon-btn danger-icon-btn" aria-label="Delete">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
           </div>
           <div
             id="card-preview-container"
             class="bento-card full-height"
-            style="text-align: center; position: relative; overflow-y: auto"
           >
             <!-- Content injected here -->
           </div>
 
           <!-- Footer Actions -->
           <div id="card-preview-footer" class="form-actions form-actions-fixed">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-                align-items: center;
-              "
-            >
-              <!-- Left: Actions (Star, Edit, Delete) -->
-              <div style="display: flex; gap: 0.5rem">
-                <button
-                  class="icon-btn preview-star-btn"
-                  style="padding: 12px; border-radius: 50%"
-                >
-                  <img
-                    src="assets/star.svg"
-                    class="action-icon"
-                    style="width: 24px; height: 24px"
-                    alt="star"
-                  />
-                </button>
-                <button
-                  class="icon-btn preview-edit-btn"
-                  style="padding: 12px; border-radius: 50%"
-                >
-                  <img
-                    src="assets/edit.svg"
-                    class="action-icon"
-                    style="width: 24px; height: 24px"
-                    alt="edit"
-                  />
-                </button>
-                <button
-                  class="icon-btn preview-delete-btn"
-                  style="padding: 12px; border-radius: 50%"
-                >
-                  <img
-                    src="assets/trash.svg"
-                    class="action-icon"
-                    style="width: 24px; height: 24px"
-                    alt="delete"
-                  />
-                </button>
-              </div>
-
+            <div class="preview-footer-content">
               <!-- Right: Navigation -->
-              <div style="display: flex; gap: 0.5rem">
+              <div class="preview-footer-actions preview-nav-actions">
                 <button
-                  class="btn btn-tonal"
+                  class="btn btn-tonal btn-icon-round"
                   id="preview-prev-btn"
-                  style="
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 50%;
-                    padding: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                  "
+                  aria-label="Previous"
                 >
                   <span class="material-icons">chevron_left</span>
                 </button>
                 <button
-                  class="btn btn-primary"
+                  class="btn btn-primary btn-icon-round"
                   id="preview-next-btn"
-                  style="
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 50%;
-                    padding: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                  "
+                  aria-label="Next"
                 >
                   <span class="material-icons">chevron_right</span>
                 </button>
@@ -840,48 +713,23 @@
         <div id="bottom-nav-container" class="hidden">
           <!-- Pill Navigation (Left) -->
           <div id="nav-pill">
-            <div class="nav-item active" data-target="dashboard">
-              <img
-                src="assets/layout-dashboard-filled.svg"
-                alt="Dashboard"
-                class="nav-icon"
-                data-icon-default="assets/layout-dashboard.svg"
-                data-icon-active="assets/layout-dashboard-filled.svg"
-              />
+            <div class="nav-item active" data-target="dashboard" aria-label="Dashboard">
+              <span class="material-icons nav-icon">dashboard</span>
+              <span class="nav-label">Dashboard</span>
             </div>
-            <div class="nav-item" data-target="words">
-              <img
-                src="assets/word-list.svg"
-                alt="Words"
-                class="nav-icon"
-                data-icon-default="assets/word-list.svg"
-                data-icon-active="assets/word-list-fill.svg"
-              />
+            <div class="nav-item" data-target="words" aria-label="Words">
+              <span class="material-icons nav-icon">format_list_bulleted</span>
+              <span class="nav-label">Words</span>
             </div>
-          </div>
-
-          <!-- FAB Container (Right) -->
-          <div id="fab-container">
-            <!-- Review FAB (Visible on Dashboard) -->
-            <button
-              id="fab-review"
-              class="fab-btn orange-btn hidden"
-              data-target="review-setup"
-            >
-              <img src="assets/start-session.svg" alt="Start Review" />
-            </button>
-            <!-- Add FAB (Visible on Words) -->
-            <button
-              id="fab-add-card"
-              class="fab-btn orange-btn hidden"
-              data-target="add-card"
-            >
-              <img src="assets/add-card.svg" alt="Add Card" />
-            </button>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Material Web Components (pinned ESM CDN) -->
+    <script type="module">
+      import 'https://esm.sh/@material/web@2.3.0/button/filled-button.js?bundle';
+    </script>
 
     <!-- Scripts (Type Module) -->
     <script type="module" src="js/app.js"></script>

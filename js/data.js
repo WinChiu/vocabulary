@@ -13,8 +13,12 @@ import {
   getDoc,
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
+import { getLanguageConfig, normalizeLanguageMode } from './language.js';
 
-const COLLECTION_NAME = 'cards';
+let currentLanguageMode = 'en';
+
+const getCollectionName = (languageMode = currentLanguageMode) =>
+  getLanguageConfig(languageMode).collection;
 
 const INITIAL_STATS = () => ({
   state: 'NEW', // NEW, LEARNING, MASTERED
@@ -169,11 +173,18 @@ export const calculateNextReviewStats = (
 };
 
 const DataService = {
+  setLanguageMode: (languageMode) => {
+    currentLanguageMode = normalizeLanguageMode(languageMode);
+  },
+
+  getLanguageMode: () => currentLanguageMode,
+
   // Add a single card
-  addCard: async (card) => {
+  addCard: async (card, languageMode) => {
     try {
+      const collectionName = getCollectionName(languageMode);
       const docRef = await callWithTimeout(
-        addDoc(collection(db, COLLECTION_NAME), {
+        addDoc(collection(db, collectionName), {
           ...card,
           is_starred: card.is_starred || false,
           created_at: serverTimestamp(),
@@ -189,10 +200,11 @@ const DataService = {
   },
 
   // Get all cards (single fetch)
-  fetchCards: async () => {
+  fetchCards: async (languageMode) => {
     try {
+      const collectionName = getCollectionName(languageMode);
       const q = query(
-        collection(db, COLLECTION_NAME),
+        collection(db, collectionName),
         orderBy('created_at', 'desc')
       );
       // Using getDocs (One-time fetch), NOT onSnapshot
@@ -210,9 +222,9 @@ const DataService = {
   },
 
   // Toggle star status
-  toggleStar: async (id, currentStatus) => {
+  toggleStar: async (id, currentStatus, languageMode) => {
     try {
-      const cardRef = doc(db, COLLECTION_NAME, id);
+      const cardRef = doc(db, getCollectionName(languageMode), id);
       await updateDoc(cardRef, {
         is_starred: !currentStatus,
         updated_at: serverTimestamp(),
@@ -225,9 +237,9 @@ const DataService = {
   },
 
   // Update card details
-  updateCard: async (id, cardData) => {
+  updateCard: async (id, cardData, languageMode) => {
     try {
-      const cardRef = doc(db, COLLECTION_NAME, id);
+      const cardRef = doc(db, getCollectionName(languageMode), id);
       await updateDoc(cardRef, {
         word_en: cardData.word_en,
         meaning_zh: cardData.meaning_zh,
@@ -242,9 +254,9 @@ const DataService = {
   },
 
   // Delete a card
-  deleteCard: async (id) => {
+  deleteCard: async (id, languageMode) => {
     try {
-      await callWithTimeout(deleteDoc(doc(db, COLLECTION_NAME, id)));
+      await callWithTimeout(deleteDoc(doc(db, getCollectionName(languageMode), id)));
     } catch (error) {
       console.error('Error deleting card: ', error);
       throw error;
@@ -252,9 +264,10 @@ const DataService = {
   },
 
   // Batch Add (for Import)
-  batchAddCards: async (cards) => {
+  batchAddCards: async (cards, languageMode) => {
     let totalCount = 0;
     const CHUNK_SIZE = 450; // Firestore limit is 500
+    const collectionName = getCollectionName(languageMode);
 
     for (let i = 0; i < cards.length; i += CHUNK_SIZE) {
       const batch = writeBatch(db);
@@ -262,7 +275,7 @@ const DataService = {
 
       chunk.forEach((card) => {
         if (!card.word_en || !card.meaning_zh) return;
-        const docRef = doc(collection(db, COLLECTION_NAME));
+        const docRef = doc(collection(db, collectionName));
         batch.set(docRef, {
           word_en: String(card.word_en).trim(),
           meaning_zh: String(card.meaning_zh).trim(),
@@ -285,16 +298,17 @@ const DataService = {
   },
 
   // Batch Update Stats (New)
-  batchUpdateStats: async (cards) => {
+  batchUpdateStats: async (cards, languageMode) => {
     let totalCount = 0;
     const CHUNK_SIZE = 450;
+    const collectionName = getCollectionName(languageMode);
 
     for (let i = 0; i < cards.length; i += CHUNK_SIZE) {
       const batch = writeBatch(db);
       const chunk = cards.slice(i, i + CHUNK_SIZE);
 
       chunk.forEach((card) => {
-        const docRef = doc(db, COLLECTION_NAME, card.id);
+        const docRef = doc(db, collectionName, card.id);
         // We only update review_stats and updated_at
         batch.update(docRef, {
           review_stats: card.review_stats,

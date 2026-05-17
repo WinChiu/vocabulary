@@ -43,7 +43,7 @@ export const showPopup = (title, content, options = {}) => {
 
   contentArea.innerHTML = `
         <div class="modal-header">
-            <h2 style="font-size: 1.25rem; font-weight: 800; letter-spacing:-0.02em;">${title}</h2>
+            <h2>${title}</h2>
             ${
               showClose
                 ? `<button class="modal-close-btn" id="modal-close-x"><span class="material-icons">close</span></button>`
@@ -105,28 +105,6 @@ export const showView = (viewId) => {
     el.classList.add('active');
   });
 
-  // Icon Swapping Logic for Bottom Nav
-  $$('.nav-item').forEach((el) => {
-    const icon = el.querySelector('.nav-icon');
-    if (icon && icon.dataset.iconDefault && icon.dataset.iconActive) {
-      if (el.classList.contains('active')) {
-        icon.src = icon.dataset.iconActive;
-      } else {
-        icon.src = icon.dataset.iconDefault;
-      }
-    }
-  });
-
-  // Dashboard specific: hide mobile bottom actions
-  const mobileActions = $('#mobile-bottom-actions');
-  if (mobileActions) {
-    if (viewId === 'dashboard') {
-      mobileActions.classList.add('hidden');
-    } else {
-      mobileActions.classList.remove('hidden');
-    }
-  }
-
   // Toggle Main Nav visibility (Only show on Dashboard & Words)
   const bottomNav = $('#bottom-nav-container');
   if (bottomNav) {
@@ -135,19 +113,6 @@ export const showView = (viewId) => {
     } else {
       bottomNav.classList.add('hidden');
     }
-  }
-
-  // Context FAB Logic
-  const fabReview = $('#fab-review');
-  const fabAdd = $('#fab-add-card');
-
-  if (fabReview) fabReview.classList.add('hidden');
-  if (fabAdd) fabAdd.classList.add('hidden');
-
-  if (viewId === 'dashboard' && fabReview) {
-    fabReview.classList.remove('hidden');
-  } else if (viewId === 'words' && fabAdd) {
-    fabAdd.classList.remove('hidden');
   }
 };
 

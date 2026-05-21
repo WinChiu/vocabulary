@@ -186,6 +186,7 @@ const DataService = {
       const docRef = await callWithTimeout(
         addDoc(collection(db, collectionName), {
           ...card,
+          note: card.note || '',
           is_starred: card.is_starred || false,
           created_at: serverTimestamp(),
           updated_at: serverTimestamp(),
@@ -243,6 +244,7 @@ const DataService = {
       await updateDoc(cardRef, {
         word_en: cardData.word_en,
         meaning_zh: cardData.meaning_zh,
+        note: cardData.note || '',
         example_en: cardData.example_en,
         is_starred: cardData.is_starred,
         updated_at: serverTimestamp(),
@@ -279,6 +281,7 @@ const DataService = {
         batch.set(docRef, {
           word_en: String(card.word_en).trim(),
           meaning_zh: String(card.meaning_zh).trim(),
+          note: String(card.note || '').trim(),
           example_en: Array.isArray(card.example_en)
             ? card.example_en
             : [String(card.example_en || '').trim()].filter(Boolean),

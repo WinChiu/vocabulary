@@ -216,7 +216,7 @@ class ReviewSession {
                            <div class="content cloze-content">${sentence.replace(
                              regex,
                              (match) =>
-                               `<input type="text" class="cloze-input error" value="${match}" disabled style="width:${match.length}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
+                               `<input type="text" class="cloze-input error" value="${match}" disabled size="${Math.max(match.length, 4)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
                            )}</div>
                         </div>
                     `;
@@ -236,7 +236,7 @@ class ReviewSession {
                                 ? sentence.replace(
                                     regex,
                                     (match) =>
-                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:${match.length}ch" >`
+                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(match.length, 4)}">`
                                   )
                                 : sentence +
                                   `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type word..." >`

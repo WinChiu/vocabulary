@@ -34,10 +34,56 @@ const App = {
   editingCardId: null, // Track editing state
   currentPreviewId: null, // Track current preview card
   currentLanguageMode: normalizeLanguageMode(
-    localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en'
+    localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en',
   ),
 
   getLanguageConfig: () => getLanguageConfig(App.currentLanguageMode),
+
+  getControlValue: (selector, fallback = '') => {
+    const el = typeof selector === 'string' ? $(selector) : selector;
+    return el && typeof el.value !== 'undefined' ? el.value : fallback;
+  },
+
+  setControlValue: (selector, value = '') => {
+    const el = typeof selector === 'string' ? $(selector) : selector;
+    if (el && typeof el.value !== 'undefined') el.value = value;
+  },
+
+  getControlChecked: (selector) => {
+    const el = typeof selector === 'string' ? $(selector) : selector;
+    if (!el) return false;
+    if (typeof el.selected !== 'undefined') return Boolean(el.selected);
+    if (typeof el.checked !== 'undefined') return Boolean(el.checked);
+    return false;
+  },
+
+  setControlChecked: (selector, checked) => {
+    const el = typeof selector === 'string' ? $(selector) : selector;
+    if (!el) return;
+    if (typeof el.selected !== 'undefined') el.selected = checked;
+    if (typeof el.checked !== 'undefined') el.checked = checked;
+    el.toggleAttribute('selected', Boolean(checked));
+    el.toggleAttribute('checked', Boolean(checked));
+  },
+
+  getSelectedReviewMode: () => {
+    const selected = Array.from($$('.mode-option')).find((el) =>
+      el.classList.contains('active'),
+    );
+    return selected ? selected.dataset.value : '1';
+  },
+
+  setSelectedReviewMode: (mode) => {
+    $$('.mode-option').forEach((el) => {
+      const isSelected = el.dataset.value === String(mode);
+      el.classList.toggle('active', isSelected);
+    });
+  },
+
+  setButtonText: (selector, text) => {
+    const el = typeof selector === 'string' ? $(selector) : selector;
+    if (el) el.textContent = text;
+  },
 
   applyLanguageCopy: () => {
     const config = App.getLanguageConfig();
@@ -55,7 +101,10 @@ const App = {
     if (sourceLabel) sourceLabel.textContent = config.sourceLabel;
 
     const sourceInput = $('#word_en');
-    if (sourceInput) sourceInput.placeholder = config.sourcePlaceholder;
+    if (sourceInput) {
+      sourceInput.label = config.sourceLabel;
+      sourceInput.placeholder = config.sourcePlaceholder;
+    }
 
     const examplesLabel = $('#examples-field-label');
     if (examplesLabel)
@@ -67,7 +116,7 @@ const App = {
     });
 
     const searchInput = $('#search-input');
-    if (searchInput) searchInput.placeholder = config.searchPlaceholder;
+    if (searchInput) searchInput.label = config.searchPlaceholder;
 
     const importTitle = $('#import-title');
     if (importTitle) importTitle.textContent = config.importTitle;
@@ -82,7 +131,7 @@ const App = {
     if (!App.editingCardId) {
       const addTitle = $('#add-card .view-header-flex h1');
       if (addTitle) addTitle.textContent = config.addTitle;
-      const submitBtn = $('button[form="add-card-form"]');
+      const submitBtn = $('#save-card-btn');
       if (submitBtn && submitBtn.textContent !== 'Saving...') {
         submitBtn.textContent = 'Save Card';
       }
@@ -96,14 +145,14 @@ const App = {
     if (ReviewManager.session) {
       showPopup(
         'Review in Progress',
-        '<p>Please exit the current review session before switching language mode.</p>'
+        '<p>Please exit the current review session before switching language mode.</p>',
       );
       App.applyLanguageCopy();
       return;
     }
 
     const activeView = Array.from($$('.view')).find((view) =>
-      view.classList.contains('active')
+      view.classList.contains('active'),
     );
     const activeViewId = activeView ? activeView.id : 'dashboard';
     const shouldStay = activeViewId === 'dashboard' || activeViewId === 'words';
@@ -154,7 +203,7 @@ const App = {
     if (inputs.length >= 5) {
       showPopup(
         'Limit Reached',
-        'You can include at most 5 example sentences.'
+        'You can include at most 5 example sentences.',
       );
       return;
     }
@@ -162,17 +211,20 @@ const App = {
     const div = document.createElement('div');
     div.className = 'example-row';
     div.innerHTML = `
-      <textarea
+      <md-outlined-text-field
+        type="textarea"
         rows="2"
         placeholder="${config.examplePlaceholder}"
-        class="input-pill example-input"
-      >${value}</textarea>
-      ${`<button type="button" class="btn-remove-example">
-           <span class="material-icons icon-sm">close</span>
-         </button>`}
+        class="example-input"
+      ></md-outlined-text-field>
+      ${`<md-icon-button type="button" class="btn-remove-example" aria-label="Remove example">
+           <md-icon>close</md-icon>
+         </md-icon-button>`}
     `;
 
     container.appendChild(div);
+    const field = div.querySelector('.example-input');
+    if (field) field.value = value;
     App.updateExampleButtons();
   },
 
@@ -197,12 +249,16 @@ const App = {
   prepareAddCardForm: () => {
     const config = App.getLanguageConfig();
     $('#add-card-form').reset();
+    App.setControlValue('#word_en', '');
+    App.setControlValue('#meaning_zh', '');
+    App.setControlValue('#note', '');
+    App.setControlChecked('#is_starred', false);
     $('#examples-container').innerHTML = '';
     App.addExampleInput();
 
     App.editingCardId = null;
     $('#add-card .view-header-flex h1').textContent = config.addTitle;
-    $('button[form="add-card-form"]').textContent = 'Save Card';
+    App.setButtonText('#save-card-btn', 'Save Card');
     App.applyLanguageCopy();
   },
 
@@ -270,7 +326,7 @@ const App = {
         await signOut(auth);
         showPopup(
           'Access Denied',
-          `<p>The account <b>${email}</b> is not authorized to access this database.</p><p class="modal-note">Server Rejected Request.</p>`
+          `<p>The account <b>${email}</b> is not authorized to access this database.</p><p class="modal-note">Server Rejected Request.</p>`,
         );
         showView('login');
         return;
@@ -278,7 +334,7 @@ const App = {
 
       showPopup(
         'Network Error',
-        `<p>Could not load cards. Details: <br><b>${e.message}</b></p>`
+        `<p>Could not load cards. Details: <br><b>${e.message}</b></p>`,
       );
     } finally {
       if (workspace) {
@@ -290,9 +346,9 @@ const App = {
   },
 
   updateDueCount: () => {
-    const scope = $('select[name="scope"]').value; // 'all' or 'starred'
-    const statusFilter = $('select[name="status"]').value; // 'all', 'new', 'learning', 'mastered'
-    const typeFilter = $('select[name="type"]').value; // 'word' or 'phrase'
+    const scope = App.getControlValue('#review-scope', 'all'); // 'all' or 'starred'
+    const statusFilter = App.getControlValue('#review-status', 'all'); // 'all', 'new', 'learning', 'mastered'
+    const typeFilter = App.getControlValue('#review-setup-type', 'word'); // 'word' or 'phrase'
     const now = new Date();
 
     let baseCards = [...App.allCards];
@@ -384,12 +440,8 @@ const App = {
       if (!reviewView || !reviewView.classList.contains('active')) return;
 
       // Ensure NO Modal is Open (prevent accidental skips when confirming exit)
-      const overlay = $('#modal-overlay');
-      if (
-        overlay &&
-        overlay.style.display &&
-        overlay.style.display !== 'none'
-      ) {
+      const dialog = $('#modal-dialog');
+      if (dialog && dialog.open) {
         return;
       }
 
@@ -480,12 +532,12 @@ const App = {
     }
 
     // Handle Review Scope Filter Change
-    on($('select[name="scope"]'), 'change', () => {
+    on($('#review-scope'), 'change', () => {
       App.updateDueCount();
     });
 
     // Handle Review Status Filter Change (For Due Count Update)
-    on($('select[name="status"]'), 'change', () => {
+    on($('#review-status'), 'change', () => {
       App.updateDueCount();
     });
 
@@ -497,18 +549,16 @@ const App = {
         App.updateDueCount();
 
         // 2. Cloze Logic
-        const isPhrase = reviewTypeSelect.value === 'phrase';
+        const isPhrase = App.getControlValue(reviewTypeSelect) === 'phrase';
         const clozeLabel = $('#grade-mode-cloze');
-        const clozeInput = clozeLabel.querySelector('input');
+        const clozeInput = clozeLabel.querySelector('md-radio');
 
         if (isPhrase) {
           clozeLabel.style.opacity = '0.5';
           clozeLabel.style.pointerEvents = 'none';
-          if (clozeInput.checked) {
+          if (App.getControlChecked(clozeInput)) {
             // Switch to Flip EN if Cloze was selected
-            document.querySelector(
-              'input[name="mode"][value="1"]'
-            ).checked = true;
+            App.setSelectedReviewMode('1');
           }
         } else {
           clozeLabel.style.opacity = '1';
@@ -545,6 +595,15 @@ const App = {
     on($('#filter-status'), 'change', resetPage);
     on($('#filter-type'), 'change', resetPage);
 
+    $$('.mode-option').forEach((option) => {
+      on(option, 'click', () => {
+        const radio = option.querySelector('md-radio');
+        if (radio && !option.style.pointerEvents) {
+          App.setSelectedReviewMode(radio.value);
+        }
+      });
+    });
+
     // Cancel buttons
     $$('.cancel-nav').forEach((btn) => {
       on(btn, 'click', () => showView('dashboard'));
@@ -554,7 +613,7 @@ const App = {
     on($('#add-card-form'), 'submit', async (e) => {
       e.preventDefault();
       const config = App.getLanguageConfig();
-      const btn = document.querySelector('button[form="add-card-form"]');
+      const btn = $('#save-card-btn');
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
@@ -565,22 +624,32 @@ const App = {
         .filter((text) => text.length > 0);
 
       const card = {
-        word_en: $('#word_en').value.trim(),
-        meaning_zh: $('#meaning_zh').value.trim(),
+        word_en: App.getControlValue('#word_en').trim(),
+        meaning_zh: App.getControlValue('#meaning_zh').trim(),
+        note: App.getControlValue('#note').trim(),
         example_en: examples.length > 0 ? examples : [], // Data service will validate or we rely on required input
-        is_starred: $('#is_starred').checked,
+        is_starred: App.getControlChecked('#is_starred'),
       };
+
+      if (!card.word_en || !card.meaning_zh) {
+        showPopup(
+          'Missing Info',
+          '<p>Please enter both the word and Chinese meaning.</p>',
+        );
+        btn.disabled = false;
+        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
+        return;
+      }
 
       if (card.example_en.length === 0) {
         showPopup(
           'Missing Info',
-          `<p>Please add at least one ${config.exampleLabel.toLowerCase().replace(
-            /s$/,
-            ''
-          )}.</p>`
+          `<p>Please add at least one ${config.exampleLabel
+            .toLowerCase()
+            .replace(/s$/, '')}.</p>`,
         );
         btn.disabled = false;
-        btn.textContent = 'Save Card';
+        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
         return;
       }
 
@@ -594,10 +663,10 @@ const App = {
         showPopup(
           `Duplicate ${config.sourceLabel}`,
           `<p>The word "<b>${card.word_en}</b>" is already in your vocabulary list.</p>`,
-          true
+          true,
         );
         btn.disabled = false;
-        btn.textContent = 'Save Card';
+        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
         return;
       }
 
@@ -607,7 +676,7 @@ const App = {
           await DataService.updateCard(
             App.editingCardId,
             card,
-            App.currentLanguageMode
+            App.currentLanguageMode,
           );
           showPopup('Updated!', '<p>Card updated successfully.</p>', true);
         } else {
@@ -616,11 +685,12 @@ const App = {
           showPopup(
             'Saved!',
             '<p>New vocabulary card added successfully.</p>',
-            true
+            true,
           );
         }
 
         e.target.reset();
+        App.setControlValue('#note', '');
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
         App.editingCardId = null; // Reset state
@@ -656,7 +726,7 @@ const App = {
     if (listContainer) {
       on(listContainer, 'click', (e) => {
         // 1. Handle Action Buttons (Star, Delete)
-        const btn = e.target.closest('button');
+        const btn = e.target.closest('button, md-icon-button');
         if (btn) {
           const itemEl = btn.closest('.vocab-row, .vocab-card-modern');
           if (!itemEl) return;
@@ -709,25 +779,34 @@ const App = {
     // Start Review Button (Global, e.g. in FAB now)
     on($('#start-review-action'), 'click', (e) => {
       e.stopPropagation();
+      if (e.currentTarget.disabled) return;
       showView('review-setup');
       App.updateDueCount();
     });
     on($('#card-due-container'), 'click', () => {
+      if ($('#start-review-action')?.disabled) return;
       showView('review-setup');
       App.updateDueCount();
+    });
+
+    // Mode Selection Click Handlers
+    $$('.mode-option').forEach((el) => {
+      on(el, 'click', () => {
+        $$('.mode-option').forEach((opt) => opt.classList.remove('active'));
+        el.classList.add('active');
+      });
     });
 
     // Review Setup Start
     on($('#review-setup-form'), 'submit', (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const scope = formData.get('scope'); // 'all' or 'starred'
-      const mode = formData.get('mode');
-      const limit = parseInt(formData.get('limit') || '10', 10);
+      const scope = App.getControlValue('#review-scope', 'all');
+      const mode = App.getSelectedReviewMode();
+      const limit = parseInt(App.getControlValue('#review-limit', '10'), 10);
 
-      const dueOnly = formData.get('dueOnly') === 'on';
-      const type = formData.get('type') || 'word';
-      const status = formData.get('status') || 'all';
+      const dueOnly = App.getControlChecked('#review-due-only');
+      const type = App.getControlValue('#review-setup-type', 'word');
+      const status = App.getControlValue('#review-status', 'all');
 
       let cardsToReview = [...App.allCards];
 
@@ -844,6 +923,14 @@ const App = {
               ) {
                 newRow.meaning_zh = row[key];
               } else if (
+                lowKey === 'note' ||
+                lowKey === 'notes' ||
+                lowKey.includes('note') ||
+                lowKey === '備註' ||
+                lowKey === '筆記'
+              ) {
+                newRow.note = row[key];
+              } else if (
                 lowKey.includes('example') ||
                 lowKey.includes('sentence') ||
                 lowKey.includes('例句')
@@ -875,7 +962,7 @@ const App = {
           if (confirmBtn) confirmBtn.disabled = true;
           showPopup(
             'Notification',
-            `<p>Failed to parse file. Please ensure it is a valid CSV.</p>`
+            `<p>Failed to parse file. Please ensure it is a valid CSV.</p>`,
           );
         }
       };
@@ -891,7 +978,7 @@ const App = {
       try {
         // Duplicate Check for Import
         const existingWords = new Set(
-          App.allCards.map((c) => c.word_en.toLowerCase())
+          App.allCards.map((c) => c.word_en.toLowerCase()),
         );
         const uniqueToImport = [];
         let duplicateCount = 0;
@@ -910,14 +997,14 @@ const App = {
         if (uniqueToImport.length === 0) {
           showPopup(
             'Import Result',
-            `<p>No new cards were added. All <b>${duplicateCount}</b> items in the file are already in your list.</p>`
+            `<p>No new cards were added. All <b>${duplicateCount}</b> items in the file are already in your list.</p>`,
           );
           return;
         }
 
         const count = await DataService.batchAddCards(
           uniqueToImport,
-          App.currentLanguageMode
+          App.currentLanguageMode,
         );
         await App.refreshData();
 
@@ -931,7 +1018,7 @@ const App = {
         console.error('Import process failed:', error);
         showPopup(
           'Import Error',
-          '<p>The import might have failed due to network issues.</p>'
+          '<p>The import might have failed due to network issues.</p>',
         );
       } finally {
         btn.disabled = false;
@@ -956,7 +1043,7 @@ const App = {
           },
           confirmText: 'Exit',
           cancelText: 'Stay',
-        }
+        },
       );
     });
 
@@ -1021,9 +1108,10 @@ const App = {
     const config = App.getLanguageConfig();
 
     // Populate Form
-    $('#word_en').value = card.word_en;
-    $('#meaning_zh').value = card.meaning_zh;
-    $('#is_starred').checked = card.is_starred;
+    App.setControlValue('#word_en', card.word_en);
+    App.setControlValue('#meaning_zh', card.meaning_zh);
+    App.setControlValue('#note', card.note || '');
+    App.setControlChecked('#is_starred', card.is_starred);
 
     // Populate Examples
     $('#examples-container').innerHTML = '';
@@ -1040,8 +1128,7 @@ const App = {
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
     document.querySelector('#add-card .view-header-flex h1').textContent =
       config.editTitle;
-    document.querySelector('button[form="add-card-form"]').textContent =
-      'Update Word';
+    App.setButtonText('#save-card-btn', 'Update Word');
 
     showView('add-card');
   },
@@ -1174,10 +1261,12 @@ const App = {
       if (dueTotal === 0) {
         elDueCard.classList.remove('orange');
         elDueCard.classList.add('green');
+        elDueCard.classList.add('is-complete');
         elActionLabel.textContent = 'Well Done!';
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');
+        elDueCard.classList.remove('is-complete');
         elActionLabel.textContent = "Let's start!";
       }
     }
@@ -1187,9 +1276,11 @@ const App = {
     if (!container) return; // Fallback if view not active
 
     // Get filter values
-    const showStarredOnly = $('#filter-starred-only').checked;
-    const searchQuery = $('#search-input').value.toLowerCase().trim();
-    const statusFilter = $('#filter-status').value;
+    const showStarredOnly = App.getControlChecked('#filter-starred-only');
+    const searchQuery = App.getControlValue('#search-input')
+      .toLowerCase()
+      .trim();
+    const statusFilter = App.getControlValue('#filter-status', 'all');
 
     // Apply filtering
     const filteredCards = App.allCards
@@ -1203,7 +1294,8 @@ const App = {
         if (
           searchQuery &&
           !card.word_en.toLowerCase().includes(searchQuery) &&
-          !card.meaning_zh.toLowerCase().includes(searchQuery)
+          !card.meaning_zh.toLowerCase().includes(searchQuery) &&
+          !(card.note || '').toLowerCase().includes(searchQuery)
         ) {
           return false;
         }
@@ -1215,7 +1307,9 @@ const App = {
         }
 
         // Type filter
-        const typeFilter = $('#filter-type') ? $('#filter-type').value : 'word';
+        const typeFilter = $('#filter-type')
+          ? App.getControlValue('#filter-type', 'word')
+          : 'word';
         const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
         if (typeFilter === 'word' && isPhrase) return false;
         if (typeFilter === 'phrase' && !isPhrase) return false;
@@ -1260,9 +1354,8 @@ const App = {
       // Only show pagination on desktop AND if there's more than one page
       if (!isMobile && filteredCards.length > ITEMS_PER_PAGE) {
         paginationEl.classList.remove('hidden');
-        $(
-          '#page-indicator'
-        ).textContent = `Page ${App.currentPage} of ${totalPages}`;
+        $('#page-indicator').textContent =
+          `Page ${App.currentPage} of ${totalPages}`;
 
         const prevBtn = $('#prev-page-btn');
         prevBtn.disabled = App.currentPage === 1;
@@ -1305,8 +1398,7 @@ const App = {
     const listEl = container.querySelector('.vocab-list-modern');
 
     if (filteredCards.length === 0) {
-      const emptyMsg =
-        '<div class="empty-state">No vocabulary found.</div>';
+      const emptyMsg = '<div class="empty-state">No vocabulary found.</div>';
       tbody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
       listEl.innerHTML = emptyMsg;
       return;
@@ -1331,25 +1423,25 @@ const App = {
           <span class="level-indicator ${level.class}">${level.label}</span>
         </td>
         <td class="vocab-table-actions">
-          <button class="icon-btn btn-star ${
+          <md-icon-button class="btn-star ${
             card.is_starred === true || String(card.is_starred) === 'true'
               ? 'starred'
               : ''
           }" data-starred="${
-        card.is_starred === true || String(card.is_starred) === 'true'
-      }">
+            card.is_starred === true || String(card.is_starred) === 'true'
+          }">
             <img src="${
               card.is_starred === true || String(card.is_starred) === 'true'
                 ? 'assets/star-filled.svg'
                 : 'assets/star.svg'
             }" class="action-icon" alt="star" />
-          </button>
-           <button class="icon-btn btn-edit">
-            <span class="material-icons">edit</span>
-          </button>
-          <button class="icon-btn btn-delete">
-            <span class="material-icons">delete</span>
-          </button>
+          </md-icon-button>
+           <md-icon-button class="btn-edit">
+            <md-icon>edit</md-icon>
+          </md-icon-button>
+          <md-icon-button class="btn-delete">
+            <md-icon>delete</md-icon>
+          </md-icon-button>
         </td>
       `;
       tbody.appendChild(row);
@@ -1366,25 +1458,25 @@ const App = {
         <div class="vocab-card-side">
           <span class="level-indicator ${level.class}">${level.label}</span>
           <div class="vocab-card-actions">
-           <button class="icon-btn btn-star ${
+           <md-icon-button class="btn-star ${
              card.is_starred === true || String(card.is_starred) === 'true'
                ? 'starred'
                : ''
            }" data-starred="${
-        card.is_starred === true || String(card.is_starred) === 'true'
-      }">
+             card.is_starred === true || String(card.is_starred) === 'true'
+           }">
              <img src="${
                card.is_starred === true || String(card.is_starred) === 'true'
                  ? 'assets/star-filled.svg'
                  : 'assets/star.svg'
              }" class="action-icon" alt="star" />
-           </button>
-            <button class="icon-btn btn-edit">
-             <span class="material-icons">edit</span>
-           </button>
-           <button class="icon-btn btn-delete">
-             <span class="material-icons">delete</span>
-           </button>
+           </md-icon-button>
+            <md-icon-button class="btn-edit">
+             <md-icon>edit</md-icon>
+           </md-icon-button>
+           <md-icon-button class="btn-delete">
+             <md-icon>delete</md-icon>
+           </md-icon-button>
          </div>
         </div>
       `;
@@ -1439,6 +1531,13 @@ const App = {
             </div>
 
             <div class="preview-section">
+                <div class="preview-section-label">Note</div>
+                <div class="preview-section-content">
+                    ${card.note ? `<div>${card.note}</div>` : '<i>No note provided.</i>'}
+                </div>
+            </div>
+
+            <div class="preview-section">
                 <div class="preview-section-label">${config.exampleLabel}</div>
                 <div class="preview-section-content">
                     ${
@@ -1479,7 +1578,7 @@ const App = {
       audioBtn.disabled = true;
       audioBtn.style.opacity = '0.3';
       audioBtn.style.cursor = 'default';
-      const icon = audioBtn.querySelector('.material-icons');
+      const icon = audioBtn.querySelector('md-icon, .material-symbols-rounded');
       if (icon) icon.textContent = 'volume_off';
       audioBtn.onclick = null;
     }
@@ -1511,7 +1610,7 @@ const App = {
 
       const cleanWord = word.trim().toLowerCase();
       const response = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/${language}/${cleanWord}`
+        `https://api.dictionaryapi.dev/api/v2/entries/${language}/${cleanWord}`,
       );
       if (!response.ok) throw new Error('Not found');
 
@@ -1526,10 +1625,10 @@ const App = {
 
       if (entry.phonetics) {
         const audioEntry = entry.phonetics.find(
-          (p) => p.audio && p.audio.length > 0
+          (p) => p.audio && p.audio.length > 0,
         );
         const textEntry = entry.phonetics.find(
-          (p) => p.text && p.text.length > 0
+          (p) => p.text && p.text.length > 0,
         );
 
         if (audioEntry) audioUrl = audioEntry.audio;
@@ -1539,7 +1638,9 @@ const App = {
       // if (phoneticContainer && phoneticText) ... Removed subtitle logic
 
       if (audioBtn) {
-        const icon = audioBtn.querySelector('.material-icons');
+        const icon = audioBtn.querySelector(
+          'md-icon, .material-symbols-rounded',
+        );
         if (audioUrl) {
           audioBtn.disabled = false;
           audioBtn.style.opacity = '1';
@@ -1577,9 +1678,9 @@ const App = {
         };
 
         let defsHtml = `
-            <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('.material-icons'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
+            <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('md-icon, .material-symbols-rounded'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
                 <span>OTHER DEFINITIONS</span>
-                <span class="material-icons">chevron_right</span>
+                <md-icon>chevron_right</md-icon>
             </div>
         `;
         defsHtml += `<div class="definition-list">`;
@@ -1663,7 +1764,7 @@ const App = {
             console.error(err);
           }
         },
-      }
+      },
     );
   },
 
@@ -1688,15 +1789,18 @@ const App = {
       previewData.forEach((row) => {
         const word = row.word_en || '';
         const meaning = row.meaning_zh || '';
+        const note = row.note || '';
         const examples = row.example_en || [];
+
+        const noteHtml = note
+          ? `<div class="vocab-card-note">${note}</div>`
+          : '';
 
         let examplesHtml = '';
         if (Array.isArray(examples) && examples.length > 0) {
           examplesHtml = `
             <div class="vocab-card-examples">
-              ${examples
-                .map((ex) => `<div>${ex}</div>`)
-                .join('')}
+              ${examples.map((ex) => `<div>${ex}</div>`).join('')}
             </div>
           `;
         }
@@ -1707,6 +1811,7 @@ const App = {
               <div class="vocab-card-word">${word}</div>
               <div class="vocab-card-meaning">${meaning}</div>
             </div>
+            ${noteHtml}
             ${examplesHtml}
           </div>
         `;

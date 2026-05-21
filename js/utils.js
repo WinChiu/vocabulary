@@ -12,8 +12,12 @@ export const on = (element, event, handler) => {
 
 // Toggle visibility of views
 export const closeModal = () => {
-  const overlay = $('#modal-overlay');
-  if (overlay) overlay.style.display = 'none';
+  const dialog = $('#modal-dialog');
+  if (dialog && dialog.open && typeof dialog.close === 'function') {
+    dialog.close();
+  } else if (dialog) {
+    dialog.removeAttribute('open');
+  }
 };
 
 export const showPopup = (title, content, options = {}) => {
@@ -26,66 +30,65 @@ export const showPopup = (title, content, options = {}) => {
     footerLeft = null,
   } = options;
 
-  const contentArea = $('#modal-content');
-  if (!contentArea) return;
+  const dialog = $('#modal-dialog');
+  if (!dialog) return;
 
   let footerHTML = '';
   if (options.customFooter) {
     footerHTML = options.customFooter;
   } else if (onConfirm) {
     footerHTML = `
-      <button class="btn btn-tonal" id="modal-cancel-btn">${cancelText}</button>
-      <button class="btn btn-primary" id="modal-confirm-btn">${confirmText}</button>
+      <md-text-button id="modal-cancel-btn">${cancelText}</md-text-button>
+      <md-filled-button id="modal-confirm-btn">${confirmText}</md-filled-button>
     `;
   } else if (showClose) {
-    footerHTML = `<button class="btn btn-primary" id="modal-close-btn-footer">${confirmText}</button>`;
+    footerHTML = `<md-filled-button id="modal-close-btn-footer">${confirmText}</md-filled-button>`;
   }
 
-  contentArea.innerHTML = `
-        <div class="modal-header">
-            <h2>${title}</h2>
+  dialog.innerHTML = `
+        <div slot="headline" class="modal-header">
+            <span>${title}</span>
             ${
               showClose
-                ? `<button class="modal-close-btn" id="modal-close-x"><span class="material-icons">close</span></button>`
+                ? `<md-icon-button class="modal-close-btn" id="modal-close-x" aria-label="Close"><md-icon>close</md-icon></md-icon-button>`
                 : ''
             }
         </div>
-        <div class="modal-body">
+        <div slot="content" class="modal-body">
             ${content}
         </div>
-        <div class="modal-footer ${footerLeft ? 'has-left' : ''}">
+        <div slot="actions" class="modal-footer ${footerLeft ? 'has-left' : ''}">
             <div class="modal-footer-left">${footerLeft || ''}</div>
             <div class="modal-footer-right">${footerHTML}</div>
         </div>
     `;
 
-  const overlay = $('#modal-overlay');
-  if (overlay) {
-    overlay.style.display = 'flex';
+  let confirmed = false;
+  const close = () => {
+    confirmed = false;
+    closeModal();
+  };
 
-    // Helper to close and cleanup
-    const close = () => {
-      overlay.style.display = 'none';
-      if (onCancel) onCancel();
+  if ($('#modal-close-x')) $('#modal-close-x').onclick = close;
+  if ($('#modal-close-btn-footer')) $('#modal-close-btn-footer').onclick = close;
+  if ($('#modal-cancel-btn')) $('#modal-cancel-btn').onclick = close;
+
+  if ($('#modal-confirm-btn')) {
+    $('#modal-confirm-btn').onclick = () => {
+      confirmed = true;
+      closeModal();
+      if (onConfirm) onConfirm();
     };
+  }
 
-    // Bind Close Actions
-    if ($('#modal-close-x')) $('#modal-close-x').onclick = close;
-    if ($('#modal-close-btn-footer'))
-      $('#modal-close-btn-footer').onclick = close;
-    if ($('#modal-cancel-btn')) $('#modal-cancel-btn').onclick = close;
+  dialog.onclose = () => {
+    if (!confirmed && onCancel) onCancel();
+  };
 
-    if ($('#modal-confirm-btn')) {
-      $('#modal-confirm-btn').onclick = () => {
-        overlay.style.display = 'none';
-        if (onConfirm) onConfirm();
-      };
-    }
-
-    // Close on background click
-    overlay.onclick = (e) => {
-      if (e.target === overlay) close();
-    };
+  if (typeof dialog.show === 'function') {
+    dialog.show();
+  } else {
+    dialog.setAttribute('open', '');
   }
 };
 

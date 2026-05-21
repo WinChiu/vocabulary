@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,9 +18,9 @@
     />
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css?v=2.0" />
-    <!-- Material Icons -->
+    <!-- Material Symbols -->
     <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
       rel="stylesheet"
     />
     <!-- SheetJS -->
@@ -36,15 +36,17 @@
         <section id="login" class="view active">
           <div class="bento-card auth-card max-w-400-center">
             <div class="auth-icon-shell">
-              <span class="material-icons icon-login-large">lock_person</span>
+              <span class="material-symbols-rounded icon-login-large"
+                >lock_person</span
+              >
             </div>
             <h1>Welcome</h1>
             <p class="supporting-text">
               Please sign in to access your vocabulary.
             </p>
-            <button
+            <md-filled-button
               id="google-login-btn"
-              class="btn btn-primary btn-full-width btn-google-signin"
+              class="btn-full-width btn-google-signin"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -52,40 +54,35 @@
                 class="google-icon-svg"
               />
               Sign in with Google
-            </button>
+            </md-filled-button>
           </div>
         </section>
 
         <!-- Dashboard View -->
         <section id="dashboard" class="view">
-          <div class="home-topbar">
-            <div>
-              <div class="eyebrow-text">Today</div>
-              <h1>Just Word</h1>
-            </div>
+          <div class="top-language-nav">
             <div
               class="language-mode-switch"
               role="radiogroup"
               aria-label="Learning language"
             >
-              <button
+              <md-text-button
                 type="button"
                 class="language-mode-option active"
                 data-language-mode="en"
                 aria-pressed="true"
               >
                 English
-              </button>
-              <button
+              </md-text-button>
+              <md-text-button
                 type="button"
                 class="language-mode-option"
                 data-language-mode="sv"
                 aria-pressed="false"
               >
                 Swedish
-              </button>
+              </md-text-button>
             </div>
-            <div class="profile-dot" aria-label="Profile">J</div>
           </div>
           <div class="bento-grid full-height dashboard">
             <!-- Summary Stats -->
@@ -96,7 +93,9 @@
               <div class="card-label">Today Due</div>
               <div class="due-card-bottom-row">
                 <div class="due-stats-group">
-                  <div class="card-value card-value-large" id="due-count">0</div>
+                  <div class="card-value card-value-large" id="due-count">
+                    0
+                  </div>
                   <div class="due-breakdown-column">
                     <div class="due-breakdown-item">
                       Words: <b id="due-count-word">0</b>
@@ -106,9 +105,12 @@
                     </div>
                   </div>
                 </div>
-                <button class="card-action-label" id="start-review-action">
+                <md-filled-button
+                  class="card-action-label"
+                  id="start-review-action"
+                >
                   Loading...
-                </button>
+                </md-filled-button>
               </div>
             </div>
 
@@ -150,57 +152,71 @@
           <div class="full-width-list-container vocab-section-container">
             <div class="section-label section-header-label">
               <div class="filter-controls-flex">
-                <div class="search-box-custom">
-                  <span class="material-icons search-icon">search</span>
-                  <input
-                    type="text"
-                    id="search-input"
-                    placeholder="Search words..."
-                  />
-                </div>
+                <md-outlined-text-field
+                  id="search-input"
+                  class="search-field"
+                  label="Search words..."
+                >
+                  <md-icon slot="leading-icon">search</md-icon>
+                </md-outlined-text-field>
                 <div class="filter-group-row">
-                  <select id="filter-status" class="vocab-select-pill" aria-label="Filter status">
-                    <option value="all">All Status</option>
-                    <option value="mastered">Mastered</option>
-                    <option value="learning">Learning</option>
-                    <option value="new">New</option>
-                  </select>
+                  <md-outlined-select
+                    id="filter-status"
+                    class="vocab-select-pill"
+                    label="Status"
+                  >
+                    <md-select-option value="all" selected>
+                      <div slot="headline">All Status</div>
+                    </md-select-option>
+                    <md-select-option value="mastered">
+                      <div slot="headline">Mastered</div>
+                    </md-select-option>
+                    <md-select-option value="learning">
+                      <div slot="headline">Learning</div>
+                    </md-select-option>
+                    <md-select-option value="new">
+                      <div slot="headline">New</div>
+                    </md-select-option>
+                  </md-outlined-select>
 
-                  <select id="filter-type" class="vocab-select-pill" aria-label="Filter type">
-                    <option value="word" selected>Word</option>
-                    <option value="phrase">Phrase</option>
-                  </select>
+                  <md-outlined-select
+                    id="filter-type"
+                    class="vocab-select-pill"
+                    label="Type"
+                  >
+                    <md-select-option value="word" selected>
+                      <div slot="headline">Word</div>
+                    </md-select-option>
+                    <md-select-option value="phrase">
+                      <div slot="headline">Phrase</div>
+                    </md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="filter-action-row">
                   <!-- Starred Toggle -->
                   <label class="toggle-switch">
                     <span class="filter-label">Starred</span>
-                    <input
-                      type="checkbox"
-                      id="filter-starred-only"
-                      class="toggle-input"
-                    />
-                    <div class="toggle-track">
-                      <span class="toggle-thumb"></span>
-                    </div>
+                    <md-switch id="filter-starred-only"></md-switch>
                   </label>
                   <div class="words-toolbar-actions">
-                    <button
+                    <md-filled-tonal-button
                       id="words-import-btn"
-                      class="btn btn-tonal words-action-btn"
                       type="button"
+                      class="words-action-btn"
                     >
-                      <span class="material-icons">upload_file</span>
+                      <md-icon slot="icon">upload_file</md-icon>
                       <span class="words-action-label">Import</span>
-                    </button>
-                    <button
+                    </md-filled-tonal-button>
+                    <md-filled-button
                       id="words-add-btn"
-                      class="btn btn-primary words-action-btn"
                       type="button"
+                      class="words-action-btn"
                     >
-                      <span class="material-icons">add</span>
-                      <span id="words-add-label" class="words-action-label">Add Word</span>
-                    </button>
+                      <md-icon slot="icon">add</md-icon>
+                      <span id="words-add-label" class="words-action-label"
+                        >Add Word</span
+                      >
+                    </md-filled-button>
                   </div>
                 </div>
               </div>
@@ -212,19 +228,21 @@
 
             <!-- Pagination Controls -->
             <div id="pagination-controls" class="pagination-container hidden">
-              <button id="prev-page-btn" class="btn btn-tonal btn-sm">
-                <span class="material-icons pagination-icon-prev"
-                  >arrow_back</span
-                >
-              </button>
+              <md-filled-tonal-icon-button
+                id="prev-page-btn"
+                aria-label="Previous page"
+              >
+                <md-icon>arrow_back</md-icon>
+              </md-filled-tonal-icon-button>
               <span id="page-indicator" class="page-indicator-text"
                 >Page 1 of 1</span
               >
-              <button id="next-page-btn" class="btn btn-tonal btn-sm">
-                <span class="material-icons pagination-icon-next"
-                  >arrow_forward</span
-                >
-              </button>
+              <md-filled-tonal-icon-button
+                id="next-page-btn"
+                aria-label="Next page"
+              >
+                <md-icon>arrow_forward</md-icon>
+              </md-filled-tonal-icon-button>
             </div>
           </div>
         </section>
@@ -232,13 +250,9 @@
         <!-- Add Card View -->
         <section id="add-card" class="view">
           <div class="view-header-flex app-bar">
-            <button
-              id="btn-back-add-card"
-              class="icon-btn surface-icon-btn"
-              aria-label="Back"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+            <md-icon-button id="btn-back-add-card" aria-label="Back">
+              <md-icon>arrow_back</md-icon>
+            </md-icon-button>
             <h1>Add New Word</h1>
             <div class="app-bar-spacer"></div>
           </div>
@@ -246,63 +260,47 @@
             <form id="add-card-form">
               <div class="input-wrapper-flex">
                 <label for="word_en" id="source-word-label">English Word</label>
-                <input
-                  type="text"
+                <md-outlined-text-field
                   id="word_en"
+                  label="English Word"
                   placeholder="e.g., Resilient"
-                  class="input-pill"
                   required
-                />
+                ></md-outlined-text-field>
               </div>
               <div class="input-wrapper-flex">
                 <label for="meaning_zh">Chinese Meaning</label>
-                <input
-                  type="text"
+                <md-outlined-text-field
                   id="meaning_zh"
+                  label="Chinese Meaning"
                   placeholder="e.g., 有韌性的"
-                  class="input-pill"
                   required
-                />
+                ></md-outlined-text-field>
               </div>
               <div class="input-wrapper-flex">
-                <label id="examples-field-label">Example Sentences (Max 5)</label>
+                <label for="note">Note</label>
+                <md-outlined-text-field
+                  id="note"
+                  type="textarea"
+                  rows="3"
+                  label="Note"
+                  placeholder="Optional note, usage tip, or memory cue"
+                ></md-outlined-text-field>
+              </div>
+              <div class="input-wrapper-flex">
+                <label id="examples-field-label"
+                  >Example Sentences (Max 5)</label
+                >
                 <div id="examples-container" class="flex-col-gap">
                   <!-- Dynamic inputs will be added here -->
                 </div>
-                <button
-                  type="button"
-                  id="add-example-btn"
-                  class="btn btn-tonal btn-text"
-                >
-                  <span class="material-icons icon-sm">add</span>
+                <md-text-button type="button" id="add-example-btn">
+                  <md-icon slot="icon">add</md-icon>
                   Add Sentence
-                </button>
+                </md-text-button>
               </div>
               <div class="form-group checkbox-group mb-0">
                 <div class="checkbox-wrapper">
-                  <label class="checkbox-custom-label" for="is_starred">
-                    <input
-                      type="checkbox"
-                      id="is_starred"
-                      class="checkbox-custom"
-                    />
-                    <span class="checkbox-checkmark">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon-check-xs"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        stroke="currentColor"
-                        stroke-width="1"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                    </span>
-                  </label>
+                  <md-checkbox id="is_starred"></md-checkbox>
                   <label class="checkbox-label-text" for="is_starred">
                     Mark as Starred
                   </label>
@@ -311,26 +309,23 @@
             </form>
           </div>
           <div class="form-actions form-actions-fixed">
-            <button
+            <md-filled-button
               form="add-card-form"
               type="submit"
-              class="btn btn-primary btn-full-width"
+              id="save-card-btn"
+              class="btn-full-width"
             >
               Save Card
-            </button>
+            </md-filled-button>
           </div>
         </section>
 
         <!-- Import View -->
         <section id="import" class="view">
           <div class="view-header-flex app-bar">
-            <button
-              id="btn-back-import"
-              class="icon-btn surface-icon-btn"
-              aria-label="Back"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+            <md-icon-button id="btn-back-import" aria-label="Back">
+              <md-icon>arrow_back</md-icon>
+            </md-icon-button>
             <h1 id="import-title">Import Words</h1>
             <!-- Empty element for grid balance -->
             <div class="app-bar-spacer"></div>
@@ -349,36 +344,30 @@
             </div>
 
             <div id="import-preview" class="hidden">
-              <div class="section-label import-preview-label">
-                Data Preview
-              </div>
+              <div class="section-label import-preview-label">Data Preview</div>
               <div id="preview-list" class="preview-list-container">
                 <!-- Preview items injected here -->
               </div>
             </div>
           </div>
           <div id="import-actions" class="form-actions form-actions-fixed">
-            <button
+            <md-filled-button
               type="button"
-              class="btn btn-primary btn-full-width"
               id="confirm-import-btn"
+              class="btn-full-width"
               disabled
             >
               Import
-            </button>
+            </md-filled-button>
           </div>
         </section>
 
         <!-- Review Configuration View -->
         <section id="review-setup" class="view">
           <div class="view-header-flex app-bar">
-            <button
-              id="btn-back-review-setup"
-              class="icon-btn surface-icon-btn"
-              aria-label="Back"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+            <md-icon-button id="btn-back-review-setup" aria-label="Back">
+              <md-icon>arrow_back</md-icon>
+            </md-icon-button>
             <h1>Review Session</h1>
             <!-- Empty element for grid balance -->
             <div class="app-bar-spacer"></div>
@@ -387,78 +376,85 @@
             <form id="review-setup-form">
               <div class="form-group input-group-flex">
                 <div class="input-wrapper-flex">
-                  <label>Type</label>
-                  <select
+                  <!-- <label>Type</label> -->
+                  <md-outlined-select
                     name="type"
-                    class="input-pill select-rounded select-with-chevron"
                     id="review-setup-type"
+                    label="Type"
                   >
-                    <option value="word" selected>Word</option>
-                    <option value="phrase">Phrase</option>
-                  </select>
+                    <md-select-option value="word" selected>
+                      <div slot="headline">Word</div>
+                    </md-select-option>
+                    <md-select-option value="phrase">
+                      <div slot="headline">Phrase</div>
+                    </md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="input-wrapper-flex">
-                  <label>Selection Scope</label>
-                  <select
+                  <!-- <label>Selection Scope</label> -->
+                  <md-outlined-select
                     name="scope"
-                    class="input-pill select-rounded select-with-chevron"
+                    id="review-scope"
+                    label="Selection Scope"
                   >
-                    <option value="all">All</option>
-                    <option value="starred">Starred</option>
-                  </select>
+                    <md-select-option value="all" selected>
+                      <div slot="headline">All</div>
+                    </md-select-option>
+                    <md-select-option value="starred">
+                      <div slot="headline">Starred</div>
+                    </md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="input-wrapper-flex">
-                  <label>Status</label>
-                  <select
+                  <!-- <label>Status</label> -->
+                  <md-outlined-select
                     name="status"
-                    class="input-pill select-rounded select-with-chevron"
+                    id="review-status"
+                    label="Status"
                   >
-                    <option value="all" selected>All Status</option>
-                    <option value="new">New</option>
-                    <option value="learning">Learning</option>
-                    <option value="mastered">Mastered</option>
-                  </select>
+                    <md-select-option value="all" selected>
+                      <div slot="headline">All Status</div>
+                    </md-select-option>
+                    <md-select-option value="new">
+                      <div slot="headline">New</div>
+                    </md-select-option>
+                    <md-select-option value="learning">
+                      <div slot="headline">Learning</div>
+                    </md-select-option>
+                    <md-select-option value="mastered">
+                      <div slot="headline">Mastered</div>
+                    </md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="input-wrapper-flex">
-                  <label>Limit</label>
-                  <select
+                  <!-- <label>Limit</label> -->
+                  <md-outlined-select
                     name="limit"
-                    class="input-pill select-rounded select-with-chevron"
+                    id="review-limit"
+                    label="Limit"
                   >
-                    <option value="10" selected>10</option>
-                    <option value="15">15</option>
-                    <option value="20">20</option>
-                    <option value="25">25</option>
-                  </select>
+                    <md-select-option value="10" selected>
+                      <div slot="headline">10</div>
+                    </md-select-option>
+                    <md-select-option value="15">
+                      <div slot="headline">15</div>
+                    </md-select-option>
+                    <md-select-option value="20">
+                      <div slot="headline">20</div>
+                    </md-select-option>
+                    <md-select-option value="25">
+                      <div slot="headline">25</div>
+                    </md-select-option>
+                  </md-outlined-select>
                 </div>
               </div>
               <div class="form-group checkbox-group mt-n05 mb-6">
                 <div class="checkbox-wrapper">
-                  <label class="checkbox-custom-label" for="review-due-only">
-                    <input
-                      type="checkbox"
-                      id="review-due-only"
-                      name="dueOnly"
-                      checked
-                      class="checkbox-custom"
-                    />
-                    <span class="checkbox-checkmark">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon-check-xs"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        stroke="currentColor"
-                        stroke-width="1"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                    </span>
-                  </label>
+                  <md-checkbox
+                    id="review-due-only"
+                    name="dueOnly"
+                    checked
+                  ></md-checkbox>
                   <label class="checkbox-label-text" for="review-due-only">
                     Due Only&nbsp;-&nbsp;
                     <span
@@ -473,47 +469,26 @@
 
               <div class="form-group mb-0">
                 <div class="mode-selection">
-                  <label class="mode-option">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="1"
-                      class="hidden-radio"
-                      checked
-                    />
+                  <label class="mode-option active" data-value="1">
                     <div class="mode-title">
                       <span id="mode-flip-source-label">Flip Card (EN)</span>
                     </div>
                   </label>
-                  <label class="mode-option">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="2"
-                      class="hidden-radio"
-                    />
+                  <label class="mode-option" data-value="2">
                     <div class="mode-title">
                       <span>Flip Card (ZH)</span>
                     </div>
                   </label>
-                  <label class="mode-option">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="3"
-                      class="hidden-radio"
-                    />
+                  <label class="mode-option" data-value="3">
                     <div class="mode-title">
                       <span>Spelling</span>
                     </div>
                   </label>
-                  <label class="mode-option" id="grade-mode-cloze">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="4"
-                      class="hidden-radio"
-                    />
+                  <label
+                    class="mode-option"
+                    id="grade-mode-cloze"
+                    data-value="4"
+                  >
                     <div class="mode-title">
                       <span>Cloze</span>
                     </div>
@@ -523,33 +498,25 @@
             </form>
           </div>
           <div class="form-actions form-actions-fixed">
-            <button
+            <md-filled-button
               form="review-setup-form"
               type="submit"
-              class="btn btn-primary btn-full-width"
+              id="start-session-submit"
+              class="btn-full-width"
             >
               Start Session
-            </button>
+            </md-filled-button>
           </div>
         </section>
 
         <section id="review-session" class="view">
           <div class="view-header-flex app-bar">
-            <button
-              id="exit-review-btn"
-              class="icon-btn surface-icon-btn"
-              aria-label="Exit Session"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+            <md-icon-button id="exit-review-btn" aria-label="Exit Session">
+              <md-icon>arrow_back</md-icon>
+            </md-icon-button>
             <!-- Empty center -->
             <div></div>
-            <div
-              id="review-progress"
-              class="review-progress-text"
-            >
-              0 / 0
-            </div>
+            <div id="review-progress" class="review-progress-text">0 / 0</div>
           </div>
 
           <div id="review-content">
@@ -561,40 +528,37 @@
               id="reveal-btn-container"
               class="form-actions form-actions-fixed"
             >
-              <button
+              <md-filled-button
                 id="reveal-btn"
-                class="btn btn-primary btn-reveal btn-full-width"
+                class="btn-reveal btn-full-width"
               >
-                <span class="material-icons mr-2">visibility</span>
+                <md-icon slot="icon">visibility</md-icon>
                 Show Answer
-              </button>
+              </md-filled-button>
             </div>
 
             <div
               id="self-assess-btns"
               class="form-actions form-actions-fixed hidden"
             >
-              <button
-                class="btn btn-tonal text-forgot btn-flex-grow-1"
+              <md-filled-tonal-button
+                class="text-forgot btn-flex-grow-1"
                 id="btn-assess-forgot"
               >
                 I Forgot
-              </button>
-              <button
-                class="btn btn-primary btn-flex-grow-2"
-                id="btn-assess-know"
-              >
+              </md-filled-tonal-button>
+              <md-filled-button class="btn-flex-grow-2" id="btn-assess-know">
                 I Know
-              </button>
+              </md-filled-button>
             </div>
 
             <div
               id="grading-btns"
               class="form-actions form-actions-fixed hidden"
             >
-              <button class="btn btn-dark btn-full-width" id="btn-next-card">
+              <md-filled-button class="btn-full-width" id="btn-next-card">
                 Next Card
-              </button>
+              </md-filled-button>
             </div>
           </div>
         </section>
@@ -619,10 +583,7 @@
               id="summary-forgotten-container"
             >
               <div class="card-label">Review These Words</div>
-              <div
-                id="summary-forgotten-list"
-                class="vocab-list-modern"
-              >
+              <div id="summary-forgotten-list" class="vocab-list-modern">
                 <!-- Items injected here -->
               </div>
             </div>
@@ -632,56 +593,48 @@
           </div>
 
           <div class="form-actions form-actions-fixed">
-            <button
-              class="btn btn-primary nav-btn btn-full-width"
+            <md-filled-button
+              class="nav-btn btn-full-width"
               data-target="dashboard"
             >
               Back to Dashboard
-            </button>
+            </md-filled-button>
           </div>
         </section>
 
         <!-- Card Preview View -->
         <section id="card-preview" class="view">
           <div class="view-header-flex app-bar">
-            <button
-              id="btn-back-card-preview"
-              class="icon-btn surface-icon-btn"
-              aria-label="Back"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+            <md-icon-button id="btn-back-card-preview" aria-label="Back">
+              <md-icon>arrow_back</md-icon>
+            </md-icon-button>
             <!-- No Title as requested -->
             <div></div>
             <!-- Empty right side -->
             <div class="preview-top-actions">
-              <button
+              <md-icon-button
                 id="preview-audio-btn"
-                class="icon-btn surface-icon-btn preview-audio-btn"
+                class="preview-audio-btn"
                 disabled
                 aria-label="Audio"
               >
-                <span class="material-icons">volume_off</span>
-              </button>
-              <button class="icon-btn preview-star-btn surface-icon-btn" aria-label="Star">
-                <img
-                  src="assets/star.svg"
-                  class="action-icon"
-                  alt="star"
-                />
-              </button>
-              <button class="icon-btn preview-edit-btn surface-icon-btn" aria-label="Edit">
-                <span class="material-icons">edit</span>
-              </button>
-              <button class="icon-btn preview-delete-btn surface-icon-btn danger-icon-btn" aria-label="Delete">
-                <span class="material-icons">delete</span>
-              </button>
+                <md-icon>volume_off</md-icon>
+              </md-icon-button>
+              <md-icon-button class="preview-star-btn" aria-label="Star">
+                <img src="assets/star.svg" class="action-icon" alt="star" />
+              </md-icon-button>
+              <md-icon-button class="preview-edit-btn" aria-label="Edit">
+                <md-icon>edit</md-icon>
+              </md-icon-button>
+              <md-icon-button
+                class="preview-delete-btn danger-icon-btn"
+                aria-label="Delete"
+              >
+                <md-icon>delete</md-icon>
+              </md-icon-button>
             </div>
           </div>
-          <div
-            id="card-preview-container"
-            class="bento-card full-height"
-          >
+          <div id="card-preview-container" class="bento-card full-height">
             <!-- Content injected here -->
           </div>
 
@@ -690,20 +643,20 @@
             <div class="preview-footer-content">
               <!-- Right: Navigation -->
               <div class="preview-footer-actions preview-nav-actions">
-                <button
-                  class="btn btn-tonal btn-icon-round"
+                <md-filled-tonal-icon-button
+                  class="btn-icon-round"
                   id="preview-prev-btn"
                   aria-label="Previous"
                 >
-                  <span class="material-icons">chevron_left</span>
-                </button>
-                <button
-                  class="btn btn-primary btn-icon-round"
+                  <md-icon>chevron_left</md-icon>
+                </md-filled-tonal-icon-button>
+                <md-filled-icon-button
+                  class="btn-icon-round"
                   id="preview-next-btn"
                   aria-label="Next"
                 >
-                  <span class="material-icons">chevron_right</span>
-                </button>
+                  <md-icon>chevron_right</md-icon>
+                </md-filled-icon-button>
               </div>
             </div>
           </div>
@@ -713,12 +666,18 @@
         <div id="bottom-nav-container" class="hidden">
           <!-- Pill Navigation (Left) -->
           <div id="nav-pill">
-            <div class="nav-item active" data-target="dashboard" aria-label="Dashboard">
-              <span class="material-icons nav-icon">dashboard</span>
+            <div
+              class="nav-item active"
+              data-target="dashboard"
+              aria-label="Dashboard"
+            >
+              <span class="material-symbols-rounded nav-icon">dashboard</span>
               <span class="nav-label">Dashboard</span>
             </div>
             <div class="nav-item" data-target="words" aria-label="Words">
-              <span class="material-icons nav-icon">format_list_bulleted</span>
+              <span class="material-symbols-rounded nav-icon"
+                >format_list_bulleted</span
+              >
               <span class="nav-label">Words</span>
             </div>
           </div>
@@ -727,18 +686,24 @@
     </div>
 
     <!-- Material Web Components (pinned ESM CDN) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@material/web/": "https://esm.run/@material/web@2.3.0/"
+        }
+      }
+    </script>
     <script type="module">
-      import 'https://esm.sh/@material/web@2.3.0/button/filled-button.js?bundle';
+      import '@material/web/all.js';
+      import { styles as typescaleStyles } from '@material/web/typography/md-typescale-styles.js';
+
+      document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
     </script>
 
     <!-- Scripts (Type Module) -->
     <script type="module" src="js/app.js"></script>
 
-    <!-- Bento Modal Overlay -->
-    <div id="modal-overlay">
-      <div id="modal-content">
-        <!-- Content injected dynamically -->
-      </div>
-    </div>
+    <!-- Material Dialog -->
+    <md-dialog id="modal-dialog"></md-dialog>
   </body>
 </html>

@@ -13,6 +13,7 @@ export const on = (element, event, handler) => {
 // Toggle visibility of views
 export const closeModal = () => {
   const dialog = $('#modal-dialog');
+  document.body.classList.remove('modal-open');
   if (dialog && dialog.open && typeof dialog.close === 'function') {
     dialog.close();
   } else if (dialog) {
@@ -58,8 +59,8 @@ export const showPopup = (title, content, options = {}) => {
             ${content}
         </div>
         <div slot="actions" class="modal-footer ${footerLeft ? 'has-left' : ''}">
-            <div class="modal-footer-left">${footerLeft || ''}</div>
-            <div class="modal-footer-right">${footerHTML}</div>
+            ${footerLeft ? `<div class="modal-footer-left">${footerLeft}</div>` : ''}
+            <div class="modal-footer-actions">${footerHTML}</div>
         </div>
     `;
 
@@ -82,10 +83,15 @@ export const showPopup = (title, content, options = {}) => {
   }
 
   dialog.onclose = () => {
+    document.body.classList.remove('modal-open');
     if (!confirmed && onCancel) onCancel();
   };
 
-  if (typeof dialog.show === 'function') {
+  document.body.classList.add('modal-open');
+
+  if (typeof dialog.showModal === 'function') {
+    dialog.showModal();
+  } else if (typeof dialog.show === 'function') {
     dialog.show();
   } else {
     dialog.setAttribute('open', '');

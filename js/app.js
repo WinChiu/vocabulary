@@ -5,10 +5,17 @@ import {
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
 } from './language.js';
+import {
+  buildCategoryOptions,
+  categoryMatchesFilter,
+  normalizeCategory,
+  UNCATEGORIZED_FILTER_VALUE,
+} from './category.js';
 import ReviewManager, {
   calculateFamiliarity,
   getFamiliarityLevel,
 } from './review.js';
+import { playPronunciation } from './tts.js';
 import {
   $,
   $$,
@@ -64,6 +71,45 @@ const App = {
     if (typeof el.checked !== 'undefined') el.checked = checked;
     el.toggleAttribute('selected', Boolean(checked));
     el.toggleAttribute('checked', Boolean(checked));
+  },
+
+  renderCategoryOptions: () => {
+    const categoryOptions = buildCategoryOptions(App.allCards);
+    const selects = [
+      $('#filter-category'),
+      $('#review-category'),
+    ].filter(Boolean);
+
+    selects.forEach((select) => {
+      const previousValue = App.getControlValue(select, 'all');
+      select.innerHTML = `
+        <md-select-option value="all" selected>
+          <div slot="headline">All Categories</div>
+        </md-select-option>
+        <md-select-option value="${UNCATEGORIZED_FILTER_VALUE}">
+          <div slot="headline">Uncategorized</div>
+        </md-select-option>
+        ${categoryOptions
+          .map(
+            (category) => `
+              <md-select-option value="${category}">
+                <div slot="headline">${category}</div>
+              </md-select-option>
+            `,
+          )
+          .join('')}
+      `;
+
+      const validValues = new Set([
+        'all',
+        UNCATEGORIZED_FILTER_VALUE,
+        ...categoryOptions,
+      ]);
+      App.setControlValue(
+        select,
+        validValues.has(previousValue) ? previousValue : 'all',
+      );
+    });
   },
 
   getSelectedReviewMode: () => {
@@ -122,7 +168,7 @@ const App = {
     if (importTitle) importTitle.textContent = config.importTitle;
 
     const addActionLabel = $('#words-add-label');
-    if (addActionLabel) addActionLabel.textContent = config.addActionLabel;
+    if (addActionLabel) addActionLabel.textContent = 'add';
 
     const modeFlipSource = $('#mode-flip-source-label');
     if (modeFlipSource)
@@ -251,6 +297,7 @@ const App = {
     $('#add-card-form').reset();
     App.setControlValue('#word_en', '');
     App.setControlValue('#meaning_zh', '');
+    App.setControlValue('#category', '');
     App.setControlValue('#note', '');
     App.setControlChecked('#is_starred', false);
     $('#examples-container').innerHTML = '';
@@ -315,6 +362,7 @@ const App = {
       const cards = await DataService.fetchCards(App.currentLanguageMode);
       App.allCards = cards;
       App.currentPage = 1; // Reset to page 1 on full refresh
+      App.renderCategoryOptions();
       App.renderDashboard();
     } catch (e) {
       console.error('Failed to refresh data', e);
@@ -349,6 +397,7 @@ const App = {
     const scope = App.getControlValue('#review-scope', 'all'); // 'all' or 'starred'
     const statusFilter = App.getControlValue('#review-status', 'all'); // 'all', 'new', 'learning', 'mastered'
     const typeFilter = App.getControlValue('#review-setup-type', 'word'); // 'word' or 'phrase'
+    const categoryFilter = App.getControlValue('#review-category', 'all');
     const now = new Date();
 
     let baseCards = [...App.allCards];
@@ -373,6 +422,10 @@ const App = {
         return typeFilter === 'phrase' ? isPhrase : !isPhrase;
       });
     }
+
+    baseCards = baseCards.filter((c) =>
+      categoryMatchesFilter(c, categoryFilter),
+    );
 
     // special UI handling for NEW status
     const dueCheckbox = $('#review-due-only');
@@ -541,6 +594,10 @@ const App = {
       App.updateDueCount();
     });
 
+    on($('#review-category'), 'change', () => {
+      App.updateDueCount();
+    });
+
     // Handle Review Type Change (Disable Cloze for Phrases + Update Due Count)
     const reviewTypeSelect = $('#review-setup-type');
     if (reviewTypeSelect) {
@@ -594,6 +651,7 @@ const App = {
     on($('#search-input'), 'input', resetPage);
     on($('#filter-status'), 'change', resetPage);
     on($('#filter-type'), 'change', resetPage);
+    on($('#filter-category'), 'change', resetPage);
 
     $$('.mode-option').forEach((option) => {
       on(option, 'click', () => {
@@ -626,6 +684,7 @@ const App = {
       const card = {
         word_en: App.getControlValue('#word_en').trim(),
         meaning_zh: App.getControlValue('#meaning_zh').trim(),
+        category: normalizeCategory(App.getControlValue('#category')),
         note: App.getControlValue('#note').trim(),
         example_en: examples.length > 0 ? examples : [], // Data service will validate or we rely on required input
         is_starred: App.getControlChecked('#is_starred'),
@@ -691,6 +750,7 @@ const App = {
 
         e.target.reset();
         App.setControlValue('#note', '');
+        App.setControlValue('#category', '');
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
         App.editingCardId = null; // Reset state
@@ -807,6 +867,7 @@ const App = {
       const dueOnly = App.getControlChecked('#review-due-only');
       const type = App.getControlValue('#review-setup-type', 'word');
       const status = App.getControlValue('#review-status', 'all');
+      const category = App.getControlValue('#review-category', 'all');
 
       let cardsToReview = [...App.allCards];
 
@@ -830,6 +891,10 @@ const App = {
       if (scope === 'starred') {
         cardsToReview = cardsToReview.filter((c) => c.is_starred);
       }
+
+      cardsToReview = cardsToReview.filter((c) =>
+        categoryMatchesFilter(c, category),
+      );
 
       // SRS Filtering: Only include DUE cards if toggle is ON
       // Exception: If user explicitly selects "New", we ignore Due limit (since New cards aren't "Due")
@@ -914,6 +979,14 @@ const App = {
                 lowKey === '瑞典文'
               ) {
                 newRow.word_en = row[key];
+              } else if (
+                lowKey === 'category' ||
+                lowKey === 'categories' ||
+                lowKey === 'type' ||
+                lowKey === '類別' ||
+                lowKey === '分類'
+              ) {
+                newRow.category = row[key];
               } else if (
                 lowKey.includes('mean') ||
                 lowKey === 'zh' ||
@@ -1110,6 +1183,7 @@ const App = {
     // Populate Form
     App.setControlValue('#word_en', card.word_en);
     App.setControlValue('#meaning_zh', card.meaning_zh);
+    App.setControlValue('#category', card.category || '');
     App.setControlValue('#note', card.note || '');
     App.setControlChecked('#is_starred', card.is_starred);
 
@@ -1281,6 +1355,7 @@ const App = {
       .toLowerCase()
       .trim();
     const statusFilter = App.getControlValue('#filter-status', 'all');
+    const categoryFilter = App.getControlValue('#filter-category', 'all');
 
     // Apply filtering
     const filteredCards = App.allCards
@@ -1305,6 +1380,8 @@ const App = {
           const level = getFamiliarityLevel(card.review_stats);
           if (level.class.replace('level-', '') !== statusFilter) return false;
         }
+
+        if (!categoryMatchesFilter(card, categoryFilter)) return false;
 
         // Type filter
         const typeFilter = $('#filter-type')
@@ -1406,6 +1483,10 @@ const App = {
 
     pagedCards.forEach((card) => {
       const level = getFamiliarityLevel(card.review_stats);
+      const category = normalizeCategory(card.category);
+      const categoryBadge = category
+        ? `<span class="category-pill">${category}</span>`
+        : '';
 
       // 1. Table Row (Desktop)
       const row = document.createElement('tr');
@@ -1414,6 +1495,7 @@ const App = {
       row.innerHTML = `
         <td>
           <div class="vocab-table-word">${card.word_en}</div>
+          ${categoryBadge}
           <div class="mobile-meaning">${card.meaning_zh}</div>
         </td>
         <td class="desktop-only">
@@ -1453,6 +1535,7 @@ const App = {
       cardEl.innerHTML = `
         <div class="vocab-card-main">
           <div class="vocab-card-word">${card.word_en}</div>
+          ${categoryBadge}
           <div class="vocab-card-meaning">${card.meaning_zh}</div>
         </div>
         <div class="vocab-card-side">
@@ -1484,6 +1567,37 @@ const App = {
     });
   },
 
+  setupPreviewAudio: (word, languageCode) => {
+    const audioBtn = $('#preview-audio-btn');
+    if (!audioBtn) return;
+
+    const cleanWord = String(word || '').trim();
+    const icon = audioBtn.querySelector('md-icon, .material-symbols-rounded');
+
+    if (!cleanWord || !languageCode) {
+      audioBtn.disabled = true;
+      audioBtn.style.opacity = '0.3';
+      audioBtn.style.cursor = 'default';
+      if (icon) icon.textContent = 'volume_off';
+      audioBtn.onclick = null;
+      return;
+    }
+
+    audioBtn.disabled = false;
+    audioBtn.style.opacity = '1';
+    audioBtn.style.cursor = 'pointer';
+    if (icon) icon.textContent = 'volume_up';
+    audioBtn.onclick = async () => {
+      const played = await playPronunciation(cleanWord, languageCode);
+      if (!played) {
+        showPopup(
+          'Audio Unavailable',
+          '<p>Your browser could not play audio for this word.</p>',
+        );
+      }
+    };
+  },
+
   showCardPreview: (id) => {
     const card = App.allCards.find((c) => c.id === id);
     if (!card) return;
@@ -1492,22 +1606,47 @@ const App = {
     const level = getFamiliarityLevel(card.review_stats);
     const config = App.getLanguageConfig();
     const dictionaryEnabled = config.dictionaryEnabled;
+    const note = String(card.note || '').trim();
+    const noteSection = note
+      ? `
+            <div class="preview-section">
+                <div class="preview-section-label">Note</div>
+                <div class="preview-section-content">
+                    <div>${note}</div>
+                </div>
+            </div>
+      `
+      : '';
+    const examples = Array.isArray(card.example_en)
+      ? card.example_en.filter((ex) => String(ex).trim().length > 0)
+      : [];
+    const exampleSection =
+      examples.length > 0
+        ? `
+            <div class="preview-section">
+                <div class="preview-section-label">${config.exampleLabel}</div>
+                <div class="preview-section-content">
+                    ${examples.map((ex) => `<div>${ex}</div>`).join('')}
+                </div>
+            </div>
+      `
+        : '';
     const dictionaryMetrics = dictionaryEnabled
       ? `
-                <div class="preview-metric-card">
+                <div id="preview-phonetic-container" class="preview-metric-card hidden">
                     <div class="preview-section-label">Phonetic</div>
-                    <div id="preview-phonetic-badge" class="preview-metric-value">-</div>
+                    <div id="preview-phonetic-badge" class="preview-metric-value"></div>
                 </div>
       `
       : '';
     const dictionarySections = dictionaryEnabled
       ? `
-            <div class="preview-section">
+            <div id="preview-synonyms-container" class="preview-section hidden">
                 <div class="preview-section-label">Synonyms</div>
-                <div id="preview-synonyms-value" class="preview-section-content">-</div>
+                <div id="preview-synonyms-value" class="preview-section-content"></div>
             </div>
 
-            <div id="preview-definitions-container" class="preview-section">
+            <div id="preview-definitions-container" class="preview-section hidden">
                 <!-- Injected via JS -->
             </div>
       `
@@ -1530,26 +1669,8 @@ const App = {
                 ${dictionaryMetrics}
             </div>
 
-            <div class="preview-section">
-                <div class="preview-section-label">Note</div>
-                <div class="preview-section-content">
-                    ${card.note ? `<div>${card.note}</div>` : '<i>No note provided.</i>'}
-                </div>
-            </div>
-
-            <div class="preview-section">
-                <div class="preview-section-label">${config.exampleLabel}</div>
-                <div class="preview-section-content">
-                    ${
-                      Array.isArray(card.example_en) &&
-                      card.example_en.length > 0
-                        ? card.example_en
-                            .map((ex) => `<div>${ex}</div>`)
-                            .join('')
-                        : '<i>No example provided.</i>'
-                    }
-                </div>
-            </div>
+            ${noteSection}
+            ${exampleSection}
             ${dictionarySections}
         </div>
     `;
@@ -1572,16 +1693,8 @@ const App = {
     // 3. Switch View
     showView('card-preview');
 
-    // 4. Reset Audio Button & Fetch Data
-    const audioBtn = $('#preview-audio-btn');
-    if (audioBtn) {
-      audioBtn.disabled = true;
-      audioBtn.style.opacity = '0.3';
-      audioBtn.style.cursor = 'default';
-      const icon = audioBtn.querySelector('md-icon, .material-symbols-rounded');
-      if (icon) icon.textContent = 'volume_off';
-      audioBtn.onclick = null;
-    }
+    // 4. Configure Audio Button & Fetch Data
+    App.setupPreviewAudio(card.word_en, config.ttsLanguage);
 
     if (dictionaryEnabled) {
       App.fetchDictionaryData(card.word_en, config.dictionaryLanguage);
@@ -1593,10 +1706,11 @@ const App = {
   fetchDictionaryData: async (word, language = 'en') => {
     // const phoneticContainer = $('#preview-phonetic-container'); // Removed
     const phoneticBadge = $('#preview-phonetic-badge');
+    const phoneticContainer = $('#preview-phonetic-container');
     // const posValue = $('#preview-pos-value'); // Removed
     const synonymsValue = $('#preview-synonyms-value');
+    const synonymsContainer = $('#preview-synonyms-container');
     const definitionsContainer = $('#preview-definitions-container');
-    const audioBtn = $('#preview-audio-btn');
 
     // Show full page loading with delay
     showLoading('#card-preview', { delay: 300 });
@@ -1604,9 +1718,11 @@ const App = {
     try {
       if (definitionsContainer) {
         definitionsContainer.innerHTML = '';
-        definitionsContainer.style.display = 'block';
+        definitionsContainer.classList.add('hidden');
         definitionsContainer.style.minHeight = '140px';
       }
+      if (phoneticContainer) phoneticContainer.classList.add('hidden');
+      if (synonymsContainer) synonymsContainer.classList.add('hidden');
 
       const cleanWord = word.trim().toLowerCase();
       const response = await fetch(
@@ -1619,64 +1735,52 @@ const App = {
 
       const entry = data[0];
 
-      // 1. Phonetics & Audio
+      // 1. Phonetics
       let phoneticText = entry.phonetic || '';
-      let audioUrl = '';
 
       if (entry.phonetics) {
-        const audioEntry = entry.phonetics.find(
-          (p) => p.audio && p.audio.length > 0,
-        );
         const textEntry = entry.phonetics.find(
           (p) => p.text && p.text.length > 0,
         );
 
-        if (audioEntry) audioUrl = audioEntry.audio;
         if (!phoneticText && textEntry) phoneticText = textEntry.text;
       }
 
       // if (phoneticContainer && phoneticText) ... Removed subtitle logic
 
-      if (audioBtn) {
-        const icon = audioBtn.querySelector(
-          'md-icon, .material-symbols-rounded',
-        );
-        if (audioUrl) {
-          audioBtn.disabled = false;
-          audioBtn.style.opacity = '1';
-          audioBtn.style.cursor = 'pointer';
-          if (icon) icon.textContent = 'volume_up';
-          audioBtn.onclick = () => {
-            new Audio(audioUrl).play();
-          };
-        } else {
-          audioBtn.disabled = true;
-          audioBtn.style.opacity = '0.3';
-          audioBtn.style.cursor = 'default';
-          if (icon) icon.textContent = 'volume_off';
-        }
-      }
-
       // 2. Populate Phonetic Badge
-      if (phoneticBadge) {
-        phoneticBadge.textContent = phoneticText || '-';
+      if (phoneticBadge && phoneticContainer && phoneticText) {
+        phoneticBadge.textContent = phoneticText;
+        phoneticContainer.classList.remove('hidden');
       }
 
       // 3. Definitions (Grouped by POS)
-      if (definitionsContainer && entry.meanings.length > 0) {
-        const posMap = {
-          noun: 'n.',
-          verb: 'v.',
-          adjective: 'adj.',
-          adverb: 'adv.',
-          pronoun: 'pron.',
-          preposition: 'prep.',
-          conjunction: 'conj.',
-          interjection: 'interj.',
-          determiner: 'det.',
-          article: 'art.',
-        };
+      const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
+      const posMap = {
+        noun: 'n.',
+        verb: 'v.',
+        adjective: 'adj.',
+        adverb: 'adv.',
+        pronoun: 'pron.',
+        preposition: 'prep.',
+        conjunction: 'conj.',
+        interjection: 'interj.',
+        determiner: 'det.',
+        article: 'art.',
+      };
+      const definitionItems = meanings.flatMap((m) => {
+        const partOfSpeech = String(m.partOfSpeech || '');
+        const posAbbr =
+          posMap[partOfSpeech.toLowerCase()] || partOfSpeech;
 
+        const definitions = Array.isArray(m.definitions) ? m.definitions : [];
+        return definitions
+          .filter((d) => d.definition)
+          .slice(0, 2)
+          .map((d) => ({ posAbbr, definition: d.definition }));
+      });
+
+      if (definitionsContainer && definitionItems.length > 0) {
         let defsHtml = `
             <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('md-icon, .material-symbols-rounded'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
                 <span>OTHER DEFINITIONS</span>
@@ -1685,39 +1789,32 @@ const App = {
         `;
         defsHtml += `<div class="definition-list">`;
 
-        entry.meanings.forEach((m) => {
-          // Limit definitions to top 2 per POS to avoid clutter
-          const topDefs = m.definitions.slice(0, 2);
-          const posAbbr =
-            posMap[m.partOfSpeech.toLowerCase()] || m.partOfSpeech;
-
-          topDefs.forEach((d) => {
-            defsHtml += `
+        definitionItems.forEach((item) => {
+          defsHtml += `
                 <div>
-                   <span class="definition-pos">${posAbbr}</span>
-                   <span>${d.definition}</span>
+                   <span class="definition-pos">${item.posAbbr}</span>
+                   <span>${item.definition}</span>
                 </div>
              `;
-          });
         });
 
         defsHtml += `</div>`;
         definitionsContainer.innerHTML = defsHtml;
-        definitionsContainer.style.display = 'block';
+        definitionsContainer.classList.remove('hidden');
       }
 
       // 3. Synonyms
-      const synonyms = entry.meanings.flatMap((m) => m.synonyms).slice(0, 5);
-      if (synonymsValue) {
-        synonymsValue.textContent =
-          synonyms.length > 0 ? synonyms.join(', ') : '-';
+      const synonyms = meanings.flatMap((m) => m.synonyms || []).slice(0, 5);
+      if (synonymsValue && synonymsContainer && synonyms.length > 0) {
+        synonymsValue.textContent = synonyms.join(', ');
+        synonymsContainer.classList.remove('hidden');
       }
     } catch (err) {
       console.log('Dictionary data not found:', err);
       // Optional: show a "Not found" message in definitions container?
       if (definitionsContainer) {
         // If we want to hide it completely when not found:
-        definitionsContainer.style.display = 'none';
+        definitionsContainer.classList.add('hidden');
       }
     } finally {
       hideLoading('#card-preview');
@@ -1725,7 +1822,7 @@ const App = {
         definitionsContainer.style.minHeight = '';
         // If innerHTML is empty (no defs found or error), hide it
         if (!definitionsContainer.innerHTML) {
-          definitionsContainer.style.display = 'none';
+          definitionsContainer.classList.add('hidden');
         }
       }
     }
@@ -1789,8 +1886,13 @@ const App = {
       previewData.forEach((row) => {
         const word = row.word_en || '';
         const meaning = row.meaning_zh || '';
+        const category = normalizeCategory(row.category);
         const note = row.note || '';
         const examples = row.example_en || [];
+
+        const categoryHtml = category
+          ? `<span class="category-pill">${category}</span>`
+          : '';
 
         const noteHtml = note
           ? `<div class="vocab-card-note">${note}</div>`
@@ -1809,6 +1911,7 @@ const App = {
           <div class="preview-item">
             <div class="vocab-card-main">
               <div class="vocab-card-word">${word}</div>
+              ${categoryHtml}
               <div class="vocab-card-meaning">${meaning}</div>
             </div>
             ${noteHtml}

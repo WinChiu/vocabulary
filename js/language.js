@@ -17,6 +17,7 @@ export const LANGUAGE_MODES = {
     addActionLabel: 'Add Word',
     dictionaryLanguage: 'en',
     dictionaryEnabled: true,
+    ttsLanguage: 'en',
   },
   sv: {
     mode: 'sv',
@@ -34,6 +35,7 @@ export const LANGUAGE_MODES = {
     addActionLabel: 'Add Swedish Word',
     dictionaryLanguage: null,
     dictionaryEnabled: false,
+    ttsLanguage: 'sv',
   },
 };
 

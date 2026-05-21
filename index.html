@@ -1,709 +1,788 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Just Word</title>
-    <link rel="icon" type="image/png" href="assets/app-icon.png" />
-    <link rel="apple-touch-icon" href="assets/app-icon.png" />
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD,ROND@6..144,100..1000,0..100,0..100&display=swap"
-      rel="stylesheet"
-    />
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=2.0" />
-    <!-- Material Symbols -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-      rel="stylesheet"
-    />
-    <!-- SheetJS -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <!-- Lottie Web -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-  </head>
-  <body class="light-mode">
-    <div class="app-shell">
-      <!-- Main Workspace -->
-      <main class="main-workspace">
-        <!-- Login View -->
-        <section id="login" class="view active">
-          <div class="bento-card auth-card max-w-400-center">
-            <div class="auth-icon-shell">
-              <span class="material-symbols-rounded icon-login-large"
-                >lock_person</span
-              >
-            </div>
-            <h1>Welcome</h1>
-            <p class="supporting-text">
-              Please sign in to access your vocabulary.
-            </p>
-            <md-filled-button
-              id="google-login-btn"
-              class="btn-full-width btn-google-signin"
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                class="google-icon-svg"
-              />
-              Sign in with Google
-            </md-filled-button>
-          </div>
-        </section>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Just Word</title>
+        <link rel="icon" type="image/png" href="assets/app-icon.png" />
+        <link rel="apple-touch-icon" href="assets/app-icon.png" />
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&family=Noto+Sans+TC:wght@100..900&display=swap"
+            rel="stylesheet"
+        />
+        <!-- CSS -->
+        <link rel="stylesheet" href="css/style.css?v=2.0" />
 
-        <!-- Dashboard View -->
-        <section id="dashboard" class="view">
-          <div class="top-language-nav">
-            <div
-              class="language-mode-switch"
-              role="radiogroup"
-              aria-label="Learning language"
-            >
-              <md-text-button
-                type="button"
-                class="language-mode-option active"
-                data-language-mode="en"
-                aria-pressed="true"
-              >
-                English
-              </md-text-button>
-              <md-text-button
-                type="button"
-                class="language-mode-option"
-                data-language-mode="sv"
-                aria-pressed="false"
-              >
-                Swedish
-              </md-text-button>
-            </div>
-          </div>
-          <div class="bento-grid full-height dashboard">
-            <!-- Summary Stats -->
-            <div
-              class="bento-card col-12 orange card-height-half"
-              id="card-due-container"
-            >
-              <div class="card-label">Today Due</div>
-              <div class="due-card-bottom-row">
-                <div class="due-stats-group">
-                  <div class="card-value card-value-large" id="due-count">
-                    0
-                  </div>
-                  <div class="due-breakdown-column">
-                    <div class="due-breakdown-item">
-                      Words: <b id="due-count-word">0</b>
+        <!-- Material Symbols -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+            rel="stylesheet"
+        />
+        <!-- SheetJS -->
+        <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+        <!-- Lottie Web -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    </head>
+    <body class="light-mode">
+        <!-- Main Workspace -->
+        <main class="main-workspace">
+            <!-- Login View -->
+            <section id="login" class="view active">
+                <div class="bento-card auth-card max-w-400-center">
+                    <div class="auth-icon-shell">
+                        <span class="material-symbols-rounded icon-login-large"
+                            >lock_person</span
+                        >
                     </div>
-                    <div class="due-breakdown-item">
-                      Phrases: <b id="due-count-phrase">0</b>
-                    </div>
-                  </div>
-                </div>
-                <md-filled-button
-                  class="card-action-label"
-                  id="start-review-action"
-                >
-                  Loading...
-                </md-filled-button>
-              </div>
-            </div>
-
-            <div
-              class="bento-card col-4 mobile-col-4 card-height-half"
-              id="card-new-container"
-            >
-              <div class="card-label">New</div>
-              <div class="flex-fill-bottom">
-                <div class="card-value" id="dashboard-new-count">0</div>
-              </div>
-            </div>
-
-            <div
-              class="bento-card col-4 mobile-col-4 card-height-half"
-              id="card-lrn-container"
-            >
-              <div class="card-label">Learning</div>
-              <div class="flex-fill-bottom">
-                <div class="card-value" id="dashboard-lrn-count">0</div>
-              </div>
-            </div>
-
-            <div
-              class="bento-card col-4 mobile-col-4 card-height-half"
-              id="card-mst-container"
-            >
-              <div class="card-label">Mastered</div>
-              <div class="flex-fill-bottom">
-                <div class="card-value" id="dashboard-mst-count">0</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Words View -->
-        <section id="words" class="view">
-          <!-- Vocabulary List Section (Full Width) -->
-          <div class="full-width-list-container vocab-section-container">
-            <div class="section-label section-header-label">
-              <div class="filter-controls-flex">
-                <md-outlined-text-field
-                  id="search-input"
-                  class="search-field"
-                  label="Search words..."
-                >
-                  <md-icon slot="leading-icon">search</md-icon>
-                </md-outlined-text-field>
-                <div class="filter-group-row">
-                  <md-outlined-select
-                    id="filter-status"
-                    class="vocab-select-pill"
-                    label="Status"
-                  >
-                    <md-select-option value="all" selected>
-                      <div slot="headline">All Status</div>
-                    </md-select-option>
-                    <md-select-option value="mastered">
-                      <div slot="headline">Mastered</div>
-                    </md-select-option>
-                    <md-select-option value="learning">
-                      <div slot="headline">Learning</div>
-                    </md-select-option>
-                    <md-select-option value="new">
-                      <div slot="headline">New</div>
-                    </md-select-option>
-                  </md-outlined-select>
-
-                  <md-outlined-select
-                    id="filter-type"
-                    class="vocab-select-pill"
-                    label="Type"
-                  >
-                    <md-select-option value="word" selected>
-                      <div slot="headline">Word</div>
-                    </md-select-option>
-                    <md-select-option value="phrase">
-                      <div slot="headline">Phrase</div>
-                    </md-select-option>
-                  </md-outlined-select>
-                </div>
-                <div class="filter-action-row">
-                  <!-- Starred Toggle -->
-                  <label class="toggle-switch">
-                    <span class="filter-label">Starred</span>
-                    <md-switch id="filter-starred-only"></md-switch>
-                  </label>
-                  <div class="words-toolbar-actions">
-                    <md-filled-tonal-button
-                      id="words-import-btn"
-                      type="button"
-                      class="words-action-btn"
-                    >
-                      <md-icon slot="icon">upload_file</md-icon>
-                      <span class="words-action-label">Import</span>
-                    </md-filled-tonal-button>
+                    <h1>Welcome</h1>
+                    <p class="supporting-text">
+                        Please sign in to access your vocabulary.
+                    </p>
                     <md-filled-button
-                      id="words-add-btn"
-                      type="button"
-                      class="words-action-btn"
+                        id="google-login-btn"
+                        class="btn-full-width btn-google-signin"
                     >
-                      <md-icon slot="icon">add</md-icon>
-                      <span id="words-add-label" class="words-action-label"
-                        >Add Word</span
-                      >
+                        <img
+                            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                            alt="Google"
+                            class="google-icon-svg"
+                        />
+                        Sign in with Google
                     </md-filled-button>
-                  </div>
                 </div>
-              </div>
-            </div>
+            </section>
 
-            <div id="card-list-modern">
-              <!-- Cards injected here -->
-            </div>
-
-            <!-- Pagination Controls -->
-            <div id="pagination-controls" class="pagination-container hidden">
-              <md-filled-tonal-icon-button
-                id="prev-page-btn"
-                aria-label="Previous page"
-              >
-                <md-icon>arrow_back</md-icon>
-              </md-filled-tonal-icon-button>
-              <span id="page-indicator" class="page-indicator-text"
-                >Page 1 of 1</span
-              >
-              <md-filled-tonal-icon-button
-                id="next-page-btn"
-                aria-label="Next page"
-              >
-                <md-icon>arrow_forward</md-icon>
-              </md-filled-tonal-icon-button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Add Card View -->
-        <section id="add-card" class="view">
-          <div class="view-header-flex app-bar">
-            <md-icon-button id="btn-back-add-card" aria-label="Back">
-              <md-icon>arrow_back</md-icon>
-            </md-icon-button>
-            <h1>Add New Word</h1>
-            <div class="app-bar-spacer"></div>
-          </div>
-          <div id="add-card-container" class="bento-card full-height">
-            <form id="add-card-form">
-              <div class="input-wrapper-flex">
-                <label for="word_en" id="source-word-label">English Word</label>
-                <md-outlined-text-field
-                  id="word_en"
-                  label="English Word"
-                  placeholder="e.g., Resilient"
-                  required
-                ></md-outlined-text-field>
-              </div>
-              <div class="input-wrapper-flex">
-                <label for="meaning_zh">Chinese Meaning</label>
-                <md-outlined-text-field
-                  id="meaning_zh"
-                  label="Chinese Meaning"
-                  placeholder="e.g., 有韌性的"
-                  required
-                ></md-outlined-text-field>
-              </div>
-              <div class="input-wrapper-flex">
-                <label for="note">Note</label>
-                <md-outlined-text-field
-                  id="note"
-                  type="textarea"
-                  rows="3"
-                  label="Note"
-                  placeholder="Optional note, usage tip, or memory cue"
-                ></md-outlined-text-field>
-              </div>
-              <div class="input-wrapper-flex">
-                <label id="examples-field-label"
-                  >Example Sentences (Max 5)</label
+            <!-- Dashboard View -->
+            <section id="dashboard" class="view">
+                <div
+                    class="top-language-nav"
+                    role="radiogroup"
+                    aria-label="Learning language"
                 >
-                <div id="examples-container" class="flex-col-gap">
-                  <!-- Dynamic inputs will be added here -->
-                </div>
-                <md-text-button type="button" id="add-example-btn">
-                  <md-icon slot="icon">add</md-icon>
-                  Add Sentence
-                </md-text-button>
-              </div>
-              <div class="form-group checkbox-group mb-0">
-                <div class="checkbox-wrapper">
-                  <md-checkbox id="is_starred"></md-checkbox>
-                  <label class="checkbox-label-text" for="is_starred">
-                    Mark as Starred
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="form-actions form-actions-fixed">
-            <md-filled-button
-              form="add-card-form"
-              type="submit"
-              id="save-card-btn"
-              class="btn-full-width"
-            >
-              Save Card
-            </md-filled-button>
-          </div>
-        </section>
-
-        <!-- Import View -->
-        <section id="import" class="view">
-          <div class="view-header-flex app-bar">
-            <md-icon-button id="btn-back-import" aria-label="Back">
-              <md-icon>arrow_back</md-icon>
-            </md-icon-button>
-            <h1 id="import-title">Import Words</h1>
-            <!-- Empty element for grid balance -->
-            <div class="app-bar-spacer"></div>
-          </div>
-          <div class="bento-card full-height import-card">
-            <div id="import-file-section">
-              <div class="section-label">Select CSV File</div>
-              <div class="form-group">
-                <input
-                  type="file"
-                  id="csv-file-input"
-                  accept=".csv"
-                  class="file-input-dropzone"
-                />
-              </div>
-            </div>
-
-            <div id="import-preview" class="hidden">
-              <div class="section-label import-preview-label">Data Preview</div>
-              <div id="preview-list" class="preview-list-container">
-                <!-- Preview items injected here -->
-              </div>
-            </div>
-          </div>
-          <div id="import-actions" class="form-actions form-actions-fixed">
-            <md-filled-button
-              type="button"
-              id="confirm-import-btn"
-              class="btn-full-width"
-              disabled
-            >
-              Import
-            </md-filled-button>
-          </div>
-        </section>
-
-        <!-- Review Configuration View -->
-        <section id="review-setup" class="view">
-          <div class="view-header-flex app-bar">
-            <md-icon-button id="btn-back-review-setup" aria-label="Back">
-              <md-icon>arrow_back</md-icon>
-            </md-icon-button>
-            <h1>Review Session</h1>
-            <!-- Empty element for grid balance -->
-            <div class="app-bar-spacer"></div>
-          </div>
-          <div id="review-session-setup" class="bento-card full-height">
-            <form id="review-setup-form">
-              <div class="form-group input-group-flex">
-                <div class="input-wrapper-flex">
-                  <!-- <label>Type</label> -->
-                  <md-outlined-select
-                    name="type"
-                    id="review-setup-type"
-                    label="Type"
-                  >
-                    <md-select-option value="word" selected>
-                      <div slot="headline">Word</div>
-                    </md-select-option>
-                    <md-select-option value="phrase">
-                      <div slot="headline">Phrase</div>
-                    </md-select-option>
-                  </md-outlined-select>
-                </div>
-                <div class="input-wrapper-flex">
-                  <!-- <label>Selection Scope</label> -->
-                  <md-outlined-select
-                    name="scope"
-                    id="review-scope"
-                    label="Selection Scope"
-                  >
-                    <md-select-option value="all" selected>
-                      <div slot="headline">All</div>
-                    </md-select-option>
-                    <md-select-option value="starred">
-                      <div slot="headline">Starred</div>
-                    </md-select-option>
-                  </md-outlined-select>
-                </div>
-                <div class="input-wrapper-flex">
-                  <!-- <label>Status</label> -->
-                  <md-outlined-select
-                    name="status"
-                    id="review-status"
-                    label="Status"
-                  >
-                    <md-select-option value="all" selected>
-                      <div slot="headline">All Status</div>
-                    </md-select-option>
-                    <md-select-option value="new">
-                      <div slot="headline">New</div>
-                    </md-select-option>
-                    <md-select-option value="learning">
-                      <div slot="headline">Learning</div>
-                    </md-select-option>
-                    <md-select-option value="mastered">
-                      <div slot="headline">Mastered</div>
-                    </md-select-option>
-                  </md-outlined-select>
-                </div>
-                <div class="input-wrapper-flex">
-                  <!-- <label>Limit</label> -->
-                  <md-outlined-select
-                    name="limit"
-                    id="review-limit"
-                    label="Limit"
-                  >
-                    <md-select-option value="10" selected>
-                      <div slot="headline">10</div>
-                    </md-select-option>
-                    <md-select-option value="15">
-                      <div slot="headline">15</div>
-                    </md-select-option>
-                    <md-select-option value="20">
-                      <div slot="headline">20</div>
-                    </md-select-option>
-                    <md-select-option value="25">
-                      <div slot="headline">25</div>
-                    </md-select-option>
-                  </md-outlined-select>
-                </div>
-              </div>
-              <div class="form-group checkbox-group mt-n05 mb-6">
-                <div class="checkbox-wrapper">
-                  <md-checkbox
-                    id="review-due-only"
-                    name="dueOnly"
-                    checked
-                  ></md-checkbox>
-                  <label class="checkbox-label-text" for="review-due-only">
-                    Due Only&nbsp;-&nbsp;
-                    <span
-                      id="due-count-badge"
-                      class="font-bold text-accent-orange"
-                      >0</span
+                    <md-text-button
+                        type="button"
+                        class="language-mode-option active"
+                        data-language-mode="en"
+                        aria-pressed="true"
                     >
-                    &nbsp;cards
-                  </label>
+                        English
+                    </md-text-button>
+                    <md-text-button
+                        type="button"
+                        class="language-mode-option"
+                        data-language-mode="sv"
+                        aria-pressed="false"
+                    >
+                        Swedish
+                    </md-text-button>
                 </div>
-              </div>
+                <div class="bento-grid full-height dashboard">
+                    <!-- Summary Stats -->
+                    <div
+                        class="bento-card col-12 orange card-height-half"
+                        id="card-due-container"
+                    >
+                        <div class="card-label">Today Due</div>
+                        <div class="due-card-bottom-row">
+                            <div class="due-stats-group">
+                                <div
+                                    class="card-value card-value-large"
+                                    id="due-count"
+                                >
+                                    0
+                                </div>
+                                <div class="due-breakdown-column">
+                                    <div class="due-breakdown-item">
+                                        Words: <b id="due-count-word">0</b>
+                                    </div>
+                                    <div class="due-breakdown-item">
+                                        Phrases: <b id="due-count-phrase">0</b>
+                                    </div>
+                                </div>
+                            </div>
+                            <md-filled-button
+                                class="card-action-label"
+                                id="start-review-action"
+                            >
+                                Loading...
+                            </md-filled-button>
+                        </div>
+                    </div>
 
-              <div class="form-group mb-0">
-                <div class="mode-selection">
-                  <label class="mode-option active" data-value="1">
-                    <div class="mode-title">
-                      <span id="mode-flip-source-label">Flip Card (EN)</span>
+                    <div
+                        class="bento-card col-4 mobile-col-4 card-height-half"
+                        id="card-new-container"
+                    >
+                        <div class="card-label">New</div>
+                        <div class="flex-fill-bottom">
+                            <div class="card-value" id="dashboard-new-count">
+                                0
+                            </div>
+                        </div>
                     </div>
-                  </label>
-                  <label class="mode-option" data-value="2">
-                    <div class="mode-title">
-                      <span>Flip Card (ZH)</span>
+
+                    <div
+                        class="bento-card col-4 mobile-col-4 card-height-half"
+                        id="card-lrn-container"
+                    >
+                        <div class="card-label">Learning</div>
+                        <div class="flex-fill-bottom">
+                            <div class="card-value" id="dashboard-lrn-count">
+                                0
+                            </div>
+                        </div>
                     </div>
-                  </label>
-                  <label class="mode-option" data-value="3">
-                    <div class="mode-title">
-                      <span>Spelling</span>
+
+                    <div
+                        class="bento-card col-4 mobile-col-4 card-height-half"
+                        id="card-mst-container"
+                    >
+                        <div class="card-label">Mastered</div>
+                        <div class="flex-fill-bottom">
+                            <div class="card-value" id="dashboard-mst-count">
+                                0
+                            </div>
+                        </div>
                     </div>
-                  </label>
-                  <label
-                    class="mode-option"
-                    id="grade-mode-cloze"
-                    data-value="4"
-                  >
-                    <div class="mode-title">
-                      <span>Cloze</span>
-                    </div>
-                  </label>
                 </div>
-              </div>
-            </form>
-          </div>
-          <div class="form-actions form-actions-fixed">
-            <md-filled-button
-              form="review-setup-form"
-              type="submit"
-              id="start-session-submit"
-              class="btn-full-width"
-            >
-              Start Session
-            </md-filled-button>
-          </div>
-        </section>
+            </section>
 
-        <section id="review-session" class="view">
-          <div class="view-header-flex app-bar">
-            <md-icon-button id="exit-review-btn" aria-label="Exit Session">
-              <md-icon>arrow_back</md-icon>
-            </md-icon-button>
-            <!-- Empty center -->
-            <div></div>
-            <div id="review-progress" class="review-progress-text">0 / 0</div>
-          </div>
+            <!-- Words View -->
+            <section id="words" class="view">
+                <!-- Vocabulary List Section (Full Width) -->
+                <div class="full-width-list-container vocab-section-container">
+                    <div class="section-label section-header-label">
+                        <div class="filter-controls-flex">
+                            <md-outlined-text-field
+                                id="search-input"
+                                class="search-field"
+                                label="Search words..."
+                            >
+                                <md-icon slot="leading-icon">search</md-icon>
+                            </md-outlined-text-field>
+                            <div class="filter-group-row">
+                                <md-outlined-select
+                                    id="filter-status"
+                                    class="vocab-select-pill"
+                                    label="Status"
+                                >
+                                    <md-select-option value="all" selected>
+                                        <div slot="headline">All Status</div>
+                                    </md-select-option>
+                                    <md-select-option value="mastered">
+                                        <div slot="headline">Mastered</div>
+                                    </md-select-option>
+                                    <md-select-option value="learning">
+                                        <div slot="headline">Learning</div>
+                                    </md-select-option>
+                                    <md-select-option value="new">
+                                        <div slot="headline">New</div>
+                                    </md-select-option>
+                                </md-outlined-select>
 
-          <div id="review-content">
-            <!-- Flashcard injected here -->
-          </div>
+                                <md-outlined-select
+                                    id="filter-type"
+                                    class="vocab-select-pill"
+                                    label="Type"
+                                >
+                                    <md-select-option value="word" selected>
+                                        <div slot="headline">Word</div>
+                                    </md-select-option>
+                                    <md-select-option value="phrase">
+                                        <div slot="headline">Phrase</div>
+                                    </md-select-option>
+                                </md-outlined-select>
 
-          <div class="review-controls">
-            <div
-              id="reveal-btn-container"
-              class="form-actions form-actions-fixed"
-            >
-              <md-filled-button
-                id="reveal-btn"
-                class="btn-reveal btn-full-width"
-              >
-                <md-icon slot="icon">visibility</md-icon>
-                Show Answer
-              </md-filled-button>
-            </div>
+                                <md-outlined-select
+                                    id="filter-category"
+                                    class="vocab-select-pill"
+                                    label="Category"
+                                >
+                                    <md-select-option value="all" selected>
+                                        <div slot="headline">
+                                            All Categories
+                                        </div>
+                                    </md-select-option>
+                                    <md-select-option value="__uncategorized">
+                                        <div slot="headline">Uncategorized</div>
+                                    </md-select-option>
+                                </md-outlined-select>
+                            </div>
+                            <div class="filter-action-row">
+                                <!-- Starred Toggle -->
+                                <label class="toggle-switch">
+                                    <span class="filter-label">Starred</span>
+                                    <md-switch
+                                        id="filter-starred-only"
+                                    ></md-switch>
+                                </label>
+                                <div class="words-toolbar-actions">
+                                    <md-filled-tonal-button
+                                        id="words-import-btn"
+                                        type="button"
+                                        class="words-action-btn"
+                                    >
+                                        <span class="words-action-label"
+                                            >import</span
+                                        >
+                                    </md-filled-tonal-button>
+                                    <md-filled-button
+                                        id="words-add-btn"
+                                        type="button"
+                                        class="words-action-btn"
+                                    >
+                                        <span
+                                            id="words-add-label"
+                                            class="words-action-label"
+                                            >add</span
+                                        >
+                                    </md-filled-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div
-              id="self-assess-btns"
-              class="form-actions form-actions-fixed hidden"
-            >
-              <md-filled-tonal-button
-                class="text-forgot btn-flex-grow-1"
-                id="btn-assess-forgot"
-              >
-                I Forgot
-              </md-filled-tonal-button>
-              <md-filled-button class="btn-flex-grow-2" id="btn-assess-know">
-                I Know
-              </md-filled-button>
-            </div>
+                    <div id="card-list-modern">
+                        <!-- Cards injected here -->
+                    </div>
 
-            <div
-              id="grading-btns"
-              class="form-actions form-actions-fixed hidden"
-            >
-              <md-filled-button class="btn-full-width" id="btn-next-card">
-                Next Card
-              </md-filled-button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Review Summary View -->
-        <section id="review-summary" class="view">
-          <div class="view-header-flex app-bar app-bar-centered">
-            <h1>Review Summary</h1>
-          </div>
-          <div class="bento-grid full-height summary-grid">
-            <div class="bento-card col-12 green" id="summary-status-card">
-              <div class="card-label">Result</div>
-              <div class="flex-fill-bottom">
-                <div class="card-value card-value-large" id="summary-correct">
-                  0
+                    <!-- Pagination Controls -->
+                    <div
+                        id="pagination-controls"
+                        class="pagination-container hidden"
+                    >
+                        <md-filled-tonal-icon-button
+                            id="prev-page-btn"
+                            aria-label="Previous page"
+                        >
+                            <md-icon>arrow_back</md-icon>
+                        </md-filled-tonal-icon-button>
+                        <span id="page-indicator" class="page-indicator-text"
+                            >Page 1 of 1</span
+                        >
+                        <md-filled-tonal-icon-button
+                            id="next-page-btn"
+                            aria-label="Next page"
+                        >
+                            <md-icon>arrow_forward</md-icon>
+                        </md-filled-tonal-icon-button>
+                    </div>
                 </div>
-              </div>
-            </div>
+            </section>
 
-            <div
-              class="bento-card col-12 white"
-              id="summary-forgotten-container"
-            >
-              <div class="card-label">Review These Words</div>
-              <div id="summary-forgotten-list" class="vocab-list-modern">
-                <!-- Items injected here -->
-              </div>
-            </div>
+            <!-- Add Card View -->
+            <section id="add-card" class="view">
+                <div class="view-header-flex app-bar">
+                    <md-icon-button id="btn-back-add-card" aria-label="Back">
+                        <md-icon>arrow_back</md-icon>
+                    </md-icon-button>
+                    <h1>Add New Word</h1>
+                    <div class="app-bar-spacer"></div>
+                </div>
+                <div id="add-card-container" class="bento-card full-height">
+                    <form id="add-card-form">
+                        <div class="input-wrapper-flex">
+                            <label for="word_en" id="source-word-label"
+                                >English Word</label
+                            >
+                            <md-outlined-text-field
+                                id="word_en"
+                                label="English Word"
+                                placeholder="e.g., Resilient"
+                                required
+                            ></md-outlined-text-field>
+                        </div>
+                        <div class="input-wrapper-flex">
+                            <label for="meaning_zh">Chinese Meaning</label>
+                            <md-outlined-text-field
+                                id="meaning_zh"
+                                label="Chinese Meaning"
+                                placeholder="e.g., 有韌性的"
+                                required
+                            ></md-outlined-text-field>
+                        </div>
+                        <div class="input-wrapper-flex">
+                            <label for="category">Category</label>
+                            <md-outlined-text-field
+                                id="category"
+                                label="Category"
+                                placeholder="e.g., 數字, 所有格, 傢俱"
+                            ></md-outlined-text-field>
+                        </div>
+                        <div class="input-wrapper-flex">
+                            <label for="note">Note</label>
+                            <md-outlined-text-field
+                                id="note"
+                                type="textarea"
+                                rows="3"
+                                label="Note"
+                                placeholder="Optional note, usage tip, or memory cue"
+                            ></md-outlined-text-field>
+                        </div>
+                        <div class="input-wrapper-flex">
+                            <label id="examples-field-label"
+                                >Example Sentences (Max 5)</label
+                            >
+                            <div id="examples-container" class="flex-col-gap">
+                                <!-- Dynamic inputs will be added here -->
+                            </div>
+                            <md-text-button type="button" id="add-example-btn">
+                                <md-icon slot="icon">add</md-icon>
+                                Add Sentence
+                            </md-text-button>
+                        </div>
+                        <div class="form-group checkbox-group mb-0">
+                            <div class="checkbox-wrapper">
+                                <md-checkbox id="is_starred"></md-checkbox>
+                                <label
+                                    class="checkbox-label-text"
+                                    for="is_starred"
+                                >
+                                    Mark as Starred
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="form-actions form-actions-fixed">
+                    <md-filled-button
+                        form="add-card-form"
+                        type="submit"
+                        id="save-card-btn"
+                        class="btn-full-width"
+                    >
+                        Save Card
+                    </md-filled-button>
+                </div>
+            </section>
 
-            <!-- Spacer for visual balance if list is empty or short -->
-            <div class="summary-spacer"></div>
-          </div>
+            <!-- Import View -->
+            <section id="import" class="view">
+                <div class="view-header-flex app-bar">
+                    <md-icon-button id="btn-back-import" aria-label="Back">
+                        <md-icon>arrow_back</md-icon>
+                    </md-icon-button>
+                    <h1 id="import-title">Import Words</h1>
+                    <!-- Empty element for grid balance -->
+                    <div class="app-bar-spacer"></div>
+                </div>
+                <div class="bento-card full-height import-card">
+                    <div id="import-file-section">
+                        <div class="section-label">Select CSV File</div>
+                        <div class="form-group">
+                            <input
+                                type="file"
+                                id="csv-file-input"
+                                accept=".csv"
+                                class="file-input-dropzone"
+                            />
+                        </div>
+                    </div>
 
-          <div class="form-actions form-actions-fixed">
-            <md-filled-button
-              class="nav-btn btn-full-width"
-              data-target="dashboard"
-            >
-              Back to Dashboard
-            </md-filled-button>
-          </div>
-        </section>
-
-        <!-- Card Preview View -->
-        <section id="card-preview" class="view">
-          <div class="view-header-flex app-bar">
-            <md-icon-button id="btn-back-card-preview" aria-label="Back">
-              <md-icon>arrow_back</md-icon>
-            </md-icon-button>
-            <!-- No Title as requested -->
-            <div></div>
-            <!-- Empty right side -->
-            <div class="preview-top-actions">
-              <md-icon-button
-                id="preview-audio-btn"
-                class="preview-audio-btn"
-                disabled
-                aria-label="Audio"
-              >
-                <md-icon>volume_off</md-icon>
-              </md-icon-button>
-              <md-icon-button class="preview-star-btn" aria-label="Star">
-                <img src="assets/star.svg" class="action-icon" alt="star" />
-              </md-icon-button>
-              <md-icon-button class="preview-edit-btn" aria-label="Edit">
-                <md-icon>edit</md-icon>
-              </md-icon-button>
-              <md-icon-button
-                class="preview-delete-btn danger-icon-btn"
-                aria-label="Delete"
-              >
-                <md-icon>delete</md-icon>
-              </md-icon-button>
-            </div>
-          </div>
-          <div id="card-preview-container" class="bento-card full-height">
-            <!-- Content injected here -->
-          </div>
-
-          <!-- Footer Actions -->
-          <div id="card-preview-footer" class="form-actions form-actions-fixed">
-            <div class="preview-footer-content">
-              <!-- Right: Navigation -->
-              <div class="preview-footer-actions preview-nav-actions">
-                <md-filled-tonal-icon-button
-                  class="btn-icon-round"
-                  id="preview-prev-btn"
-                  aria-label="Previous"
+                    <div id="import-preview" class="hidden">
+                        <div class="section-label import-preview-label">
+                            Data Preview
+                        </div>
+                        <div id="preview-list" class="preview-list-container">
+                            <!-- Preview items injected here -->
+                        </div>
+                    </div>
+                </div>
+                <div
+                    id="import-actions"
+                    class="form-actions form-actions-fixed"
                 >
-                  <md-icon>chevron_left</md-icon>
-                </md-filled-tonal-icon-button>
-                <md-filled-icon-button
-                  class="btn-icon-round"
-                  id="preview-next-btn"
-                  aria-label="Next"
+                    <md-filled-button
+                        type="button"
+                        id="confirm-import-btn"
+                        class="btn-full-width"
+                        disabled
+                    >
+                        Import
+                    </md-filled-button>
+                </div>
+            </section>
+
+            <!-- Review Configuration View -->
+            <section id="review-setup" class="view">
+                <div class="view-header-flex app-bar">
+                    <md-icon-button
+                        id="btn-back-review-setup"
+                        aria-label="Back"
+                    >
+                        <md-icon>arrow_back</md-icon>
+                    </md-icon-button>
+                    <h1>Review Session</h1>
+                    <!-- Empty element for grid balance -->
+                    <div class="app-bar-spacer"></div>
+                </div>
+                <div id="review-session-setup" class="bento-card full-height">
+                    <form id="review-setup-form">
+                        <div class="form-group input-group-flex">
+                            <md-outlined-select
+                                name="type"
+                                id="review-setup-type"
+                                label="Type"
+                            >
+                                <md-select-option value="word" selected>
+                                    <div slot="headline">Word</div>
+                                </md-select-option>
+                                <md-select-option value="phrase">
+                                    <div slot="headline">Phrase</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                            <md-outlined-select
+                                name="scope"
+                                id="review-scope"
+                                label="Selection Scope"
+                            >
+                                <md-select-option value="all" selected>
+                                    <div slot="headline">All</div>
+                                </md-select-option>
+                                <md-select-option value="starred">
+                                    <div slot="headline">Starred</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                            <md-outlined-select
+                                name="status"
+                                id="review-status"
+                                label="Status"
+                            >
+                                <md-select-option value="all" selected>
+                                    <div slot="headline">All Status</div>
+                                </md-select-option>
+                                <md-select-option value="new">
+                                    <div slot="headline">New</div>
+                                </md-select-option>
+                                <md-select-option value="learning">
+                                    <div slot="headline">Learning</div>
+                                </md-select-option>
+                                <md-select-option value="mastered">
+                                    <div slot="headline">Mastered</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                            <md-outlined-select
+                                name="category"
+                                id="review-category"
+                                label="Category"
+                            >
+                                <md-select-option value="all" selected>
+                                    <div slot="headline">All Categories</div>
+                                </md-select-option>
+                                <md-select-option value="__uncategorized">
+                                    <div slot="headline">Uncategorized</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                            <md-outlined-select
+                                name="limit"
+                                id="review-limit"
+                                label="Limit"
+                            >
+                                <md-select-option value="10" selected>
+                                    <div slot="headline">10</div>
+                                </md-select-option>
+                                <md-select-option value="15">
+                                    <div slot="headline">15</div>
+                                </md-select-option>
+                                <md-select-option value="20">
+                                    <div slot="headline">20</div>
+                                </md-select-option>
+                                <md-select-option value="25">
+                                    <div slot="headline">25</div>
+                                </md-select-option>
+                            </md-outlined-select>
+                        </div>
+                        <div class="form-group checkbox-group mt-n05 mb-6">
+                            <div class="checkbox-wrapper">
+                                <md-checkbox
+                                    id="review-due-only"
+                                    name="dueOnly"
+                                    checked
+                                ></md-checkbox>
+                                <label
+                                    class="checkbox-label-text"
+                                    for="review-due-only"
+                                >
+                                    Due Only&nbsp;-&nbsp;
+                                    <span
+                                        id="due-count-badge"
+                                        class="font-bold text-accent-orange"
+                                        >0</span
+                                    >
+                                    &nbsp;cards
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <div class="mode-selection">
+                                <label
+                                    class="mode-option active"
+                                    data-value="1"
+                                >
+                                    <span id="mode-flip-source-label"
+                                        >Flip Card (EN)</span
+                                    >
+                                </label>
+                                <label class="mode-option" data-value="2"
+                                    >Flip Card (ZH)</label
+                                >
+                                <label class="mode-option" data-value="3"
+                                    >Spelling</label
+                                >
+                                <label
+                                    class="mode-option"
+                                    id="grade-mode-cloze"
+                                    data-value="4"
+                                >
+                                    Cloze
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="form-actions form-actions-fixed">
+                    <md-filled-button
+                        form="review-setup-form"
+                        type="submit"
+                        id="start-session-submit"
+                        class="btn-full-width"
+                    >
+                        Start Session
+                    </md-filled-button>
+                </div>
+            </section>
+
+            <section id="review-session" class="view">
+                <div class="view-header-flex app-bar">
+                    <md-icon-button
+                        id="exit-review-btn"
+                        aria-label="Exit Session"
+                    >
+                        <md-icon>arrow_back</md-icon>
+                    </md-icon-button>
+                    <!-- Empty center -->
+                    <div></div>
+                    <div id="review-progress" class="review-progress-text">
+                        0 / 0
+                    </div>
+                </div>
+
+                <div id="review-content">
+                    <!-- Flashcard injected here -->
+                </div>
+
+                <div class="review-controls">
+                    <div
+                        id="reveal-btn-container"
+                        class="form-actions form-actions-fixed"
+                    >
+                        <md-filled-button
+                            id="reveal-btn"
+                            class="btn-reveal btn-full-width"
+                        >
+                            <md-icon slot="icon">visibility</md-icon>
+                            Show Answer
+                        </md-filled-button>
+                    </div>
+
+                    <div
+                        id="self-assess-btns"
+                        class="form-actions form-actions-fixed hidden"
+                    >
+                        <md-filled-tonal-button
+                            class="text-forgot btn-flex-grow-1"
+                            id="btn-assess-forgot"
+                        >
+                            I Forgot
+                        </md-filled-tonal-button>
+                        <md-filled-button
+                            class="btn-flex-grow-2"
+                            id="btn-assess-know"
+                        >
+                            I Know
+                        </md-filled-button>
+                    </div>
+
+                    <div
+                        id="grading-btns"
+                        class="form-actions form-actions-fixed hidden"
+                    >
+                        <md-filled-button
+                            class="btn-full-width"
+                            id="btn-next-card"
+                        >
+                            Next Card
+                        </md-filled-button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Review Summary View -->
+            <section id="review-summary" class="view">
+                <div class="view-header-flex app-bar app-bar-centered">
+                    <h1>Review Summary</h1>
+                </div>
+                <div class="bento-grid full-height summary-grid">
+                    <div
+                        class="bento-card col-12 green"
+                        id="summary-status-card"
+                    >
+                        <div class="card-label">Result</div>
+                        <div class="flex-fill-bottom">
+                            <div
+                                class="card-value card-value-large"
+                                id="summary-correct"
+                            >
+                                0
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bento-card col-12 white"
+                        id="summary-forgotten-container"
+                    >
+                        <div class="card-label">Review These Words</div>
+                        <div
+                            id="summary-forgotten-list"
+                            class="vocab-list-modern"
+                        >
+                            <!-- Items injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Spacer for visual balance if list is empty or short -->
+                    <div class="summary-spacer"></div>
+                </div>
+
+                <div class="form-actions form-actions-fixed">
+                    <md-filled-button
+                        class="nav-btn btn-full-width"
+                        data-target="dashboard"
+                    >
+                        Back to Dashboard
+                    </md-filled-button>
+                </div>
+            </section>
+
+            <!-- Card Preview View -->
+            <section id="card-preview" class="view">
+                <div class="view-header-flex app-bar">
+                    <md-icon-button
+                        id="btn-back-card-preview"
+                        aria-label="Back"
+                    >
+                        <md-icon>arrow_back</md-icon>
+                    </md-icon-button>
+                    <!-- No Title as requested -->
+                    <div></div>
+                    <!-- Empty right side -->
+                    <div class="preview-top-actions">
+                        <md-icon-button
+                            id="preview-audio-btn"
+                            class="preview-audio-btn"
+                            disabled
+                            aria-label="Audio"
+                        >
+                            <md-icon>volume_off</md-icon>
+                        </md-icon-button>
+                        <md-icon-button
+                            class="preview-star-btn"
+                            aria-label="Star"
+                        >
+                            <img
+                                src="assets/star.svg"
+                                class="action-icon"
+                                alt="star"
+                            />
+                        </md-icon-button>
+                        <md-icon-button
+                            class="preview-edit-btn"
+                            aria-label="Edit"
+                        >
+                            <md-icon>edit</md-icon>
+                        </md-icon-button>
+                        <md-icon-button
+                            class="preview-delete-btn danger-icon-btn"
+                            aria-label="Delete"
+                        >
+                            <md-icon>delete</md-icon>
+                        </md-icon-button>
+                    </div>
+                </div>
+                <div id="card-preview-container" class="bento-card full-height">
+                    <!-- Content injected here -->
+                </div>
+
+                <!-- Footer Actions -->
+                <div
+                    id="card-preview-footer"
+                    class="form-actions form-actions-fixed"
                 >
-                  <md-icon>chevron_right</md-icon>
-                </md-filled-icon-button>
-              </div>
+                    <md-filled-tonal-icon-button
+                        class="btn-icon-round"
+                        id="preview-prev-btn"
+                        aria-label="Previous"
+                    >
+                        <md-icon>chevron_left</md-icon>
+                    </md-filled-tonal-icon-button>
+                    <md-filled-icon-button
+                        class="btn-icon-round"
+                        id="preview-next-btn"
+                        aria-label="Next"
+                    >
+                        <md-icon>chevron_right</md-icon>
+                    </md-filled-icon-button>
+                </div>
+            </section>
+
+            <!-- Shared Bottom Navigation -->
+            <div id="bottom-nav-container" class="hidden">
+                <div
+                    class="nav-item active"
+                    data-target="dashboard"
+                    aria-label="Dashboard"
+                >
+                    <span class="material-symbols-rounded nav-icon"
+                        >dashboard</span
+                    >
+                    <span class="nav-label">Dashboard</span>
+                </div>
+                <div class="nav-item" data-target="words" aria-label="Words">
+                    <span class="material-symbols-rounded nav-icon"
+                        >format_list_bulleted</span
+                    >
+                    <span class="nav-label">Words</span>
+                </div>
             </div>
-          </div>
-        </section>
+        </main>
 
-        <!-- Shared Bottom Navigation -->
-        <div id="bottom-nav-container" class="hidden">
-          <!-- Pill Navigation (Left) -->
-          <div id="nav-pill">
-            <div
-              class="nav-item active"
-              data-target="dashboard"
-              aria-label="Dashboard"
-            >
-              <span class="material-symbols-rounded nav-icon">dashboard</span>
-              <span class="nav-label">Dashboard</span>
-            </div>
-            <div class="nav-item" data-target="words" aria-label="Words">
-              <span class="material-symbols-rounded nav-icon"
-                >format_list_bulleted</span
-              >
-              <span class="nav-label">Words</span>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+        <!-- Material Web Components (pinned ESM CDN) -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "@material/web/": "https://esm.run/@material/web@2.3.0/"
+                }
+            }
+        </script>
+        <script type="module">
+            import "@material/web/all.js";
+            import { styles as typescaleStyles } from "@material/web/typography/md-typescale-styles.js";
 
-    <!-- Material Web Components (pinned ESM CDN) -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@material/web/": "https://esm.run/@material/web@2.3.0/"
-        }
-      }
-    </script>
-    <script type="module">
-      import '@material/web/all.js';
-      import { styles as typescaleStyles } from '@material/web/typography/md-typescale-styles.js';
+            document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+        </script>
 
-      document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
-    </script>
+        <!-- Scripts (Type Module) -->
+        <script type="module" src="js/app.js"></script>
 
-    <!-- Scripts (Type Module) -->
-    <script type="module" src="js/app.js"></script>
-
-    <!-- Material Dialog -->
-    <md-dialog id="modal-dialog"></md-dialog>
-  </body>
+        <!-- Material Dialog -->
+        <md-dialog id="modal-dialog"></md-dialog>
+    </body>
 </html>

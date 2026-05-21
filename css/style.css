@@ -1572,6 +1572,7 @@ label {
   position: fixed;
   width: 100%;
   z-index: 35;
+  padding-bottom: 24px;
 }
 
 #bottom-nav-container .nav-item {

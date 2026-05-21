@@ -1606,6 +1606,10 @@ const App = {
     const level = getFamiliarityLevel(card.review_stats);
     const config = App.getLanguageConfig();
     const dictionaryEnabled = config.dictionaryEnabled;
+    const category = normalizeCategory(card.category);
+    const categoryBadge = category
+      ? `<span class="category-pill">${category}</span>`
+      : '';
     const note = String(card.note || '').trim();
     const noteSection = note
       ? `
@@ -1658,6 +1662,7 @@ const App = {
         <div class="preview-page">
             <div>
               <div class="preview-title">${card.word_en}</div>
+              <div class="preview-category">${categoryBadge}</div>
               <div class="preview-meaning">${card.meaning_zh}</div>
             </div>
 

@@ -1,6 +1,7 @@
 // Review Logic (ES Module)
 import { $, $$, showView, showPopup } from './utils.js';
 import DataService, { calculateNextReviewStats } from './data.js';
+import { normalizeCategory } from './category.js';
 
 const MODE_MAP = {
   1: 'flip_en',
@@ -125,6 +126,10 @@ class ReviewSession {
   renderCard() {
     const card = this.getCurrentCard();
     if (!card) return '<div class="flashcard">Error: No card</div>';
+    const category = normalizeCategory(card.category);
+    const categoryBadge = category
+      ? `<div class="review-card-meta"><span class="category-pill">${category}</span></div>`
+      : '';
 
     switch (this.mode) {
       case 1: // EN -> ZH
@@ -148,6 +153,7 @@ class ReviewSession {
                         <div class="level-badge ${getFamiliarityLevel(card.review_stats).class}">${
           getFamiliarityLevel(card.review_stats).label
         }</div>
+                        ${categoryBadge}
                         <div class="content">${front}</div>
                         <div class="sub-content ${
                           this.isCardRevealed ? '' : 'hidden'
@@ -169,6 +175,7 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                         <div class="flashcard">
+                            ${categoryBadge}
                             <div class="sub-content review-prompt">${card.meaning_zh}</div>
                             <div class="content">${card.word_en}</div>
                              <div class="sub-content"><small>${spellingEx}</small></div>
@@ -177,6 +184,7 @@ class ReviewSession {
         }
         return `
                     <div class="flashcard">
+                        ${categoryBadge}
                         <div class="content">${card.meaning_zh}</div>
                         <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" >
                          <div id="spelling-feedback" class="feedback-msg"></div>
@@ -210,6 +218,7 @@ class ReviewSession {
         if (this.isCardRevealed) {
           return `
                        <div class="flashcard">
+                           ${categoryBadge}
                            <div class="sub-content review-prompt">${
                              card.meaning_zh
                            }</div>
@@ -227,6 +236,7 @@ class ReviewSession {
 
         return `
                     <div class="flashcard">
+                        ${categoryBadge}
                         <div class="sub-content review-prompt">${
                           card.meaning_zh
                         }</div>

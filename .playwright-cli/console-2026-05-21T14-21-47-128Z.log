@@ -1,0 +1,9 @@
+[     674ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     675ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     675ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     676ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     676ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     676ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     677ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     677ms] [WARNING] Invalid keyframe value for property transform: translateX(0px) translateY(NaNpx) scale(NaN) @ https://cdn.jsdelivr.net/npm/@material/web@2.3.0/all.js/+esm:704
+[     684ms] [LOG] Firebase (Modular) initialized successfully @ http://127.0.0.1:4173/js/firebase-config.js:21

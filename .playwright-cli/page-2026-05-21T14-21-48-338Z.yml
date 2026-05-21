@@ -1,0 +1,10 @@
+- main [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e6]: lock_person
+    - heading "Welcome" [level=1] [ref=e7]
+    - paragraph [ref=e8]: Please sign in to access your vocabulary.
+    - button "Google Sign in with Google" [ref=e11] [cursor=pointer]:
+      - generic [ref=e13]:
+        - generic:
+          - img "Google" [ref=e14]
+          - text: Sign in with Google

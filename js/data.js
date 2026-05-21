@@ -16,6 +16,25 @@ import {
 import { getLanguageConfig, normalizeLanguageMode } from './language.js';
 
 let currentLanguageMode = 'en';
+let mockMode = false;
+
+const makeMockStats = (state, offsetDays = 0) => {
+  const stats = INITIAL_STATS();
+  stats.state = state;
+  if (state !== 'NEW') {
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + offsetDays);
+    nextDate.setHours(0, 0, 0, 0);
+    stats.next_review_date = nextDate;
+    stats.success_streak = state === 'MASTERED' ? 4 : 1;
+    stats.interval_days = state === 'MASTERED' ? 14 : 1;
+    stats.total_attempts = state === 'MASTERED' ? 8 : 2;
+    stats.correct_attempts = state === 'MASTERED' ? 7 : 1;
+  }
+  return stats;
+};
+
+let mockCardsByLanguage;
 
 const getCollectionName = (languageMode = currentLanguageMode) =>
   getLanguageConfig(languageMode).collection;
@@ -39,6 +58,73 @@ const INITIAL_STATS = () => ({
     fill_blank: { attempts: 0, correct: 0 },
   },
 });
+
+const getMockCardsByLanguage = () => {
+  if (mockCardsByLanguage) return mockCardsByLanguage;
+
+  mockCardsByLanguage = {
+    en: [
+      {
+        id: 'demo-hej',
+        word_en: 'hej',
+        meaning_zh: '你好',
+        category: '問候',
+        note: 'A short greeting.',
+        example_en: ['Hej! Hur mar du?', 'Hej, trevligt att traffas.'],
+        is_starred: false,
+        created_at: new Date('2026-05-19T09:00:00'),
+        review_stats: makeMockStats('LEARNING', -1),
+      },
+      {
+        id: 'demo-bok',
+        word_en: 'bok',
+        meaning_zh: '書',
+        category: '物品',
+        note: '',
+        example_en: ['Jag laser en bok.'],
+        is_starred: true,
+        created_at: new Date('2026-05-18T09:00:00'),
+        review_stats: makeMockStats('MASTERED', -2),
+      },
+      {
+        id: 'demo-ett',
+        word_en: 'ett',
+        meaning_zh: '一（中性）',
+        category: '數字',
+        note: '',
+        example_en: ['Jag har ett apple.'],
+        is_starred: false,
+        created_at: new Date('2026-05-17T09:00:00'),
+        review_stats: makeMockStats('LEARNING', 0),
+      },
+      {
+        id: 'demo-stol',
+        word_en: 'stol',
+        meaning_zh: '椅子',
+        category: '傢俱',
+        note: '',
+        example_en: ['Stolen ar vid bordet.'],
+        is_starred: false,
+        created_at: new Date('2026-05-16T09:00:00'),
+        review_stats: makeMockStats('NEW'),
+      },
+      {
+        id: 'demo-tack',
+        word_en: 'tack',
+        meaning_zh: '謝謝',
+        category: '問候',
+        note: '',
+        example_en: ['Tack sa mycket.'],
+        is_starred: false,
+        created_at: new Date('2026-05-15T09:00:00'),
+        review_stats: makeMockStats('LEARNING', -3),
+      },
+    ],
+    sv: [],
+  };
+
+  return mockCardsByLanguage;
+};
 
 // Helper to timeout promises (Crucial for flaky networks)
 const callWithTimeout = async (promise, timeoutMs = 5000) => {
@@ -173,6 +259,10 @@ export const calculateNextReviewStats = (
 };
 
 const DataService = {
+  setMockMode: (enabled) => {
+    mockMode = Boolean(enabled);
+  },
+
   setLanguageMode: (languageMode) => {
     currentLanguageMode = normalizeLanguageMode(languageMode);
   },
@@ -181,6 +271,24 @@ const DataService = {
 
   // Add a single card
   addCard: async (card, languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const list = mockCards[mode] || mockCards.en;
+      const id = `demo-${Date.now()}`;
+      list.unshift({
+        id,
+        ...card,
+        category: String(card.category || '').trim(),
+        note: card.note || '',
+        is_starred: card.is_starred || false,
+        created_at: new Date(),
+        updated_at: new Date(),
+        review_stats: INITIAL_STATS(),
+      });
+      return id;
+    }
+
     try {
       const collectionName = getCollectionName(languageMode);
       const docRef = await callWithTimeout(
@@ -203,6 +311,16 @@ const DataService = {
 
   // Get all cards (single fetch)
   fetchCards: async (languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const cards = mockCards[mode]?.length ? mockCards[mode] : mockCards.en;
+      return cards.map((card) => ({
+        ...card,
+        review_stats: JSON.parse(JSON.stringify(card.review_stats || {})),
+      }));
+    }
+
     try {
       const collectionName = getCollectionName(languageMode);
       const q = query(
@@ -225,6 +343,15 @@ const DataService = {
 
   // Toggle star status
   toggleStar: async (id, currentStatus, languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const list = mockCards[mode] || mockCards.en;
+      const card = list.find((item) => item.id === id);
+      if (card) card.is_starred = !currentStatus;
+      return;
+    }
+
     try {
       const cardRef = doc(db, getCollectionName(languageMode), id);
       await updateDoc(cardRef, {
@@ -240,6 +367,26 @@ const DataService = {
 
   // Update card details
   updateCard: async (id, cardData, languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const list = mockCards[mode] || mockCards.en;
+      const index = list.findIndex((item) => item.id === id);
+      if (index !== -1) {
+        list[index] = {
+          ...list[index],
+          word_en: cardData.word_en,
+          meaning_zh: cardData.meaning_zh,
+          category: String(cardData.category || '').trim(),
+          note: cardData.note || '',
+          example_en: cardData.example_en,
+          is_starred: cardData.is_starred,
+          updated_at: new Date(),
+        };
+      }
+      return;
+    }
+
     try {
       const cardRef = doc(db, getCollectionName(languageMode), id);
       await updateDoc(cardRef, {
@@ -259,6 +406,15 @@ const DataService = {
 
   // Delete a card
   deleteCard: async (id, languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const list = mockCards[mode] || mockCards.en;
+      const index = list.findIndex((item) => item.id === id);
+      if (index !== -1) list.splice(index, 1);
+      return;
+    }
+
     try {
       await callWithTimeout(deleteDoc(doc(db, getCollectionName(languageMode), id)));
     } catch (error) {
@@ -269,6 +425,13 @@ const DataService = {
 
   // Batch Add (for Import)
   batchAddCards: async (cards, languageMode) => {
+    if (mockMode) {
+      for (const card of cards) {
+        await DataService.addCard(card, languageMode);
+      }
+      return cards.length;
+    }
+
     let totalCount = 0;
     const CHUNK_SIZE = 450; // Firestore limit is 500
     const collectionName = getCollectionName(languageMode);
@@ -305,6 +468,17 @@ const DataService = {
 
   // Batch Update Stats (New)
   batchUpdateStats: async (cards, languageMode) => {
+    if (mockMode) {
+      const mode = normalizeLanguageMode(languageMode);
+      const mockCards = getMockCardsByLanguage();
+      const list = mockCards[mode] || mockCards.en;
+      cards.forEach((updatedCard) => {
+        const card = list.find((item) => item.id === updatedCard.id);
+        if (card) card.review_stats = updatedCard.review_stats;
+      });
+      return cards.length;
+    }
+
     let totalCount = 0;
     const CHUNK_SIZE = 450;
     const collectionName = getCollectionName(languageMode);

@@ -165,7 +165,7 @@ class ReviewSession {
                         </div>
                         ${
                           !this.isCardRevealed
-                            ? '<div class="hint">(Click to flip)</div>'
+                            ? '<div class="hint">點擊翻面</div>'
                             : ''
                         }
                     </div>
@@ -466,7 +466,7 @@ const ReviewManager = {
       if (forgotCount > 0) {
         // Render List Structure
         forgottenContainer.innerHTML = `
-            <div class="card-label">Review These Words</div>
+            <div class="card-label">需要再複習</div>
             <div id="summary-forgotten-list" class="summary-forgotten-text"></div>
         `;
         forgottenContainer.style.display = 'flex';
@@ -488,8 +488,8 @@ const ReviewManager = {
         // Render Congratulations
         forgottenContainer.innerHTML = `
             <div class="summary-message">
-                <h2>Congratulations!</h2>
-                <p>You remembered all words correctly.</p>
+                <h2>完成複習</h2>
+                <p>這次全部答對。</p>
             </div>
         `;
         forgottenContainer.style.display = 'flex';

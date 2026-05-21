@@ -38,6 +38,7 @@ const App = {
   allCards: [],
   currentPage: 1, // Pagination State
   userInfo: null,
+  isMockMode: false,
   editingCardId: null, // Track editing state
   currentPreviewId: null, // Track current preview card
   currentLanguageMode: normalizeLanguageMode(
@@ -82,23 +83,32 @@ const App = {
 
     selects.forEach((select) => {
       const previousValue = App.getControlValue(select, 'all');
-      select.innerHTML = `
-        <md-select-option value="all" selected>
-          <div slot="headline">All Categories</div>
-        </md-select-option>
-        <md-select-option value="${UNCATEGORIZED_FILTER_VALUE}">
-          <div slot="headline">Uncategorized</div>
-        </md-select-option>
-        ${categoryOptions
-          .map(
-            (category) => `
-              <md-select-option value="${category}">
-                <div slot="headline">${category}</div>
-              </md-select-option>
-            `,
-          )
-          .join('')}
-      `;
+      const isNativeSelect = select.tagName.toLowerCase() === 'select';
+      select.innerHTML = isNativeSelect
+        ? `
+          <option value="all" selected>${select.id === 'filter-category' ? 'All' : 'All Categories'}</option>
+          <option value="${UNCATEGORIZED_FILTER_VALUE}">Uncategorized</option>
+          ${categoryOptions
+            .map((category) => `<option value="${category}">${category}</option>`)
+            .join('')}
+        `
+        : `
+          <md-select-option value="all" selected>
+            <div slot="headline">All</div>
+          </md-select-option>
+          <md-select-option value="${UNCATEGORIZED_FILTER_VALUE}">
+            <div slot="headline">Uncategorized</div>
+          </md-select-option>
+          ${categoryOptions
+            .map(
+              (category) => `
+                <md-select-option value="${category}">
+                  <div slot="headline">${category}</div>
+                </md-select-option>
+              `,
+            )
+            .join('')}
+        `;
 
       const validValues = new Set([
         'all',
@@ -153,8 +163,7 @@ const App = {
     }
 
     const examplesLabel = $('#examples-field-label');
-    if (examplesLabel)
-      examplesLabel.textContent = `${config.exampleLabel} (Max 5)`;
+    if (examplesLabel) examplesLabel.textContent = config.exampleLabel;
 
     const exampleInputs = $$('.example-input');
     exampleInputs.forEach((input) => {
@@ -171,15 +180,14 @@ const App = {
     if (addActionLabel) addActionLabel.textContent = 'add';
 
     const modeFlipSource = $('#mode-flip-source-label');
-    if (modeFlipSource)
-      modeFlipSource.textContent = `Flip Card (${config.sourceShort})`;
+    if (modeFlipSource) modeFlipSource.textContent = '單字卡';
 
     if (!App.editingCardId) {
       const addTitle = $('#add-card .view-header-flex h1');
       if (addTitle) addTitle.textContent = config.addTitle;
       const submitBtn = $('#save-card-btn');
       if (submitBtn && submitBtn.textContent !== 'Saving...') {
-        submitBtn.textContent = 'Save Card';
+        submitBtn.textContent = '儲存單字';
       }
     }
   },
@@ -305,7 +313,7 @@ const App = {
 
     App.editingCardId = null;
     $('#add-card .view-header-flex h1').textContent = config.addTitle;
-    App.setButtonText('#save-card-btn', 'Save Card');
+    App.setButtonText('#save-card-btn', '儲存單字');
     App.applyLanguageCopy();
   },
 
@@ -318,6 +326,26 @@ const App = {
   init: async () => {
     App.applyLanguageCopy();
     App.bindEvents();
+
+    const demoParam = new URLSearchParams(window.location.search).get('demo');
+    const isLocalHost = ['localhost', '127.0.0.1', ''].includes(
+      window.location.hostname,
+    );
+    App.isMockMode = demoParam === '1' || isLocalHost;
+    DataService.setMockMode(App.isMockMode);
+
+    if (App.isMockMode) {
+      App.currentLanguageMode = 'sv';
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, App.currentLanguageMode);
+      App.applyLanguageCopy();
+      App.userInfo = {
+        displayName: 'Demo User',
+        email: 'demo@local',
+      };
+      showView('dashboard');
+      await App.refreshData();
+      return;
+    }
 
     const auth = getAuth();
 
@@ -540,7 +568,6 @@ const App = {
     });
 
     const wordsAddBtn = $('#words-add-btn');
-    const wordsImportBtn = $('#words-import-btn');
 
     if (wordsAddBtn) {
       on(wordsAddBtn, 'click', () => {
@@ -549,12 +576,39 @@ const App = {
       });
     }
 
-    if (wordsImportBtn) {
-      on(wordsImportBtn, 'click', () => {
-        App.prepareImportView();
-        showView('import');
+    $$('.dashboard-menu-item').forEach((item) => {
+      on(item, 'click', () => {
+        const target = item.dataset.dashboardTarget;
+        const action = item.dataset.dashboardAction;
+
+        if (target === 'review-setup') {
+          App.updateDueCount();
+          showView('review-setup');
+          return;
+        }
+
+        if (target === 'import') {
+          App.prepareImportView();
+          showView('import');
+          return;
+        }
+
+        if (target === 'words') {
+          App.setControlChecked('#filter-starred-only', false);
+          App.currentPage = 1;
+          App.renderDashboard();
+          showView('words');
+          return;
+        }
+
+        if (action === 'starred') {
+          App.setControlChecked('#filter-starred-only', true);
+          App.currentPage = 1;
+          App.renderDashboard();
+          showView('words');
+        }
       });
-    }
+    });
 
     const btnBackAddCard = $('#btn-back-add-card');
     if (btnBackAddCard) {
@@ -696,7 +750,7 @@ const App = {
           '<p>Please enter both the word and Chinese meaning.</p>',
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
+        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
         return;
       }
 
@@ -708,7 +762,7 @@ const App = {
             .replace(/s$/, '')}.</p>`,
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
+        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
         return;
       }
 
@@ -725,7 +779,7 @@ const App = {
           true,
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? 'Update Word' : 'Save Card';
+        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
         return;
       }
 
@@ -762,7 +816,7 @@ const App = {
         showPopup('Error', `<p>${err.message}</p>`);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Save Card';
+        btn.textContent = '儲存單字';
       }
     });
 
@@ -1046,7 +1100,7 @@ const App = {
       if (pendingImportData.length === 0) return;
       const btn = $('#confirm-import-btn');
       btn.disabled = true;
-      btn.textContent = 'Importing...';
+        btn.textContent = '匯入中...';
 
       try {
         // Duplicate Check for Import
@@ -1069,7 +1123,7 @@ const App = {
 
         if (uniqueToImport.length === 0) {
           showPopup(
-            'Import Result',
+            '匯入結果',
             `<p>No new cards were added. All <b>${duplicateCount}</b> items in the file are already in your list.</p>`,
           );
           return;
@@ -1086,16 +1140,16 @@ const App = {
           message += `<p class="modal-note-primary">Note: <b>${duplicateCount}</b> duplicate words were skipped.</p>`;
         }
 
-        showPopup('Import Success', message);
+        showPopup('匯入成功', message);
       } catch (error) {
         console.error('Import process failed:', error);
         showPopup(
-          'Import Error',
+          '匯入失敗',
           '<p>The import might have failed due to network issues.</p>',
         );
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Confirm Import';
+        btn.textContent = '確認匯入';
         $('#csv-file-input').value = '';
         $('#csv-file-input').value = '';
         $('#import-preview').classList.add('hidden');
@@ -1202,7 +1256,7 @@ const App = {
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
     document.querySelector('#add-card .view-header-flex h1').textContent =
       config.editTitle;
-    App.setButtonText('#save-card-btn', 'Update Word');
+    App.setButtonText('#save-card-btn', '更新單字');
 
     showView('add-card');
   },
@@ -1315,10 +1369,17 @@ const App = {
       App.countUp($('#dashboard-lrn-count'), 0, totalLrn, 1000);
     if ($('#dashboard-mst-count'))
       App.countUp($('#dashboard-mst-count'), 0, totalMst, 1000);
+    const goalReviewed = Math.min(dueTotal, 30);
+    if ($('#goal-reviewed-count')) $('#goal-reviewed-count').textContent = goalReviewed;
+    if ($('#goal-progress-value')) {
+      $('#goal-progress-value').style.width = `${Math.min(100, (goalReviewed / 30) * 100)}%`;
+    }
 
     const elDueCount = $('#due-count');
     const elDueCard = $('#card-due-container');
     const elActionLabel = $('#start-review-action');
+    const masteryPercentEl = $('#mastery-percent');
+    const masteryRingValue = $('#mastery-ring-value');
 
     // Breakdown Elements
     const elDueWord = $('#due-count-word');
@@ -1331,17 +1392,29 @@ const App = {
     if (elDueWord) elDueWord.textContent = dueWordCount;
     if (elDuePhrase) elDuePhrase.textContent = duePhraseCount;
 
+    const totalCards = dashboardCards.length;
+    const masteryPercent =
+      totalCards > 0 ? Math.round((totalMst / totalCards) * 100) : 0;
+    if (masteryPercentEl) masteryPercentEl.textContent = `${masteryPercent}%`;
+    if (masteryRingValue) {
+      const circumference = 188.5;
+      masteryRingValue.style.strokeDashoffset = String(
+        circumference - (circumference * masteryPercent) / 100,
+      );
+    }
+
     if (elDueCard && elActionLabel) {
       if (dueTotal === 0) {
         elDueCard.classList.remove('orange');
         elDueCard.classList.add('green');
         elDueCard.classList.add('is-complete');
-        elActionLabel.textContent = 'Well Done!';
+        elActionLabel.textContent = '完成今日複習';
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');
         elDueCard.classList.remove('is-complete');
-        elActionLabel.textContent = "Let's start!";
+        elActionLabel.innerHTML =
+          '<span class="material-symbols-rounded">play_arrow</span> 開始複習';
       }
     }
 
@@ -1456,9 +1529,9 @@ const App = {
         <table class="vocab-table">
           <thead>
             <tr>
-              <th>Word</th>
+              <th>單字</th>
               <th class="desktop-only">Meaning</th>
-              <th>Status</th>
+              <th>狀態</th>
               <th class="actions-col">Actions</th>
             </tr>
           </thead>
@@ -1483,11 +1556,6 @@ const App = {
 
     pagedCards.forEach((card) => {
       const level = getFamiliarityLevel(card.review_stats);
-      const category = normalizeCategory(card.category);
-      const categoryBadge = category
-        ? `<span class="category-pill">${category}</span>`
-        : '';
-
       // 1. Table Row (Desktop)
       const row = document.createElement('tr');
       row.className = 'vocab-row';
@@ -1495,7 +1563,6 @@ const App = {
       row.innerHTML = `
         <td>
           <div class="vocab-table-word">${card.word_en}</div>
-          ${categoryBadge}
           <div class="mobile-meaning">${card.meaning_zh}</div>
         </td>
         <td class="desktop-only">
@@ -1505,7 +1572,7 @@ const App = {
           <span class="level-indicator ${level.class}">${level.label}</span>
         </td>
         <td class="vocab-table-actions">
-          <md-icon-button class="btn-star ${
+          <button type="button" class="icon-button btn-star ${
             card.is_starred === true || String(card.is_starred) === 'true'
               ? 'starred'
               : ''
@@ -1517,13 +1584,13 @@ const App = {
                 ? 'assets/star-filled.svg'
                 : 'assets/star.svg'
             }" class="action-icon" alt="star" />
-          </md-icon-button>
-           <md-icon-button class="btn-edit">
-            <md-icon>edit</md-icon>
-          </md-icon-button>
-          <md-icon-button class="btn-delete">
-            <md-icon>delete</md-icon>
-          </md-icon-button>
+          </button>
+           <button type="button" class="icon-button btn-edit">
+            <span class="material-symbols-rounded">edit</span>
+          </button>
+          <button type="button" class="icon-button btn-delete">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
         </td>
       `;
       tbody.appendChild(row);
@@ -1535,13 +1602,12 @@ const App = {
       cardEl.innerHTML = `
         <div class="vocab-card-main">
           <div class="vocab-card-word">${card.word_en}</div>
-          ${categoryBadge}
           <div class="vocab-card-meaning">${card.meaning_zh}</div>
         </div>
         <div class="vocab-card-side">
           <span class="level-indicator ${level.class}">${level.label}</span>
-          <div class="vocab-card-actions">
-           <md-icon-button class="btn-star ${
+         <div class="vocab-card-actions">
+           <button type="button" class="icon-button btn-star ${
              card.is_starred === true || String(card.is_starred) === 'true'
                ? 'starred'
                : ''
@@ -1553,13 +1619,13 @@ const App = {
                  ? 'assets/star-filled.svg'
                  : 'assets/star.svg'
              }" class="action-icon" alt="star" />
-           </md-icon-button>
-            <md-icon-button class="btn-edit">
-             <md-icon>edit</md-icon>
-           </md-icon-button>
-           <md-icon-button class="btn-delete">
-             <md-icon>delete</md-icon>
-           </md-icon-button>
+           </button>
+            <button type="button" class="icon-button btn-edit">
+             <span class="material-symbols-rounded">edit</span>
+           </button>
+           <button type="button" class="icon-button btn-delete">
+             <span class="material-symbols-rounded">delete</span>
+           </button>
          </div>
         </div>
       `;
@@ -1614,7 +1680,7 @@ const App = {
     const noteSection = note
       ? `
             <div class="preview-section">
-                <div class="preview-section-label">Note</div>
+                <div class="preview-section-label">筆記</div>
                 <div class="preview-section-content">
                     <div>${note}</div>
                 </div>
@@ -1668,7 +1734,7 @@ const App = {
 
             <div class="preview-metrics">
                 <div class="status-badge-container status-${level.label.toLowerCase()}">
-                    <div class="status-label">Status</div>
+                    <div class="status-label">狀態</div>
                     <div class="status-value">${level.label.toUpperCase()}</div>
                 </div>
                 ${dictionaryMetrics}

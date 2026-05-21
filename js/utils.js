@@ -114,10 +114,10 @@ export const showView = (viewId) => {
     el.classList.add('active');
   });
 
-  // Toggle Main Nav visibility (Only show on Dashboard & Words)
+  // Toggle Main Nav visibility for primary tab-style destinations.
   const bottomNav = $('#bottom-nav-container');
   if (bottomNav) {
-    if (viewId === 'dashboard' || viewId === 'words') {
+    if (viewId === 'dashboard' || viewId === 'words' || viewId === 'import') {
       bottomNav.classList.remove('hidden');
     } else {
       bottomNav.classList.add('hidden');

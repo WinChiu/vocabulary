@@ -76,10 +76,9 @@ const App = {
 
   renderCategoryOptions: () => {
     const categoryOptions = buildCategoryOptions(App.allCards);
-    const selects = [
-      $('#filter-category'),
-      $('#review-category'),
-    ].filter(Boolean);
+    const selects = [$('#filter-category'), $('#review-category')].filter(
+      Boolean,
+    );
 
     selects.forEach((select) => {
       const previousValue = App.getControlValue(select, 'all');
@@ -89,7 +88,9 @@ const App = {
           <option value="all" selected>${select.id === 'filter-category' ? 'All' : 'All Categories'}</option>
           <option value="${UNCATEGORIZED_FILTER_VALUE}">Uncategorized</option>
           ${categoryOptions
-            .map((category) => `<option value="${category}">${category}</option>`)
+            .map(
+              (category) => `<option value="${category}">${category}</option>`,
+            )
             .join('')}
         `
         : `
@@ -328,10 +329,7 @@ const App = {
     App.bindEvents();
 
     const demoParam = new URLSearchParams(window.location.search).get('demo');
-    const isLocalHost = ['localhost', '127.0.0.1', ''].includes(
-      window.location.hostname,
-    );
-    App.isMockMode = demoParam === '1' || isLocalHost;
+    App.isMockMode = demoParam === '1';
     DataService.setMockMode(App.isMockMode);
 
     if (App.isMockMode) {
@@ -1100,7 +1098,7 @@ const App = {
       if (pendingImportData.length === 0) return;
       const btn = $('#confirm-import-btn');
       btn.disabled = true;
-        btn.textContent = '匯入中...';
+      btn.textContent = '匯入中...';
 
       try {
         // Duplicate Check for Import
@@ -1370,9 +1368,11 @@ const App = {
     if ($('#dashboard-mst-count'))
       App.countUp($('#dashboard-mst-count'), 0, totalMst, 1000);
     const goalReviewed = Math.min(dueTotal, 30);
-    if ($('#goal-reviewed-count')) $('#goal-reviewed-count').textContent = goalReviewed;
+    if ($('#goal-reviewed-count'))
+      $('#goal-reviewed-count').textContent = goalReviewed;
     if ($('#goal-progress-value')) {
-      $('#goal-progress-value').style.width = `${Math.min(100, (goalReviewed / 30) * 100)}%`;
+      $('#goal-progress-value').style.width =
+        `${Math.min(100, (goalReviewed / 30) * 100)}%`;
     }
 
     const elDueCount = $('#due-count');
@@ -1728,7 +1728,6 @@ const App = {
         <div class="preview-page">
             <div>
               <div class="preview-title">${card.word_en}</div>
-              <div class="preview-category">${categoryBadge}</div>
               <div class="preview-meaning">${card.meaning_zh}</div>
             </div>
 
@@ -1841,8 +1840,7 @@ const App = {
       };
       const definitionItems = meanings.flatMap((m) => {
         const partOfSpeech = String(m.partOfSpeech || '');
-        const posAbbr =
-          posMap[partOfSpeech.toLowerCase()] || partOfSpeech;
+        const posAbbr = posMap[partOfSpeech.toLowerCase()] || partOfSpeech;
 
         const definitions = Array.isArray(m.definitions) ? m.definitions : [];
         return definitions

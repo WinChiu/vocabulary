@@ -127,9 +127,11 @@ class ReviewSession {
     const card = this.getCurrentCard();
     if (!card) return '<div class="flashcard">Error: No card</div>';
     const category = normalizeCategory(card.category);
-    const categoryBadge = category
-      ? `<div class="review-card-meta"><span class="category-pill">${category}</span></div>`
-      : '';
+    // const categoryBadge = category
+    //   ? `<div class="review-card-meta"><span class="category-pill">${category}</span></div>`
+    //   : '';
+
+    const categoryBadge = '';
 
     switch (this.mode) {
       case 1: // EN -> ZH
@@ -150,9 +152,7 @@ class ReviewSession {
 
         return `
                     <div class="flashcard" id="active-flashcard">
-                        <div class="level-badge ${getFamiliarityLevel(card.review_stats).class}">${
-          getFamiliarityLevel(card.review_stats).label
-        }</div>
+                       
                         ${categoryBadge}
                         <div class="content">${front}</div>
                         <div class="sub-content ${
@@ -225,7 +225,7 @@ class ReviewSession {
                            <div class="content cloze-content">${sentence.replace(
                              regex,
                              (match) =>
-                               `<input type="text" class="cloze-input error" value="${match}" disabled size="${Math.max(match.length, 4)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
+                               `<input type="text" class="cloze-input error" value="${match}" disabled size="${Math.max(match.length, 4)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`,
                            )}</div>
                         </div>
                     `;
@@ -246,7 +246,7 @@ class ReviewSession {
                                 ? sentence.replace(
                                     regex,
                                     (match) =>
-                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(match.length, 4)}">`
+                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(match.length, 4)}">`,
                                   )
                                 : sentence +
                                   `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type word..." >`
@@ -348,7 +348,7 @@ const ReviewManager = {
       console.error('Review Render Error:', err);
       showPopup(
         'Render Error',
-        `<p>Something went wrong displaying this card.<br><small>${err.message}</small></p>`
+        `<p>Something went wrong displaying this card.<br><small>${err.message}</small></p>`,
       );
     }
   },
@@ -360,7 +360,7 @@ const ReviewManager = {
       // Deep copy stats
       session.originalStats.set(
         card.id,
-        JSON.parse(JSON.stringify(card.review_stats || {}))
+        JSON.parse(JSON.stringify(card.review_stats || {})),
       );
     }
   },
@@ -388,7 +388,7 @@ const ReviewManager = {
         card.review_stats,
         modeKey,
         false,
-        weight
+        weight,
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
@@ -416,7 +416,7 @@ const ReviewManager = {
       card.review_stats,
       modeKey,
       isCorrect,
-      weight
+      weight,
     );
     card.review_stats = newStats;
     session.modifiedCards.set(card.id, card);
@@ -473,7 +473,7 @@ const ReviewManager = {
         forgottenContainer.style.justifyContent = 'flex-start';
 
         const listDiv = forgottenContainer.querySelector(
-          '#summary-forgotten-list'
+          '#summary-forgotten-list',
         );
 
         const forgottenWords = [];
@@ -513,7 +513,7 @@ const ReviewManager = {
         console.error('Batch sync failed', e);
         showPopup(
           'Sync Error',
-          '<p>Failed to save review progress. Please check connection.</p>'
+          '<p>Failed to save review progress. Please check connection.</p>',
         );
       }
     }
@@ -544,7 +544,7 @@ const ReviewManager = {
         card.review_stats,
         modeKey,
         true,
-        weight
+        weight,
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
@@ -564,7 +564,7 @@ const ReviewManager = {
         card.review_stats,
         modeKey,
         false,
-        weight
+        weight,
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
@@ -594,7 +594,7 @@ const ReviewManager = {
     // Use the currently displayed sentence for matching context if needed.
     // We must check against the specific sentence used in the cloze to find the correct variation (suffixed word)
     const matches = (session.currentClozeSentence.match(regex) || []).map((m) =>
-      normalize(m)
+      normalize(m),
     );
 
     // Backup before modification
@@ -614,7 +614,7 @@ const ReviewManager = {
         card.review_stats,
         modeKey,
         true,
-        weight
+        weight,
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
@@ -635,7 +635,7 @@ const ReviewManager = {
         card.review_stats,
         modeKey,
         false,
-        weight
+        weight,
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
@@ -654,7 +654,7 @@ const ReviewManager = {
       console.log(
         'Cancelling session. Reverting ' +
           session.originalStats.size +
-          ' cards.'
+          ' cards.',
       );
       // Revert stats
       session.originalStats.forEach((originalStats, cardId) => {

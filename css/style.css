@@ -1215,7 +1215,7 @@ label {
   display: flex;
   gap: var(--spacing-md);
   justify-content: space-between;
-  min-height: 96px;
+
   padding: var(--spacing-md);
 }
 

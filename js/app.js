@@ -507,7 +507,34 @@ const App = {
     $$('.language-mode-option').forEach((btn) => {
       on(btn, 'click', () => {
         App.switchLanguageMode(btn.dataset.languageMode);
+        const languageMenu = btn.closest('.dashboard-language-menu');
+        if (languageMenu) {
+          languageMenu.classList.remove('is-open');
+          const trigger = languageMenu.querySelector('#dashboard-language-btn');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
       });
+    });
+
+    const dashboardLanguageMenu = $('.dashboard-language-menu');
+    const dashboardLanguageBtn = $('#dashboard-language-btn');
+    on(dashboardLanguageBtn, 'click', (event) => {
+      event.stopPropagation();
+      if (!dashboardLanguageMenu) return;
+      const isOpen = dashboardLanguageMenu.classList.toggle('is-open');
+      dashboardLanguageBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    document.addEventListener('click', (event) => {
+      if (
+        dashboardLanguageMenu &&
+        !dashboardLanguageMenu.contains(event.target)
+      ) {
+        dashboardLanguageMenu.classList.remove('is-open');
+        if (dashboardLanguageBtn) {
+          dashboardLanguageBtn.setAttribute('aria-expanded', 'false');
+        }
+      }
     });
 
     // Global Keydown Listener for Review Navigation
@@ -573,6 +600,28 @@ const App = {
         showView('add-card');
       });
     }
+
+    const wordsView = $('#words');
+    const wordsFilterBtn = $('#words-filter-btn');
+    const wordsFilterCloseBtn = $('#words-filter-close-btn');
+    const closeWordsFilters = () => {
+      if (!wordsView) return;
+      wordsView.classList.remove('filters-open');
+      if (wordsFilterBtn) wordsFilterBtn.setAttribute('aria-expanded', 'false');
+    };
+    const openWordsFilters = () => {
+      if (!wordsView) return;
+      wordsView.classList.add('filters-open');
+      if (wordsFilterBtn) wordsFilterBtn.setAttribute('aria-expanded', 'true');
+    };
+
+    on(wordsFilterBtn, 'click', openWordsFilters);
+    on(wordsFilterCloseBtn, 'click', closeWordsFilters);
+    on(wordsView, 'click', (event) => {
+      if (event.target === wordsView && wordsView.classList.contains('filters-open')) {
+        closeWordsFilters();
+      }
+    });
 
     $$('.dashboard-menu-item').forEach((item) => {
       on(item, 'click', () => {
@@ -660,12 +709,12 @@ const App = {
         // 2. Cloze Logic
         const isPhrase = App.getControlValue(reviewTypeSelect) === 'phrase';
         const clozeLabel = $('#grade-mode-cloze');
-        const clozeInput = clozeLabel.querySelector('md-radio');
+        if (!clozeLabel) return;
 
         if (isPhrase) {
           clozeLabel.style.opacity = '0.5';
           clozeLabel.style.pointerEvents = 'none';
-          if (App.getControlChecked(clozeInput)) {
+          if (clozeLabel.classList.contains('active')) {
             // Switch to Flip EN if Cloze was selected
             App.setSelectedReviewMode('1');
           }
@@ -1380,6 +1429,7 @@ const App = {
     const elActionLabel = $('#start-review-action');
     const masteryPercentEl = $('#mastery-percent');
     const masteryRingValue = $('#mastery-ring-value');
+    const mockupDueCount = $('#mockup-due-count');
 
     // Breakdown Elements
     const elDueWord = $('#due-count-word');
@@ -1387,6 +1437,10 @@ const App = {
 
     if (elDueCount) {
       App.countUp(elDueCount, 0, dueTotal, 1000);
+    }
+
+    if (mockupDueCount) {
+      mockupDueCount.textContent = dueTotal;
     }
 
     if (elDueWord) elDueWord.textContent = dueWordCount;

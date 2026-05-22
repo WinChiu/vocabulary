@@ -13,11 +13,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&family=Noto+Sans+TC:wght@100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css?v=2.0" />
+    <link rel="stylesheet" href="css/style.css?v=3.5" />
 
     <!-- Material Symbols -->
     <link
@@ -60,28 +60,45 @@
 
       <!-- Dashboard View -->
       <section id="dashboard" class="view">
-        <div
-          class="top-language-nav"
-          role="radiogroup"
-          aria-label="Learning language"
-        >
-          <button
-            type="button"
-            class="language-mode-option active"
-            data-language-mode="en"
-            aria-pressed="true"
-          >
-            English
-          </button>
-          <button
-            type="button"
-            class="language-mode-option"
-            data-language-mode="sv"
-            aria-pressed="false"
-          >
-            Swedish
-          </button>
+        <div class="dashboard-intro">
+          <div>
+            <h1>Today’s review</h1>
+          </div>
+          <div class="dashboard-language-menu">
+            <button
+              id="dashboard-language-btn"
+              type="button"
+              class="topbar-icon-button"
+              aria-label="Learning language"
+              aria-expanded="false"
+            >
+              <span class="material-symbols-rounded">language</span>
+            </button>
+            <div
+              class="top-language-nav"
+              role="radiogroup"
+              aria-label="Learning language"
+            >
+              <button
+                type="button"
+                class="language-mode-option active"
+                data-language-mode="en"
+                aria-pressed="true"
+              >
+                English
+              </button>
+              <button
+                type="button"
+                class="language-mode-option"
+                data-language-mode="sv"
+                aria-pressed="false"
+              >
+                Swedish
+              </button>
+            </div>
+          </div>
         </div>
+
         <div class="bento-grid full-height dashboard">
           <!-- Summary Stats -->
           <div
@@ -167,8 +184,43 @@
           <div class="app-bar-spacer"></div>
         </div> -->
         <!-- Vocabulary List Section (Full Width) -->
+        <div class="workspace-header words-header">
+          <div>
+            <h1>Word list</h1>
+          </div>
+          <div class="topbar-actions">
+            <button
+              id="words-add-btn"
+              type="button"
+              class="topbar-icon-button"
+              aria-label="Add word"
+            >
+              <span class="material-symbols-rounded">add</span>
+            </button>
+            <button
+              id="words-filter-btn"
+              type="button"
+              class="topbar-icon-button"
+              aria-label="Filter words"
+              aria-expanded="false"
+            >
+              <span class="material-symbols-rounded">tune</span>
+            </button>
+          </div>
+        </div>
         <div class="full-width-list-container vocab-section-container">
           <div class="section-label section-header-label">
+            <div class="filter-sheet-header">
+              <h2>Filter words</h2>
+              <button
+                id="words-filter-close-btn"
+                type="button"
+                class="topbar-icon-button"
+                aria-label="Close filters"
+              >
+                <span class="material-symbols-rounded">close</span>
+              </button>
+            </div>
             <div class="filter-controls-flex">
               <label class="search-box">
                 <span class="material-symbols-rounded">search</span>
@@ -224,26 +276,6 @@
                   <span class="filter-label">Starred</span>
                   <md-switch id="filter-starred-only"></md-switch>
                 </label>
-                <div class="words-toolbar-actions">
-                  <!-- <button
-                    id="words-import-btn"
-                    type="button"
-                    class="words-action-btn app-button app-button-tonal"
-                  >
-                    <span class="material-symbols-rounded">upload</span>
-                    <span class="words-action-label">import</span>
-                  </button> -->
-                  <button
-                    id="words-add-btn"
-                    type="button"
-                    class="words-action-btn app-button app-button-primary"
-                  >
-                    <span class="material-symbols-rounded">add</span>
-                    <span id="words-add-label" class="words-action-label"
-                      >add</span
-                    >
-                  </button>
-                </div>
               </div>
             </div>
           </div>

@@ -1147,7 +1147,7 @@ const App = {
       if (pendingImportData.length === 0) return;
       const btn = $('#confirm-import-btn');
       btn.disabled = true;
-      btn.textContent = '匯入中...';
+      btn.textContent = 'Importing...';
 
       try {
         // Duplicate Check for Import
@@ -1170,7 +1170,7 @@ const App = {
 
         if (uniqueToImport.length === 0) {
           showPopup(
-            '匯入結果',
+            'Import result',
             `<p>No new cards were added. All <b>${duplicateCount}</b> items in the file are already in your list.</p>`,
           );
           return;
@@ -1187,16 +1187,16 @@ const App = {
           message += `<p class="modal-note-primary">Note: <b>${duplicateCount}</b> duplicate words were skipped.</p>`;
         }
 
-        showPopup('匯入成功', message);
+        showPopup('Import complete', message);
       } catch (error) {
         console.error('Import process failed:', error);
         showPopup(
-          '匯入失敗',
+          'Import failed',
           '<p>The import might have failed due to network issues.</p>',
         );
       } finally {
         btn.disabled = false;
-        btn.textContent = '確認匯入';
+        btn.textContent = 'Import';
         $('#csv-file-input').value = '';
         $('#csv-file-input').value = '';
         $('#import-preview').classList.add('hidden');

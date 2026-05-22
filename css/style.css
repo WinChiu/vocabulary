@@ -272,7 +272,7 @@ label {
   gap: var(--spacing-lg);
   justify-content: space-between;
   min-height: 64px;
-  padding: 14px max(14px, env(safe-area-inset-left)) 18px
+  padding: 14px max(14px, env(safe-area-inset-left)) 14px
     max(14px, env(safe-area-inset-right));
   width: 100%;
 }
@@ -354,22 +354,17 @@ label {
 }
 
 .dashboard-intro {
-  align-items: flex-start;
+  align-items: center;
   display: flex;
   gap: var(--spacing-md);
   justify-content: space-between;
-  margin-top: var(--spacing-lg);
+  margin: 0;
 }
 
 .dashboard-intro > div:first-child {
   min-width: 0;
 }
 
-.dashboard-intro h1 {
-  font-size: clamp(2.25rem, 12vw, 3rem);
-}
-
-#dashboard > .dashboard-intro,
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
@@ -762,7 +757,7 @@ label {
 .app-bar h1 {
   flex: 1 1 auto;
   font-family: var(--font-display);
-  font-size: 2.45rem;
+  font-size: clamp(2.4rem, 6vw, 3.7rem);
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -796,6 +791,36 @@ label {
 .app-bar md-icon-button {
   --md-icon-button-container-shape: var(--rounded-pill);
   --md-icon-button-icon-color: var(--colors-body);
+}
+
+.dashboard-intro,
+.workspace-header,
+.view-header-flex.app-bar {
+  align-items: center;
+  background: var(--colors-canvas);
+  border-bottom: 1px solid var(--colors-hairline);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  min-height: 96px;
+  padding: 18px max(18px, env(safe-area-inset-left)) 18px
+    max(18px, env(safe-area-inset-right));
+  width: 100%;
+}
+
+.dashboard-intro h1,
+.words-header h1,
+.app-bar h1 {
+  font-size: clamp(2.4rem, 6vw, 3.7rem);
+}
+
+.topbar-icon-button,
+.icon-button,
+.app-bar md-icon-button {
+  height: 52px;
+  width: 52px;
 }
 
 .preview-top-actions,
@@ -873,10 +898,10 @@ label {
   flex-wrap: wrap;
   gap: var(--spacing-sm);
 }
-
+/*
 .input-group-flex > * {
   flex: 1 1 220px;
-}
+} */
 
 .input-wrapper-flex,
 .flex-col-gap {
@@ -932,7 +957,6 @@ label {
   align-items: center;
   flex-direction: row;
   justify-content: space-between;
-  min-height: 96px;
 }
 
 .words-header > div:first-child {
@@ -953,16 +977,17 @@ label {
   border-radius: var(--rounded-pill);
   color: var(--colors-body);
   display: inline-flex;
-  height: 40px;
+  height: 52px;
   justify-content: center;
-  width: 40px;
+  width: 52px;
 }
 
 .topbar-icon-button .material-symbols-rounded {
   font-size: 22px;
 }
 
-.words-header h1 {
+.words-header h1,
+.dashboard-intro h1 {
   font-size: clamp(2.4rem, 6vw, 3.7rem);
 }
 
@@ -1061,7 +1086,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 48px;
+  height: fit-content;
   padding: 8px 14px;
 }
 
@@ -1333,6 +1358,9 @@ label {
   display: flex;
   justify-content: center;
 }
+#import-preview {
+  width: 100%;
+}
 
 #import-file-section,
 .import-preview-label,
@@ -1346,6 +1374,7 @@ label {
   flex-direction: column;
   gap: 8px;
   padding: 14px 0;
+  width: 100%;
 }
 
 .mode-selection {
@@ -1954,8 +1983,8 @@ body.modal-open::before {
 }
 
 .workspace-header {
-  align-items: flex-start;
-  flex-direction: column;
+  align-items: center;
+  flex-direction: row;
   gap: var(--spacing-md);
 }
 
@@ -1965,10 +1994,9 @@ body.modal-open::before {
 }
 
 .app-bar {
-  min-height: 70px;
+  min-height: 96px;
 }
 
-#dashboard > .dashboard-intro,
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
@@ -1993,24 +2021,12 @@ body.modal-open::before {
   padding-bottom: calc(var(--nav-height) + 18px);
 }
 
-#dashboard > .dashboard-intro {
-  flex: 0 0 auto;
-}
-
 .brand-name {
   font-size: 2.45rem;
 }
 
 .top-language-nav {
   max-width: none;
-}
-
-.dashboard-intro {
-  margin-top: 20px;
-}
-
-.words-header h1 {
-  font-size: 2.45rem;
 }
 
 .dashboard-intro p,
@@ -2125,14 +2141,9 @@ body.modal-open::before {
     padding: 0;
   }
 
-  .workspace-header {
-    align-items: center;
-    flex-direction: row;
-    padding-left: 22px;
-    padding-right: 22px;
-  }
-
-  .app-bar {
+  .dashboard-intro,
+  .workspace-header,
+  .view-header-flex.app-bar {
     padding-left: 22px;
     padding-right: 22px;
   }
@@ -2141,7 +2152,6 @@ body.modal-open::before {
     max-width: 860px;
   }
 
-  #dashboard > .dashboard-intro,
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
@@ -2157,7 +2167,9 @@ body.modal-open::before {
     font-size: 3.1rem;
   }
 
-  .words-header h1 {
+  .dashboard-intro h1,
+  .words-header h1,
+  .app-bar h1 {
     font-size: 3.4rem;
   }
 
@@ -2185,7 +2197,6 @@ body.modal-open::before {
 }
 
 @media (min-width: 1100px) {
-  #dashboard > .dashboard-intro,
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,

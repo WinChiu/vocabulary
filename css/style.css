@@ -1203,6 +1203,8 @@ label {
   display: none;
   flex-direction: column;
   width: 100%;
+  overflow-y: scroll;
+  height: 100%;
 }
 
 .vocab-card-modern {

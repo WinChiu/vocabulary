@@ -7,8 +7,19 @@ export const getSpeechSynthesisLanguage = (languageCode) => {
   return locales[languageCode] || languageCode;
 };
 
+export const createGoogleTtsUrl = (text, languageCode) => {
+  const cleanText = String(text || "").trim();
+
+  return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${encodeURIComponent(languageCode)}&q=${encodeURIComponent(cleanText)}`;
+};
+
 const getSpeechSynthesisVoices = (speechSynthesis) =>
   new Promise((resolve) => {
+    if (typeof speechSynthesis.getVoices !== "function") {
+      resolve([]);
+      return;
+    }
+
     const voices = speechSynthesis.getVoices();
 
     if (voices.length > 0) {
@@ -47,6 +58,17 @@ export const playPronunciation = async (
     globalThis.SpeechSynthesisUtterance;
 
   const logWarning = dependencies.logWarning || console.warn;
+  const AudioCtor = dependencies.AudioCtor || globalThis.Audio;
+
+  if (AudioCtor) {
+    try {
+      const audio = new AudioCtor(createGoogleTtsUrl(cleanText, languageCode));
+      await audio.play();
+      return true;
+    } catch (error) {
+      logWarning(`Google TTS playback failed: ${error.message}`);
+    }
+  }
 
   if (!speechSynthesis || !SpeechSynthesisUtteranceCtor) {
     return false;

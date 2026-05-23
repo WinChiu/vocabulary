@@ -1,3 +1,5 @@
+@use './design-system';
+
 :root {
   color-scheme: light;
   --colors-primary: #cc785c;
@@ -42,11 +44,12 @@
   --nav-height: 78px;
   --fixed-action-height: 92px;
   --max-app-width: 1200px;
-  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
   --font-body:
-    "Inter", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
-  --font-code: "JetBrains Mono", Consolas, monospace;
+  --font-code: 'JetBrains Mono', Consolas, monospace;
+
   --ink: var(--colors-ink);
   --ink-2: var(--colors-body);
   --muted: var(--colors-muted);
@@ -71,6 +74,7 @@
   --shadow-subtle: none;
   --shadow-soft: 0 1px 3px rgba(20, 20, 19, 0.08);
   --font-family: var(--font-body);
+
   --md-ref-typeface-brand: var(--font-body);
   --md-ref-typeface-plain: var(--font-body);
   --md-sys-color-primary: var(--colors-primary);
@@ -183,17 +187,19 @@ md-outlined-button {
 
 md-icon,
 .material-symbols-rounded {
-  --md-icon-font: "Material Symbols Rounded";
-  font-family: "Material Symbols Rounded";
-  font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+  --md-icon-font: 'Material Symbols Rounded';
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 450,
+    'GRAD' 0,
+    'opsz' 24;
   line-height: 1;
 }
 
 md-outlined-text-field,
 md-outlined-select {
-  background: var(--colors-canvas);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
+  @include design-system.control-surface;
   --md-outlined-field-container-shape: var(--rounded-md);
   --md-outlined-text-field-container-color: var(--colors-canvas);
   --md-outlined-text-field-disabled-container-color: var(--colors-canvas);
@@ -210,9 +216,7 @@ md-outlined-select {
 }
 
 .form-field {
-  background: var(--colors-canvas);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
+  @include design-system.control-surface;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -316,6 +320,7 @@ label {
     transform: translateY(0);
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -325,6 +330,7 @@ label {
     transition-duration: 1ms !important;
   }
 }
+
 .workspace-header {
   align-items: center;
   background: var(--colors-canvas);
@@ -334,7 +340,8 @@ label {
   gap: var(--spacing-lg);
   justify-content: space-between;
   min-height: 64px;
-  padding: 14px max(14px, env(safe-area-inset-left)) 14px max(14px, env(safe-area-inset-right));
+  padding: 14px max(14px, env(safe-area-inset-left)) 14px
+    max(14px, env(safe-area-inset-right));
   width: 100%;
 }
 
@@ -632,7 +639,10 @@ label {
   justify-content: center;
   min-height: 40px;
   padding: 0 20px;
-  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
 }
 
 .app-button-primary {
@@ -804,7 +814,8 @@ label {
   gap: 10px;
   justify-content: space-between;
   min-height: 64px;
-  padding: 14px max(14px, env(safe-area-inset-left)) 14px max(14px, env(safe-area-inset-right));
+  padding: 14px max(14px, env(safe-area-inset-left)) 14px
+    max(14px, env(safe-area-inset-right));
   position: sticky;
   top: 0;
   width: 100%;
@@ -862,7 +873,8 @@ label {
   gap: var(--spacing-md);
   justify-content: space-between;
   min-height: 96px;
-  padding: 18px max(18px, env(safe-area-inset-left)) 18px max(18px, env(safe-area-inset-right));
+  padding: 18px max(18px, env(safe-area-inset-left)) 18px
+    max(18px, env(safe-area-inset-right));
   width: 100%;
 }
 
@@ -957,11 +969,11 @@ label {
   flex-wrap: wrap;
   gap: var(--spacing-sm);
 }
-
 /*
 .input-group-flex > * {
   flex: 1 1 220px;
 } */
+
 .input-wrapper-flex,
 .flex-col-gap {
   display: flex;
@@ -972,16 +984,14 @@ label {
 
 .checkbox-wrapper {
   align-items: center;
-  background: var(--colors-canvas);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
+  @include design-system.control-surface;
   display: flex;
   gap: 10px;
   min-height: 48px;
   padding: 8px 12px;
 }
 
-.checkbox-wrapper input[type=checkbox] {
+.checkbox-wrapper input[type='checkbox'] {
   accent-color: var(--colors-primary);
 }
 
@@ -1066,21 +1076,22 @@ label {
 
 #words.filters-open::before {
   background: rgba(20, 20, 19, 0.36);
-  content: "";
+  content: '';
   inset: 0;
   position: fixed;
   z-index: 55;
 }
-
 #words.filters-open .section-header-label {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+
   display: block;
   max-height: calc(100dvh - var(--nav-height) - 112px);
   overflow-y: auto;
   z-index: 60;
+
   width: calc(100% - 32px);
 }
 
@@ -1107,9 +1118,7 @@ label {
 
 .search-box,
 .select-field {
-  background: var(--colors-canvas);
-  border: 1px solid var(--colors-hairline);
-  border-radius: var(--rounded-md);
+  @include design-system.control-surface;
 }
 
 .search-box {
@@ -1152,7 +1161,11 @@ label {
 
 .select-field select {
   appearance: none;
-  background: linear-gradient(45deg, transparent 50%, var(--colors-muted) 50%) calc(100% - 14px) 50%/6px 6px no-repeat, linear-gradient(135deg, var(--colors-muted) 50%, transparent 50%) calc(100% - 9px) 50%/6px 6px no-repeat;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--colors-muted) 50%)
+      calc(100% - 14px) 50% / 6px 6px no-repeat,
+    linear-gradient(135deg, var(--colors-muted) 50%, transparent 50%)
+      calc(100% - 9px) 50% / 6px 6px no-repeat;
   border: 0;
   color: var(--colors-ink);
   min-width: 0;
@@ -1260,6 +1273,7 @@ label {
   display: flex;
   gap: var(--spacing-md);
   justify-content: space-between;
+
   padding: var(--spacing-md);
 }
 
@@ -1404,7 +1418,6 @@ label {
   display: flex;
   justify-content: center;
 }
-
 #import-preview {
   width: 100%;
 }
@@ -1506,7 +1519,8 @@ label {
   justify-content: center;
   min-height: calc(100dvh - 250px);
   overflow: hidden;
-  padding: var(--spacing-xl) var(--spacing-lg) calc(var(--fixed-action-height) + 18px);
+  padding: var(--spacing-xl) var(--spacing-lg)
+    calc(var(--fixed-action-height) + 18px);
   text-align: center;
   width: 100%;
 }
@@ -1717,14 +1731,14 @@ label {
   --md-dialog-supporting-text-color: var(--colors-body);
   inset: 0;
   margin: auto;
-  max-width: min(480px, 100vw - 34px);
+  max-width: min(480px, calc(100vw - 34px));
   position: fixed;
   z-index: 10000;
 }
 
 body.modal-open::before {
   background: rgba(20, 20, 19, 0.36);
-  content: "";
+  content: '';
   inset: 0;
   pointer-events: none;
   position: fixed;
@@ -1881,19 +1895,25 @@ body.modal-open::before {
 }
 
 @keyframes shake {
-  10%, 90% {
+  10%,
+  90% {
     transform: translate3d(-1px, 0, 0);
   }
-  20%, 80% {
+  20%,
+  80% {
     transform: translate3d(2px, 0, 0);
   }
-  30%, 50%, 70% {
+  30%,
+  50%,
+  70% {
     transform: translate3d(-4px, 0, 0);
   }
-  40%, 60% {
+  40%,
+  60% {
     transform: translate3d(4px, 0, 0);
   }
 }
+
 .shake {
   animation: shake 0.5s both;
 }
@@ -1902,101 +1922,129 @@ body.modal-open::before {
   :root {
     --max-app-width: 860px;
   }
+
   .filter-action-row {
     justify-content: space-between;
   }
+
   .card-action-label {
     width: 100%;
   }
+
   .mockup-grid {
     align-items: stretch;
     flex-direction: column;
   }
 }
+
 @media (max-width: 767px) {
   .main-workspace {
     padding: 14px 14px calc(var(--nav-height) + 18px);
   }
+
   .view {
     gap: var(--spacing-md);
   }
+
   .workspace-header {
     align-items: flex-start;
     flex-direction: column;
     gap: var(--spacing-md);
   }
+
   .brand-name {
     font-size: 2.45rem;
   }
+
   .top-language-nav {
     max-width: none;
   }
+
   .dashboard-intro {
     margin-top: 0;
   }
+
   h1 {
     font-size: 2.35rem;
   }
+
   .bento-card,
   .product-mockup-card-dark {
     padding: var(--spacing-lg);
   }
+
   .bento-card.col-4,
   .bento-card.mobile-col-4 {
     grid-column: span 4;
     min-height: 112px;
     padding: var(--spacing-md);
   }
+
   #dashboard .bento-grid {
     gap: 10px;
   }
+
   #card-due-container {
     min-height: 190px;
   }
+
   .card-value {
     font-size: 2.45rem;
   }
+
   .card-value-large {
     font-size: 4.6rem;
   }
+
   .filter-action-row {
     align-items: stretch;
     flex-direction: column;
   }
+
   .words-toolbar-actions {
     justify-content: stretch;
   }
+
   .words-action-btn {
     width: 100%;
   }
+
   .table-responsive {
     display: none;
   }
+
   .vocab-list-modern {
     display: flex;
   }
+
   #card-list-modern {
     min-height: 420px;
   }
+
   .mobile-meaning {
     display: block;
   }
+
   .mode-selection {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   #bottom-nav-container .nav-item {
     flex-direction: column;
     gap: 2px;
   }
+
   .nav-label {
     font-size: 0.68rem;
   }
+
   .form-actions-fixed,
   #bottom-nav-container {
     padding-left: 14px;
     padding-right: 14px;
   }
 }
+
 /* Mobile-first final pass: the phone layout is the source of truth. */
 .main-workspace {
   max-width: none;
@@ -2173,15 +2221,18 @@ body.modal-open::before {
   .main-workspace {
     padding: 0;
   }
+
   .dashboard-intro,
   .workspace-header,
   .view-header-flex.app-bar {
     padding-left: 22px;
     padding-right: 22px;
   }
+
   .form-actions-fixed > * {
     max-width: 860px;
   }
+
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
@@ -2192,32 +2243,40 @@ body.modal-open::before {
     max-width: 860px;
     width: calc(100% - 44px);
   }
+
   .brand-name {
     font-size: 3.1rem;
   }
+
   .dashboard-intro h1,
   .words-header h1,
   .app-bar h1 {
     font-size: 3.4rem;
   }
+
   .input-group-flex,
   .preview-metrics {
     flex-direction: row;
   }
+
   .table-responsive {
     display: block;
   }
+
   .vocab-list-modern {
     display: none;
   }
+
   #bottom-nav-container .nav-item {
     flex-direction: row;
     gap: 8px;
   }
+
   .nav-label {
     font-size: 0.82rem;
   }
 }
+
 @media (min-width: 1100px) {
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
@@ -2228,16 +2287,20 @@ body.modal-open::before {
   #card-preview > #card-preview-container {
     max-width: 1200px;
   }
+
   .form-actions-fixed > * {
     max-width: 1200px;
   }
+
   .due-card-bottom-row {
     gap: var(--spacing-lg);
   }
+
   .card-action-label {
     flex: 0 0 auto;
     width: auto;
   }
+
   .mockup-grid {
     align-items: center;
     flex-direction: row;

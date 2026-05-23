@@ -1,0 +1,25 @@
+// Shared SCSS-only design constants. Runtime CSS custom properties stay in
+// style.scss so Material Web and plain CSS can consume the same token names.
+$radius-control: var(--rounded-md);
+$radius-pill: var(--rounded-pill);
+$surface-canvas: var(--colors-canvas);
+$surface-card: var(--colors-surface-card);
+$hairline: var(--colors-hairline);
+$ink: var(--colors-ink);
+$muted: var(--colors-muted);
+$primary: var(--colors-primary);
+$on-primary: var(--colors-on-primary);
+
+@mixin control-surface {
+  background: $surface-canvas;
+  border: 1px solid $hairline;
+  border-radius: $radius-control;
+}
+
+@mixin centered-icon-button($size: 52px) {
+  align-items: center;
+  display: inline-flex;
+  height: $size;
+  justify-content: center;
+  width: $size;
+}

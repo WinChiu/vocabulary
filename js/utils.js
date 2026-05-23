@@ -117,7 +117,14 @@ export const showView = (viewId) => {
   // Toggle Main Nav visibility for primary tab-style destinations.
   const bottomNav = $('#bottom-nav-container');
   if (bottomNav) {
-    if (viewId === 'dashboard' || viewId === 'words' || viewId === 'import') {
+    const viewsWithBottomNav = [
+      'dashboard',
+      'words',
+      'review-setup',
+      'import',
+    ];
+
+    if (viewsWithBottomNav.includes(viewId)) {
       bottomNav.classList.remove('hidden');
     } else {
       bottomNav.classList.add('hidden');

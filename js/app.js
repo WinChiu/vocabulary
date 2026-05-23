@@ -1,21 +1,32 @@
 // Main App Logic (ES Module)
-import DataService from './data.js';
+import DataService from './data.js?v=4.1';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js';
+} from './language.js?v=4.1';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js';
+} from './category.js?v=4.1';
+import {
+  createVocabularyCard,
+  createVocabularyTableRow,
+  escapeHtml,
+  renderEmptyState,
+  renderExampleInput,
+  renderImportPreviewItem,
+  renderPreviewPage,
+  renderPreviewSection,
+  renderVocabularyTableShell,
+} from './components.js?v=4.1';
 import ReviewManager, {
   calculateFamiliarity,
   getFamiliarityLevel,
-} from './review.js';
-import { playPronunciation } from './tts.js';
+} from './review.js?v=4.1';
+import { playPronunciation } from './tts.js?v=4.1';
 import {
   $,
   $$,
@@ -25,7 +36,7 @@ import {
   closeModal,
   showLoading,
   hideLoading,
-} from './utils.js';
+} from './utils.js?v=4.1';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -159,12 +170,18 @@ const App = {
 
     const sourceInput = $('#word_en');
     if (sourceInput) {
-      sourceInput.label = config.sourceLabel;
       sourceInput.placeholder = config.sourcePlaceholder;
     }
 
     const examplesLabel = $('#examples-field-label');
     if (examplesLabel) examplesLabel.textContent = config.exampleLabel;
+
+    const addExampleBtn = $('#add-example-btn');
+    if (addExampleBtn) {
+      const icon = addExampleBtn.querySelector('md-icon');
+      addExampleBtn.textContent = config.addExampleActionLabel;
+      if (icon) addExampleBtn.prepend(icon);
+    }
 
     const exampleInputs = $$('.example-input');
     exampleInputs.forEach((input) => {
@@ -188,7 +205,7 @@ const App = {
       if (addTitle) addTitle.textContent = config.addTitle;
       const submitBtn = $('#save-card-btn');
       if (submitBtn && submitBtn.textContent !== 'Saving...') {
-        submitBtn.textContent = '儲存單字';
+        submitBtn.textContent = config.saveActionLabel;
       }
     }
   },
@@ -265,17 +282,7 @@ const App = {
 
     const div = document.createElement('div');
     div.className = 'example-row';
-    div.innerHTML = `
-      <md-outlined-text-field
-        type="textarea"
-        rows="2"
-        placeholder="${config.examplePlaceholder}"
-        class="example-input"
-      ></md-outlined-text-field>
-      ${`<md-icon-button type="button" class="btn-remove-example" aria-label="Remove example">
-           <md-icon>close</md-icon>
-         </md-icon-button>`}
-    `;
+    div.innerHTML = renderExampleInput(config.examplePlaceholder);
 
     container.appendChild(div);
     const field = div.querySelector('.example-input');
@@ -314,7 +321,7 @@ const App = {
 
     App.editingCardId = null;
     $('#add-card .view-header-flex h1').textContent = config.addTitle;
-    App.setButtonText('#save-card-btn', '儲存單字');
+    App.setButtonText('#save-card-btn', config.saveActionLabel);
     App.applyLanguageCopy();
   },
 
@@ -564,32 +571,41 @@ const App = {
       }
     });
 
+    const handleNavigationTarget = (target) => {
+      if (!target) return;
+
+      // Reset Import View State
+      if (target === 'import') {
+        App.prepareImportView();
+      }
+
+      if (target === 'add-card') {
+        App.prepareAddCardForm();
+      }
+
+      if (target === 'dashboard' || target === 'words') {
+        App.renderDashboard();
+      }
+
+      if (target === 'review-setup') {
+        // Reset scope to 'all' on enter or handle based on current selection
+        App.updateDueCount();
+      }
+
+      showView(target);
+    };
+
     // Navigation Interception
-    // Navigation Interception
-    $$('.nav-btn, .nav-item').forEach((btn) => {
+    $$('.nav-btn').forEach((btn) => {
       on(btn, 'click', () => {
-        const target = btn.getAttribute('data-target');
-
-        // Reset Import View State
-        if (target === 'import') {
-          App.prepareImportView();
-        }
-
-        if (target === 'add-card') {
-          App.prepareAddCardForm();
-        }
-
-        if (target === 'dashboard' || target === 'words') {
-          App.renderDashboard();
-        }
-
-        if (target === 'review-setup') {
-          // Reset scope to 'all' on enter or handle based on current selection
-          App.updateDueCount();
-        }
-
-        showView(target);
+        handleNavigationTarget(btn.getAttribute('data-target'));
       });
+    });
+
+    on($('#bottom-nav-container'), 'click', (event) => {
+      const navItem = event.target.closest('.nav-item');
+      if (!navItem) return;
+      handleNavigationTarget(navItem.getAttribute('data-target'));
     });
 
     const wordsAddBtn = $('#words-add-btn');
@@ -794,10 +810,12 @@ const App = {
       if (!card.word_en || !card.meaning_zh) {
         showPopup(
           'Missing Info',
-          '<p>Please enter both the word and Chinese meaning.</p>',
+          '<p>Please enter both the word and meaning.</p>',
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
+        btn.textContent = App.editingCardId
+          ? config.updateActionLabel
+          : config.saveActionLabel;
         return;
       }
 
@@ -809,7 +827,9 @@ const App = {
             .replace(/s$/, '')}.</p>`,
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
+        btn.textContent = App.editingCardId
+          ? config.updateActionLabel
+          : config.saveActionLabel;
         return;
       }
 
@@ -826,7 +846,9 @@ const App = {
           true,
         );
         btn.disabled = false;
-        btn.textContent = App.editingCardId ? '更新單字' : '儲存單字';
+        btn.textContent = App.editingCardId
+          ? config.updateActionLabel
+          : config.saveActionLabel;
         return;
       }
 
@@ -863,7 +885,9 @@ const App = {
         showPopup('Error', `<p>${err.message}</p>`);
       } finally {
         btn.disabled = false;
-        btn.textContent = '儲存單字';
+        btn.textContent = App.editingCardId
+          ? config.updateActionLabel
+          : config.saveActionLabel;
       }
     });
 
@@ -1303,7 +1327,7 @@ const App = {
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
     document.querySelector('#add-card .view-header-flex h1').textContent =
       config.editTitle;
-    App.setButtonText('#save-card-btn', '更新單字');
+    App.setButtonText('#save-card-btn', config.updateActionLabel);
 
     showView('add-card');
   },
@@ -1577,32 +1601,13 @@ const App = {
       }
     }
 
-    container.innerHTML = `
-      <!-- Desktop Table View -->
-      <div class="table-responsive">
-        <table class="vocab-table">
-          <thead>
-            <tr>
-              <th>單字</th>
-              <th class="desktop-only">Meaning</th>
-              <th>狀態</th>
-              <th class="actions-col">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="vocab-table-body"></tbody>
-        </table>
-      </div>
-
-      <!-- Mobile Card View -->
-      <div class="vocab-list-modern">
-      </div>
-    `;
+    container.innerHTML = renderVocabularyTableShell();
 
     const tbody = container.querySelector('#vocab-table-body');
     const listEl = container.querySelector('.vocab-list-modern');
 
     if (filteredCards.length === 0) {
-      const emptyMsg = '<div class="empty-state">No vocabulary found.</div>';
+      const emptyMsg = renderEmptyState('No vocabulary found.');
       tbody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
       listEl.innerHTML = emptyMsg;
       return;
@@ -1610,79 +1615,10 @@ const App = {
 
     pagedCards.forEach((card) => {
       const level = getFamiliarityLevel(card.review_stats);
-      // 1. Table Row (Desktop)
-      const row = document.createElement('tr');
-      row.className = 'vocab-row';
-      row.dataset.id = card.id;
-      row.innerHTML = `
-        <td>
-          <div class="vocab-table-word">${card.word_en}</div>
-          <div class="mobile-meaning">${card.meaning_zh}</div>
-        </td>
-        <td class="desktop-only">
-          <div class="vocab-table-meaning">${card.meaning_zh}</div>
-        </td>
-        <td>
-          <span class="level-indicator ${level.class}">${level.label}</span>
-        </td>
-        <td class="vocab-table-actions">
-          <button type="button" class="icon-button btn-star ${
-            card.is_starred === true || String(card.is_starred) === 'true'
-              ? 'starred'
-              : ''
-          }" data-starred="${
-            card.is_starred === true || String(card.is_starred) === 'true'
-          }">
-            <img src="${
-              card.is_starred === true || String(card.is_starred) === 'true'
-                ? 'assets/star-filled.svg'
-                : 'assets/star.svg'
-            }" class="action-icon" alt="star" />
-          </button>
-           <button type="button" class="icon-button btn-edit">
-            <span class="material-symbols-rounded">edit</span>
-          </button>
-          <button type="button" class="icon-button btn-delete">
-            <span class="material-symbols-rounded">delete</span>
-          </button>
-        </td>
-      `;
+      const row = createVocabularyTableRow(card, level);
       tbody.appendChild(row);
 
-      // 2. Card (Mobile)
-      const cardEl = document.createElement('div');
-      cardEl.className = 'vocab-card-modern';
-      cardEl.dataset.id = card.id;
-      cardEl.innerHTML = `
-        <div class="vocab-card-main">
-          <div class="vocab-card-word">${card.word_en}</div>
-          <div class="vocab-card-meaning">${card.meaning_zh}</div>
-        </div>
-        <div class="vocab-card-side">
-          <span class="level-indicator ${level.class}">${level.label}</span>
-         <div class="vocab-card-actions">
-           <button type="button" class="icon-button btn-star ${
-             card.is_starred === true || String(card.is_starred) === 'true'
-               ? 'starred'
-               : ''
-           }" data-starred="${
-             card.is_starred === true || String(card.is_starred) === 'true'
-           }">
-             <img src="${
-               card.is_starred === true || String(card.is_starred) === 'true'
-                 ? 'assets/star-filled.svg'
-                 : 'assets/star.svg'
-             }" class="action-icon" alt="star" />
-           </button>
-            <button type="button" class="icon-button btn-edit">
-             <span class="material-symbols-rounded">edit</span>
-           </button>
-           <button type="button" class="icon-button btn-delete">
-             <span class="material-symbols-rounded">delete</span>
-           </button>
-         </div>
-        </div>
-      `;
+      const cardEl = createVocabularyCard(card, level);
       listEl.appendChild(cardEl);
     });
   },
@@ -1726,35 +1662,12 @@ const App = {
     const level = getFamiliarityLevel(card.review_stats);
     const config = App.getLanguageConfig();
     const dictionaryEnabled = config.dictionaryEnabled;
-    const category = normalizeCategory(card.category);
-    const categoryBadge = category
-      ? `<span class="category-pill">${category}</span>`
-      : '';
     const note = String(card.note || '').trim();
-    const noteSection = note
-      ? `
-            <div class="preview-section">
-                <div class="preview-section-label">筆記</div>
-                <div class="preview-section-content">
-                    <div>${note}</div>
-                </div>
-            </div>
-      `
-      : '';
+    const noteSection = renderPreviewSection('筆記', note);
     const examples = Array.isArray(card.example_en)
       ? card.example_en.filter((ex) => String(ex).trim().length > 0)
       : [];
-    const exampleSection =
-      examples.length > 0
-        ? `
-            <div class="preview-section">
-                <div class="preview-section-label">${config.exampleLabel}</div>
-                <div class="preview-section-content">
-                    ${examples.map((ex) => `<div>${ex}</div>`).join('')}
-                </div>
-            </div>
-      `
-        : '';
+    const exampleSection = renderPreviewSection(config.exampleLabel, examples);
     const dictionaryMetrics = dictionaryEnabled
       ? `
                 <div id="preview-phonetic-container" class="preview-metric-card hidden">
@@ -1778,26 +1691,14 @@ const App = {
 
     // 1. Render Content into the new view container
     const container = $('#card-preview-container');
-    container.innerHTML = `
-        <div class="preview-page">
-            <div>
-              <div class="preview-title">${card.word_en}</div>
-              <div class="preview-meaning">${card.meaning_zh}</div>
-            </div>
-
-            <div class="preview-metrics">
-                <div class="status-badge-container status-${level.label.toLowerCase()}">
-                    <div class="status-label">狀態</div>
-                    <div class="status-value">${level.label.toUpperCase()}</div>
-                </div>
-                ${dictionaryMetrics}
-            </div>
-
-            ${noteSection}
-            ${exampleSection}
-            ${dictionarySections}
-        </div>
-    `;
+    container.innerHTML = renderPreviewPage({
+      card,
+      level,
+      noteSection,
+      exampleSection,
+      dictionaryMetrics,
+      dictionarySections,
+    });
 
     // 2. Update Footer States (Star Icon)
     const starBtn = document.querySelector('.preview-star-btn');
@@ -1915,8 +1816,8 @@ const App = {
         definitionItems.forEach((item) => {
           defsHtml += `
                 <div>
-                   <span class="definition-pos">${item.posAbbr}</span>
-                   <span>${item.definition}</span>
+                   <span class="definition-pos">${escapeHtml(item.posAbbr)}</span>
+                   <span>${escapeHtml(item.definition)}</span>
                 </div>
              `;
         });
@@ -1996,7 +1897,7 @@ const App = {
     // Update Header with Count
     const sectionLabel = importPreviewContainer.querySelector('.section-label');
     if (sectionLabel) {
-      sectionLabel.innerHTML = `Data Preview <span class="import-count">(${data.length} vocabularies)</span>`;
+      sectionLabel.innerHTML = `Data Preview <span class="import-count">(${escapeHtml(data.length)} vocabularies)</span>`;
     }
 
     if (importPreviewContainer) {
@@ -2013,34 +1914,13 @@ const App = {
         const note = row.note || '';
         const examples = row.example_en || [];
 
-        const categoryHtml = category
-          ? `<span class="category-pill">${category}</span>`
-          : '';
-
-        const noteHtml = note
-          ? `<div class="vocab-card-note">${note}</div>`
-          : '';
-
-        let examplesHtml = '';
-        if (Array.isArray(examples) && examples.length > 0) {
-          examplesHtml = `
-            <div class="vocab-card-examples">
-              ${examples.map((ex) => `<div>${ex}</div>`).join('')}
-            </div>
-          `;
-        }
-
-        listHTML += `
-          <div class="preview-item">
-            <div class="vocab-card-main">
-              <div class="vocab-card-word">${word}</div>
-              ${categoryHtml}
-              <div class="vocab-card-meaning">${meaning}</div>
-            </div>
-            ${noteHtml}
-            ${examplesHtml}
-          </div>
-        `;
+        listHTML += renderImportPreviewItem({
+          word,
+          meaning,
+          category,
+          note,
+          examples,
+        });
       });
       previewList.innerHTML = listHTML;
     }

@@ -1640,13 +1640,18 @@ label {
   color: var(--colors-body);
 }
 
+#card-preview-footer {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
+
 #grading-btns {
   padding: var(--spacing-lg);
   padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
 }
 
 #card-preview {
-  padding-bottom: calc(var(--fixed-action-height));
+  padding-bottom: calc(var(--fixed-action-height) + var(--spacing-lg));
 }
 
 #done-btn-container {

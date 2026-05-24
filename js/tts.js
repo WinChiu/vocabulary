@@ -1,21 +1,21 @@
 export const getSpeechSynthesisLanguage = (languageCode) => {
   const locales = {
-    en: "en-US",
-    sv: "sv-SE",
+    en: 'en-US',
+    sv: 'sv-SE',
   };
 
   return locales[languageCode] || languageCode;
 };
 
 export const createGoogleTtsUrl = (text, languageCode) => {
-  const cleanText = String(text || "").trim();
+  const cleanText = String(text || '').trim();
 
   return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${encodeURIComponent(languageCode)}&q=${encodeURIComponent(cleanText)}`;
 };
 
 const getSpeechSynthesisVoices = (speechSynthesis) =>
   new Promise((resolve) => {
-    if (typeof speechSynthesis.getVoices !== "function") {
+    if (typeof speechSynthesis.getVoices !== 'function') {
       resolve([]);
       return;
     }
@@ -47,7 +47,7 @@ export const playPronunciation = async (
   languageCode,
   dependencies = {},
 ) => {
-  const cleanText = String(text || "").trim();
+  const cleanText = String(text || '').trim();
   if (!cleanText || !languageCode) return false;
 
   const speechSynthesis =
@@ -69,9 +69,6 @@ export const playPronunciation = async (
       try {
         audio.preload = 'auto';
       } catch (e) {}
-      try {
-        audio.crossOrigin = 'anonymous';
-      } catch (e) {}
 
       const tryPlay = async () => {
         return audio.play();
@@ -83,7 +80,9 @@ export const playPronunciation = async (
       } catch (err) {
         // If playback was blocked due to lack of user gesture, schedule a one-time
         // user-interaction retry (touchstart / click). This often resolves mobile issues.
-        const isGestureError = err && (err.name === 'NotAllowedError' || err.name === 'NotSupportedError');
+        const isGestureError =
+          err &&
+          (err.name === 'NotAllowedError' || err.name === 'NotSupportedError');
         if (isGestureError) {
           const retry = async () => {
             document.removeEventListener('touchstart', retry, true);
@@ -96,10 +95,19 @@ export const playPronunciation = async (
           };
 
           // Use capture so we catch early interaction on some mobile webviews
-          document.addEventListener('touchstart', retry, { once: true, passive: true, capture: true });
-          document.addEventListener('click', retry, { once: true, capture: true });
-          logWarning('Google TTS playback blocked — will retry on next user interaction.');
-          return false;
+          document.addEventListener('touchstart', retry, {
+            once: true,
+            passive: true,
+            capture: true,
+          });
+          document.addEventListener('click', retry, {
+            once: true,
+            capture: true,
+          });
+          logWarning(
+            'Google TTS playback blocked — will retry on next user interaction.',
+          );
+          // Do not return here so we can fall back to speechSynthesis if available
         }
 
         throw err;

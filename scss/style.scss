@@ -461,7 +461,7 @@ label {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -589,11 +589,6 @@ label {
     background: var(--colors-primary);
     border-color: var(--colors-primary);
     color: var(--colors-on-primary);
-  }
-
-  &:disabled {
-    cursor: default;
-    opacity: 0.72;
   }
 }
 
@@ -1049,7 +1044,7 @@ label {
 
 #add-card-container,
 #review-session-setup,
-.import-card {
+.import-content {
   margin-bottom: var(--fixed-action-height);
 }
 
@@ -1058,8 +1053,10 @@ label {
   padding-bottom: var(--spacing-lg);
 }
 
-.import-card {
+.import-content {
   align-items: center;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
@@ -1482,17 +1479,29 @@ label {
 }
 
 .preview-list-container {
-  background: transparent;
+  background: var(--colors-canvas);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-lg);
   display: flex;
   flex-direction: column;
+  min-height: 460px;
   overflow: hidden;
 }
 
 .import-preview-card {
   cursor: default;
 
-  .vocab-card-main {
+  &-row {
+    align-items: center;
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: space-between;
     width: 100%;
+  }
+
+  .category-pill {
+    flex: 0 1 auto;
+    margin-left: auto;
   }
 }
 
@@ -1783,7 +1792,7 @@ label {
 
 #bottom-nav-container {
   align-items: center;
-  background: rgba(245, 240, 232, 0.96);
+  background: #fff;
   backdrop-filter: blur(18px);
   border: 1px solid var(--colors-hairline);
   bottom: 0;
@@ -2176,7 +2185,7 @@ body.modal-open::before {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -2187,7 +2196,7 @@ body.modal-open::before {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -2340,7 +2349,7 @@ body.modal-open::before {
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
-  #import > .bento-card,
+  #import > .import-content,
   #review-setup > .bento-card,
   #review-summary > .bento-grid,
   #card-preview > #card-preview-container {
@@ -2387,7 +2396,7 @@ body.modal-open::before {
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
-  #import > .bento-card,
+  #import > .import-content,
   #review-setup > .bento-card,
   #review-summary > .bento-grid,
   #card-preview > #card-preview-container {

@@ -71,7 +71,7 @@ test("renders example input through a shared form component", () => {
   assert.match(html, /btn-remove-example/);
 });
 
-test("renders import preview with the list card style and no actions", () => {
+test("renders import preview as word and category only", () => {
   const html = renderImportPreviewItem({
     word: "<Jag>",
     meaning: "我",
@@ -83,7 +83,10 @@ test("renders import preview with the list card style and no actions", () => {
   assert.match(html, /class="vocab-card-modern import-preview-card"/);
   assert.match(html, /&lt;Jag&gt;/);
   assert.match(html, /人稱代名詞/);
-  assert.match(html, /Jag heter Win\./);
+  assert.doesNotMatch(html, /我/);
+  assert.doesNotMatch(html, /note/);
+  assert.doesNotMatch(html, /Jag heter Win\./);
+  assert.doesNotMatch(html, /vocab-card-meaning|vocab-card-note|vocab-card-examples/);
   assert.doesNotMatch(html, /vocab-card-actions/);
   assert.doesNotMatch(html, /btn-star|btn-edit|btn-delete/);
 });

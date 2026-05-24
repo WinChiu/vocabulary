@@ -1476,25 +1476,13 @@ const App = {
     }
 
     if (elDueCard && elActionLabel) {
-      if (dueTotal === 0) {
-        elDueCard.classList.remove('orange');
-        elDueCard.classList.add('green');
-        elDueCard.classList.add('is-complete');
-        elActionLabel.disabled = true;
-        elActionLabel.setAttribute('aria-label', 'Review complete');
-        elActionLabel.setAttribute('title', 'Review complete');
-        elActionLabel.innerHTML =
-          '<span class="material-symbols-rounded">check</span>';
-      } else {
-        elDueCard.classList.remove('green');
-        elDueCard.classList.add('orange');
-        elDueCard.classList.remove('is-complete');
-        elActionLabel.disabled = false;
-        elActionLabel.setAttribute('aria-label', 'Start review');
-        elActionLabel.setAttribute('title', 'Start review');
-        elActionLabel.innerHTML =
-          '<span class="material-symbols-rounded">play_arrow</span>';
-      }
+      elDueCard.classList.remove('green', 'is-complete');
+      elDueCard.classList.add('orange');
+      elActionLabel.disabled = false;
+      elActionLabel.setAttribute('aria-label', 'Start review');
+      elActionLabel.setAttribute('title', 'Start review');
+      elActionLabel.innerHTML =
+        '<span class="material-symbols-rounded">play_arrow</span>';
     }
 
     // List rendering

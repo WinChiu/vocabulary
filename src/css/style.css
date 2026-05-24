@@ -445,7 +445,7 @@ label {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -453,12 +453,6 @@ label {
   margin-right: auto;
   max-width: 430px;
   width: calc(100% - 28px);
-}
-
-.words-header p {
-  color: var(--colors-muted);
-  font-size: 1rem;
-  margin-top: 4px;
 }
 
 .bento-grid {
@@ -569,10 +563,6 @@ label {
   background: var(--colors-primary);
   border-color: var(--colors-primary);
   color: var(--colors-on-primary);
-}
-.due-review-button:disabled {
-  cursor: default;
-  opacity: 0.72;
 }
 
 #card-new-container,
@@ -1007,7 +997,7 @@ label {
 
 #add-card-container,
 #review-session-setup,
-.import-card {
+.import-content {
   margin-bottom: var(--fixed-action-height);
 }
 
@@ -1016,8 +1006,10 @@ label {
   padding-bottom: var(--spacing-lg);
 }
 
-.import-card {
+.import-content {
   align-items: center;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
@@ -1412,17 +1404,28 @@ label {
 }
 
 .preview-list-container {
-  background: transparent;
+  background: var(--colors-canvas);
+  border: 1px solid var(--colors-hairline);
+  border-radius: var(--rounded-lg);
   display: flex;
   flex-direction: column;
+  min-height: 460px;
   overflow: hidden;
 }
 
 .import-preview-card {
   cursor: default;
 }
-.import-preview-card .vocab-card-main {
+.import-preview-card-row {
+  align-items: center;
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: space-between;
   width: 100%;
+}
+.import-preview-card .category-pill {
+  flex: 0 1 auto;
+  margin-left: auto;
 }
 
 .vocab-card-note, .vocab-card-examples {
@@ -1691,7 +1694,7 @@ label {
 
 #bottom-nav-container {
   align-items: center;
-  background: rgba(245, 240, 232, 0.96);
+  background: #fff;
   backdrop-filter: blur(18px);
   border: 1px solid var(--colors-hairline);
   bottom: 0;
@@ -2045,7 +2048,7 @@ body.modal-open::before {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -2056,7 +2059,7 @@ body.modal-open::before {
 #dashboard > .bento-grid,
 #words > .full-width-list-container,
 #add-card > .bento-card,
-#import > .bento-card,
+#import > .import-content,
 #review-setup > .bento-card,
 #review-summary > .bento-grid,
 #card-preview > #card-preview-container {
@@ -2196,7 +2199,7 @@ body.modal-open::before {
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
-  #import > .bento-card,
+  #import > .import-content,
   #review-setup > .bento-card,
   #review-summary > .bento-grid,
   #card-preview > #card-preview-container {
@@ -2233,7 +2236,7 @@ body.modal-open::before {
   #dashboard > .bento-grid,
   #words > .full-width-list-container,
   #add-card > .bento-card,
-  #import > .bento-card,
+  #import > .import-content,
   #review-setup > .bento-card,
   #review-summary > .bento-grid,
   #card-preview > #card-preview-container {

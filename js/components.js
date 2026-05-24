@@ -186,31 +186,11 @@ export const renderPreviewPage = ({
   </div>
 `;
 
-export const renderImportPreviewItem = ({
-  word,
-  meaning,
-  category,
-  note,
-  examples,
-}) => {
-  const exampleHtml =
-    Array.isArray(examples) && examples.length > 0
-      ? `
-        <div class="vocab-card-examples">
-          ${examples.map((example) => `<div>${escapeHtml(example)}</div>`).join('')}
-        </div>
-      `
-      : '';
-
-  return `
+export const renderImportPreviewItem = ({ word, category }) => `
     <div class="vocab-card-modern import-preview-card">
-      <div class="vocab-card-main">
+      <div class="import-preview-card-row">
         <div class="vocab-card-word">${escapeHtml(word)}</div>
         ${renderCategoryPill(category)}
-        <div class="vocab-card-meaning">${escapeHtml(meaning)}</div>
-        ${note ? `<div class="vocab-card-note">${escapeHtml(note)}</div>` : ''}
-        ${exampleHtml}
       </div>
     </div>
   `;
-};

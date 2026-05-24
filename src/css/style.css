@@ -1920,6 +1920,10 @@ body.modal-open::before {
   color: var(--colors-error);
 }
 
+#card-preview-container {
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
 @keyframes shake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);

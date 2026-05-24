@@ -2010,6 +2010,10 @@ body.modal-open::before {
   color: var(--colors-error);
 }
 
+#card-preview-container {
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
 @keyframes shake {
   10%,
   90% {

@@ -1418,6 +1418,11 @@ label {
   width: 100%;
 }
 
+#reveal-btn-container {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
+
 .import-preview-label {
   margin-bottom: var(--spacing-md);
   text-align: center;

@@ -45,6 +45,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
@@ -357,6 +358,18 @@ const App = {
         showView('login');
       }
     });
+
+    try {
+      const result = await getRedirectResult(auth);
+      if (result && result.user) {
+        App.userInfo = result.user;
+        showView('dashboard');
+        await App.refreshData();
+      }
+    } catch (redirectError) {
+      console.error('Redirect sign-in failed', redirectError);
+      showPopup('Login Error', `<p>${redirectError.message}</p>`);
+    }
 
     // Handle Login Button
     const loginBtn = $('#google-login-btn');

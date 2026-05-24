@@ -1482,6 +1482,10 @@ label {
   width: 100%;
 }
 
+.import-preview-label {
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
 .preview-list-container {
   background: var(--colors-canvas);
   border: 1px solid var(--colors-hairline);

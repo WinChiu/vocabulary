@@ -390,7 +390,10 @@ const App = {
             await ensureAuthPersistence();
           } catch (e) {
             // Non-fatal: still attempt sign-in but show a friendly note if persistence fails
-            console.warn('Auth persistence unavailable, falling back to default', e);
+            console.warn(
+              'Auth persistence unavailable, falling back to default',
+              e,
+            );
           }
 
           const provider = new GoogleAuthProvider();
@@ -658,7 +661,10 @@ const App = {
     on(wordsFilterBtn, 'click', openWordsFilters);
     on(wordsFilterCloseBtn, 'click', closeWordsFilters);
     on(wordsView, 'click', (event) => {
-      if (event.target === wordsView && wordsView.classList.contains('filters-open')) {
+      if (
+        event.target === wordsView &&
+        wordsView.classList.contains('filters-open')
+      ) {
         closeWordsFilters();
       }
     });

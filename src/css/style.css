@@ -1596,31 +1596,62 @@ label {
   padding: 7px 10px;
 }
 
+#spelling-input,
 .cloze-input {
   all: unset;
+  box-sizing: border-box;
   border-bottom: 2px solid var(--colors-primary);
   color: var(--colors-ink);
-  display: inline-block;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   margin: 16px 0;
+  min-height: 3rem;
   min-width: 84px;
+  max-width: 100%;
   padding: 0 4px 5px;
   text-align: center;
   vertical-align: baseline;
-  width: 100%;
+  width: auto;
 }
+#spelling-input:disabled,
+.cloze-input:disabled {
+  opacity: 1;
+  cursor: default;
+}
+#spelling-input.correct,
 .cloze-input.correct {
   border-color: var(--colors-success);
   color: var(--colors-success);
 }
+#spelling-input.error,
 .cloze-input.error {
   border-color: var(--colors-error);
   color: var(--colors-error);
 }
+#spelling-input.revealed,
+.cloze-input.revealed {
+  border-color: var(--colors-warning);
+  background-color: rgba(212, 160, 23, 0.12);
+  color: var(--colors-body);
+}
+
+#grading-btns {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
 
 #card-preview {
   padding-bottom: calc(var(--fixed-action-height));
+}
+
+#done-btn-container {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
 }
 
 #card-preview-container {

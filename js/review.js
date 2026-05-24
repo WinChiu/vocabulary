@@ -68,11 +68,14 @@ const createFlexibleRegex = (text) => {
     string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   const parts = text.trim().split(/\s+/);
+  const suffixPattern = "[\\p{L}\\p{M}'’-]*"; // Allow unicode letters, accents, hyphen, apostrophe
   const pattern = parts
-    .map((part) => escapeRegExp(part) + '[a-z]*') // Allow suffix on each word
+    .map((part) => escapeRegExp(part) + suffixPattern)
     .join('\\s+'); // Allow flexible whitespace between words
 
-  return new RegExp(`\\b${pattern}\\b`, 'gi');
+  const boundaryPrefix = '(^|[^\\p{L}\\p{N}_])';
+  const boundarySuffix = '(?=$|[^\\p{L}\\p{N}_])';
+  return new RegExp(`${boundaryPrefix}(${pattern})${boundarySuffix}`, 'giu');
 };
 
 // Helper to get examples as array
@@ -152,7 +155,7 @@ class ReviewSession {
 
         return `
                     <div class="flashcard" id="active-flashcard">
-                       
+
                         ${categoryBadge}
                         <div class="content">${front}</div>
                         <div class="sub-content ${
@@ -182,11 +185,15 @@ class ReviewSession {
                         </div>
                     `;
         }
+        const answerLength = Math.max(
+          String(card.word_en || '').trim().length,
+          4,
+        );
         return `
                     <div class="flashcard">
                         ${categoryBadge}
                         <div class="content">${card.meaning_zh}</div>
-                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" >
+                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${answerLength}" style="width:${answerLength}ch">
                          <div id="spelling-feedback" class="feedback-msg"></div>
                     </div>
                 `;
@@ -201,8 +208,11 @@ class ReviewSession {
         // Pick a random example that contains the word
         const allExamples = getExamples(card);
         // We prefer examples that actually match the word for Cloze
-        const validExamples = allExamples.filter((ex) => regex.test(ex));
-        regex.lastIndex = 0; // Reset
+        const validExamples = allExamples.filter((ex) => {
+          regex.lastIndex = 0;
+          return regex.test(ex);
+        });
+        regex.lastIndex = 0; // Reset after filtering
 
         // If no example matches (rare), allow any (will just show text without blank)
         const candidates =
@@ -224,8 +234,15 @@ class ReviewSession {
                            }</div>
                            <div class="content cloze-content">${sentence.replace(
                              regex,
-                             (match) =>
-                               `<input type="text" class="cloze-input error" value="${match}" disabled size="${Math.max(match.length, 4)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`,
+                             (fullMatch, prefix, matchWord) =>
+                               `${prefix}<input type="text" class="cloze-input ${
+                                 this.clozeRevealedByUnknown
+                                   ? 'revealed'
+                                   : 'error'
+                               }" value="${matchWord}" disabled size="${Math.max(
+                                 matchWord.length,
+                                 4,
+                               )}" style="width:${Math.max(matchWord.length, 4)}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`,
                            )}</div>
                         </div>
                     `;
@@ -245,11 +262,14 @@ class ReviewSession {
                               hasMatch
                                 ? sentence.replace(
                                     regex,
-                                    (match) =>
-                                      `<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(match.length, 4)}">`,
+                                    (fullMatch, prefix, matchWord) =>
+                                      `${prefix}<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(
+                                        matchWord.length,
+                                        4,
+                                      )}" style="width:${Math.max(matchWord.length, 4)}ch">`,
                                   )
                                 : sentence +
-                                  `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type word..." >`
+                                  `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="" style="width:4ch">`
                             }
                         </div>
                         <div id="cloze-feedback" class="feedback-msg"></div>
@@ -310,7 +330,13 @@ const ReviewManager = {
       if (clozeInput) {
         clozeInput.focus();
         clozeInput.onkeydown = (e) => {
-          if (e.key === 'Enter') ReviewManager.checkCloze();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            ReviewManager.checkCloze();
+          }
+        };
+        clozeInput.oninput = () => {
+          clozeInput.classList.remove('error');
         };
       }
 
@@ -383,6 +409,10 @@ const ReviewManager = {
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
 
+      if (session.mode === 4) {
+        session.clozeRevealedByUnknown = true;
+      }
+
       // Local calculation (Optimistic/Batch)
       const newStats = calculateNextReviewStats(
         card.review_stats,
@@ -392,6 +422,8 @@ const ReviewManager = {
       );
       card.review_stats = newStats;
       session.modifiedCards.set(card.id, card);
+    } else {
+      session.clozeRevealedByUnknown = false;
     }
 
     session.isCardRevealed = true;
@@ -429,6 +461,7 @@ const ReviewManager = {
     const session = ReviewManager.session;
     if (session.hasNext()) {
       session.next();
+      session.clozeRevealedByUnknown = false;
       ReviewManager.updateUI();
     } else {
       ReviewManager.finish();
@@ -550,7 +583,7 @@ const ReviewManager = {
       session.modifiedCards.set(card.id, card);
 
       setTimeout(() => {
-        ReviewManager.reveal(true);
+        ReviewManager.next();
       }, 700);
     } else {
       session.incorrectCardIds.add(card.id);
@@ -593,6 +626,7 @@ const ReviewManager = {
     const regex = createFlexibleRegex(card.word_en);
     // Use the currently displayed sentence for matching context if needed.
     // We must check against the specific sentence used in the cloze to find the correct variation (suffixed word)
+    regex.lastIndex = 0;
     const matches = (session.currentClozeSentence.match(regex) || []).map((m) =>
       normalize(m),
     );
@@ -601,11 +635,10 @@ const ReviewManager = {
     ReviewManager._backupStats(card);
 
     if (val === word || matches.includes(val)) {
-      feedback.textContent = ''; // UI feedback via color is enough, cleaner
+      feedback.textContent = '';
+      input.classList.remove('error');
       input.classList.add('correct');
-      // input.disabled = true; // Prevent further typing (Fixed syntax from previous edit)
-      const el = input;
-      el.disabled = true;
+      input.disabled = true;
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];
@@ -621,12 +654,13 @@ const ReviewManager = {
 
       setTimeout(() => {
         ReviewManager.next();
-      }, 700);
+      }, 1000);
     } else {
-      // Turn text red, no feedback text
       session.incorrectCardIds.add(card.id);
       feedback.textContent = '';
       input.classList.add('error');
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];

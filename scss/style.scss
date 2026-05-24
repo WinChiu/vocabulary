@@ -1673,20 +1673,32 @@ label {
   font-weight: 500;
   padding: 7px 10px;
 }
-
+#spelling-input,
 .cloze-input {
   all: unset;
+  box-sizing: border-box;
   border-bottom: 2px solid var(--colors-primary);
   color: var(--colors-ink);
-  display: inline-block;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   margin: 16px 0;
+  min-height: 3rem;
   min-width: 84px;
+  max-width: 100%;
   padding: 0 4px 5px;
   text-align: center;
   vertical-align: baseline;
-  width: 100%;
+  width: auto;
+
+  &:disabled {
+    opacity: 1;
+    cursor: default;
+  }
 
   &.correct {
     border-color: var(--colors-success);
@@ -1697,12 +1709,24 @@ label {
     border-color: var(--colors-error);
     color: var(--colors-error);
   }
-}
 
+  &.revealed {
+    border-color: var(--colors-warning);
+    background-color: rgba(212, 160, 23, 0.12);
+    color: var(--colors-body);
+  }
+}
+#grading-btns {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
 #card-preview {
   padding-bottom: calc(var(--fixed-action-height));
 }
-
+#done-btn-container {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
+}
 #card-preview-container {
   background: var(--colors-surface-card);
   border: 1px solid var(--colors-hairline);

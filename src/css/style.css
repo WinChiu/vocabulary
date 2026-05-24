@@ -1012,6 +1012,10 @@ label {
   overflow-y: scroll !important;
 }
 
+#self-assess-btns {
+  padding: var(--spacing-lg);
+}
+
 .import-content {
   align-items: center;
   display: flex;

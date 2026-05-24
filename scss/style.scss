@@ -1054,7 +1054,9 @@ label {
   height: calc(100% - var(--fixed-action-height) - var(--nav-height) - 96px);
   overflow-y: scroll !important;
 }
-
+#self-assess-btns {
+  padding: var(--spacing-lg);
+}
 .import-content {
   align-items: center;
   display: flex;

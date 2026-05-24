@@ -521,8 +521,7 @@ const ReviewManager = {
         // Render Congratulations
         forgottenContainer.innerHTML = `
             <div class="summary-message">
-                <h2>完成複習</h2>
-                <p>這次全部答對。</p>
+                <h2>Well done!</h2>
             </div>
         `;
         forgottenContainer.style.display = 'flex';
@@ -533,11 +532,7 @@ const ReviewManager = {
     // Batch Save
     const cardsToSave = Array.from(session.modifiedCards.values());
     if (cardsToSave.length > 0) {
-      // We do this in background or await?
-      // To be safe and ensure data persistence, lets trigger it.
-      // If we want it fast, we can don't await, but user might exit app.
-      // Let's await it but show a non-blocking toast?
-      // Or show popup "Partial success" etc if fail?
+
 
       try {
         await DataService.batchUpdateStats(cardsToSave, session.languageMode);

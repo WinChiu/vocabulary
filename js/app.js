@@ -48,6 +48,8 @@ import {
   getRedirectResult,
   signOut,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 
 const App = {
@@ -332,7 +334,6 @@ const App = {
     $('#import-file-section').classList.remove('hidden');
     $('#csv-file-input').value = '';
   },
-
   init: async () => {
     App.applyLanguageCopy();
     App.bindEvents();
@@ -349,29 +350,36 @@ const App = {
 
     const auth = getAuth();
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        App.userInfo = user;
-        showView('dashboard');
-        await App.refreshData();
-      } else {
-        showView('login');
+    const goToDashboard = async (user) => {
+      App.userInfo = user;
+
+      if (window.location.search || window.location.hash) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       }
-    });
+
+      showView('dashboard');
+      await App.refreshData();
+    };
 
     try {
-      const result = await getRedirectResult(auth);
-      if (result && result.user) {
-        App.userInfo = result.user;
-        showView('dashboard');
-        await App.refreshData();
-      }
+      await getRedirectResult(auth);
     } catch (redirectError) {
       console.error('Redirect sign-in failed', redirectError);
       showPopup('Login Error', `<p>${redirectError.message}</p>`);
     }
 
-    // Handle Login Button
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await goToDashboard(user);
+      } else {
+        showView('login');
+      }
+    });
+
     const loginBtn = $('#google-login-btn');
     if (loginBtn) {
       on(loginBtn, 'click', async () => {

@@ -44,6 +44,7 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signOut,
@@ -350,31 +351,36 @@ const App = {
 
     const auth = getAuth();
 
-    const goToDashboard = async (user) => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account',
+    });
+
+    const enterDashboard = async (user) => {
       App.userInfo = user;
-
-      if (window.location.search || window.location.hash) {
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
-      }
-
       showView('dashboard');
       await App.refreshData();
     };
 
     try {
-      await getRedirectResult(auth);
-    } catch (redirectError) {
-      console.error('Redirect sign-in failed', redirectError);
-      showPopup('Login Error', `<p>${redirectError.message}</p>`);
+      await setPersistence(auth, browserLocalPersistence);
+    } catch (error) {
+      console.error('Failed to set auth persistence', error);
+    }
+
+    try {
+      const redirectResult = await getRedirectResult(auth);
+      if (redirectResult?.user) {
+        await enterDashboard(redirectResult.user);
+        return;
+      }
+    } catch (error) {
+      console.error('Redirect result failed', error);
     }
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        await goToDashboard(user);
+        await enterDashboard(user);
       } else {
         showView('login');
       }
@@ -384,11 +390,22 @@ const App = {
     if (loginBtn) {
       on(loginBtn, 'click', async () => {
         try {
-          const provider = new GoogleAuthProvider();
-          await signInWithRedirect(auth, provider);
-        } catch (error) {
-          console.error('Login failed', error);
-          showPopup('Login Error', `<p>${error.message}</p>`);
+          await setPersistence(auth, browserLocalPersistence);
+
+          const result = await signInWithPopup(auth, provider);
+
+          if (result?.user) {
+            await enterDashboard(result.user);
+          }
+        } catch (popupError) {
+          console.warn('Popup login failed, fallback to redirect', popupError);
+
+          try {
+            await signInWithRedirect(auth, provider);
+          } catch (redirectError) {
+            console.error('Redirect login failed', redirectError);
+            showPopup('Login Error', `<p>${redirectError.message}</p>`);
+          }
         }
       });
     }

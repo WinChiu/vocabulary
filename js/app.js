@@ -47,6 +47,10 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  inMemoryPersistence,
 } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
 
 const App = {
@@ -348,6 +352,24 @@ const App = {
 
     const auth = getAuth();
 
+    // Ensure a usable persistence is set for environments where storage may be unavailable
+    const ensureAuthPersistence = async () => {
+      const candidates = [
+        browserLocalPersistence,
+        browserSessionPersistence,
+        inMemoryPersistence,
+      ];
+
+      for (const p of candidates) {
+        try {
+          await setPersistence(auth, p);
+          return;
+        } catch (e) {
+          // try next
+        }
+      }
+    };
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         App.userInfo = user;
@@ -363,6 +385,14 @@ const App = {
     if (loginBtn) {
       on(loginBtn, 'click', async () => {
         try {
+          // Try to set a usable persistence before initiating popup/redirect flows
+          try {
+            await ensureAuthPersistence();
+          } catch (e) {
+            // Non-fatal: still attempt sign-in but show a friendly note if persistence fails
+            console.warn('Auth persistence unavailable, falling back to default', e);
+          }
+
           const provider = new GoogleAuthProvider();
           await signInWithPopup(auth, provider);
         } catch (error) {

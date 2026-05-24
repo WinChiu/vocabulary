@@ -45,8 +45,6 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
   setPersistence,
@@ -356,16 +354,6 @@ const App = {
       prompt: 'select_account',
     });
 
-    const isMobileLikeBrowser = () => {
-      const ua = navigator.userAgent || '';
-      const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
-      const isStandalone =
-        window.matchMedia?.('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
-
-      return isMobileUA || isStandalone;
-    };
-
     const enterDashboard = async (user) => {
       if (!user) return;
 
@@ -403,54 +391,12 @@ const App = {
       console.error('Failed to set auth persistence', error);
     }
 
-    try {
-      const redirectResult = await getRedirectResult(auth);
-
-      if (redirectResult?.user) {
-        sessionStorage.removeItem('firebaseRedirectPending');
-        await enterDashboard(redirectResult.user);
-        return;
-      }
-    } catch (error) {
-      sessionStorage.removeItem('firebaseRedirectPending');
-
-      console.error('Redirect result failed', {
-        code: error.code,
-        message: error.message,
-        error,
-      });
-
-      showPopup(
-        'Login Error',
-        `<p>${error.code || 'unknown-error'}</p><p>${error.message}</p>`,
-      );
-    }
-
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        sessionStorage.removeItem('firebaseRedirectPending');
         await enterDashboard(user);
-        return;
+      } else {
+        showLogin();
       }
-
-      const redirectPending =
-        sessionStorage.getItem('firebaseRedirectPending') === 'true';
-
-      if (redirectPending) {
-        sessionStorage.removeItem('firebaseRedirectPending');
-
-        console.warn(
-          'Returned from redirect, but Firebase did not restore a user.',
-        );
-
-        showPopup(
-          'Login Not Completed',
-          `<p>Google login returned, but Firebase did not restore the session.</p>
-         <p>Please open this app in Chrome/Safari directly, not inside LINE, Instagram, Messenger, or another in-app browser.</p>`,
-        );
-      }
-
-      showLogin();
     });
 
     const loginBtn = $('#google-login-btn');
@@ -460,56 +406,34 @@ const App = {
         try {
           await setPersistence(auth, browserLocalPersistence);
 
-          if (isMobileLikeBrowser()) {
-            sessionStorage.setItem('firebaseRedirectPending', 'true');
-            await signInWithRedirect(auth, provider);
-            return;
-          }
-
           const result = await signInWithPopup(auth, provider);
 
           if (result?.user) {
             await enterDashboard(result.user);
           }
-        } catch (popupError) {
-          console.warn('Popup login failed, fallback to redirect', {
-            code: popupError.code,
-            message: popupError.message,
-            error: popupError,
+        } catch (error) {
+          console.error('Popup login failed', {
+            code: error.code,
+            message: error.message,
+            error,
           });
 
-          const fallbackCodes = new Set([
-            'auth/popup-blocked',
-            'auth/popup-closed-by-user',
-            'auth/cancelled-popup-request',
-            'auth/operation-not-supported-in-this-environment',
-          ]);
+          let message = error.message;
 
-          if (!fallbackCodes.has(popupError.code)) {
-            showPopup(
-              'Login Error',
-              `<p>${popupError.code || 'unknown-error'}</p><p>${popupError.message}</p>`,
-            );
-            return;
+          if (
+            error.code === 'auth/popup-blocked' ||
+            error.code === 'auth/popup-closed-by-user' ||
+            error.code === 'auth/cancelled-popup-request' ||
+            error.code === 'auth/operation-not-supported-in-this-environment'
+          ) {
+            message =
+              'Popup login was blocked or not supported. Please open this app directly in Safari or Chrome, not inside a saved home-screen WebApp or in-app browser.';
           }
 
-          try {
-            sessionStorage.setItem('firebaseRedirectPending', 'true');
-            await signInWithRedirect(auth, provider);
-          } catch (redirectError) {
-            sessionStorage.removeItem('firebaseRedirectPending');
-
-            console.error('Redirect login failed', {
-              code: redirectError.code,
-              message: redirectError.message,
-              error: redirectError,
-            });
-
-            showPopup(
-              'Login Error',
-              `<p>${redirectError.code || 'unknown-error'}</p><p>${redirectError.message}</p>`,
-            );
-          }
+          showPopup(
+            'Login Error',
+            `<p>${error.code || 'unknown-error'}</p><p>${message}</p>`,
+          );
         }
       });
     }

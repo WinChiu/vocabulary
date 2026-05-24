@@ -7,6 +7,7 @@ import {
   escapeHtml,
   renderEmptyState,
   renderExampleInput,
+  renderImportPreviewItem,
   renderPreviewSection,
   renderVocabularyTableShell,
 } from "../js/components.js";
@@ -68,4 +69,21 @@ test("renders example input through a shared form component", () => {
   assert.match(html, /class="example-input form-control form-textarea"/);
   assert.match(html, /placeholder="例句 &lt;placeholder&gt;"/);
   assert.match(html, /btn-remove-example/);
+});
+
+test("renders import preview with the list card style and no actions", () => {
+  const html = renderImportPreviewItem({
+    word: "<Jag>",
+    meaning: "我",
+    category: "人稱代名詞",
+    note: "note",
+    examples: ["Jag heter Win."],
+  });
+
+  assert.match(html, /class="vocab-card-modern import-preview-card"/);
+  assert.match(html, /&lt;Jag&gt;/);
+  assert.match(html, /人稱代名詞/);
+  assert.match(html, /Jag heter Win\./);
+  assert.doesNotMatch(html, /vocab-card-actions/);
+  assert.doesNotMatch(html, /btn-star|btn-edit|btn-delete/);
 });

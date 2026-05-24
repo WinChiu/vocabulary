@@ -6,6 +6,10 @@ import {
   normalizeLanguageMode,
 } from './language.js?v=4.1';
 import {
+  createAuthBypassUser,
+  shouldBypassAuthForTesting,
+} from './auth-flow.js?v=4.1';
+import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
@@ -194,9 +198,6 @@ const App = {
     const importTitle = $('#import-title');
     if (importTitle) importTitle.textContent = config.importTitle;
 
-    const addActionLabel = $('#words-add-label');
-    if (addActionLabel) addActionLabel.textContent = 'add';
-
     const modeFlipSource = $('#mode-flip-source-label');
     if (modeFlipSource) modeFlipSource.textContent = '單字卡';
 
@@ -335,18 +336,11 @@ const App = {
     App.applyLanguageCopy();
     App.bindEvents();
 
-    const demoParam = new URLSearchParams(window.location.search).get('demo');
-    App.isMockMode = demoParam === '1';
+    App.isMockMode = shouldBypassAuthForTesting(window.location.search);
     DataService.setMockMode(App.isMockMode);
 
     if (App.isMockMode) {
-      App.currentLanguageMode = 'sv';
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, App.currentLanguageMode);
-      App.applyLanguageCopy();
-      App.userInfo = {
-        displayName: 'Demo User',
-        email: 'demo@local',
-      };
+      App.userInfo = createAuthBypassUser();
       showView('dashboard');
       await App.refreshData();
       return;
@@ -1486,13 +1480,20 @@ const App = {
         elDueCard.classList.remove('orange');
         elDueCard.classList.add('green');
         elDueCard.classList.add('is-complete');
-        elActionLabel.textContent = '完成今日複習';
+        elActionLabel.disabled = true;
+        elActionLabel.setAttribute('aria-label', 'Review complete');
+        elActionLabel.setAttribute('title', 'Review complete');
+        elActionLabel.innerHTML =
+          '<span class="material-symbols-rounded">check</span>';
       } else {
         elDueCard.classList.remove('green');
         elDueCard.classList.add('orange');
         elDueCard.classList.remove('is-complete');
+        elActionLabel.disabled = false;
+        elActionLabel.setAttribute('aria-label', 'Start review');
+        elActionLabel.setAttribute('title', 'Start review');
         elActionLabel.innerHTML =
-          '<span class="material-symbols-rounded">play_arrow</span> 開始複習';
+          '<span class="material-symbols-rounded">play_arrow</span>';
       }
     }
 

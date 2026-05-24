@@ -23,10 +23,10 @@ const createElement = (tagName, className, dataset = {}, innerHTML = '') => {
   return element;
 };
 
-export const renderMaterialIcon = (name) =>
+const renderMaterialIcon = (name) =>
   `<span class="material-symbols-rounded">${escapeHtml(name)}</span>`;
 
-export const renderIconButton = ({
+const renderIconButton = ({
   className = '',
   icon,
   imageSrc,
@@ -47,7 +47,7 @@ export const renderIconButton = ({
   )}"${dataAttrs}>${content}</button>`;
 };
 
-export const renderStarButton = (card) => {
+const renderStarButton = (card) => {
   const active = isStarred(card);
   return renderIconButton({
     className: `btn-star ${active ? 'starred' : ''}`.trim(),
@@ -57,21 +57,19 @@ export const renderStarButton = (card) => {
   });
 };
 
-export const renderRowActions = (card) => `
+const renderRowActions = (card) => `
   ${renderStarButton(card)}
   ${renderIconButton({ className: 'btn-edit', icon: 'edit' })}
   ${renderIconButton({ className: 'btn-delete', icon: 'delete' })}
 `;
 
-export const renderStatusBadge = (level) =>
+const renderStatusBadge = (level) =>
   `<span class="level-indicator ${escapeHtml(level.class)}">${escapeHtml(
     level.label,
   )}</span>`;
 
-export const renderCategoryPill = (category) =>
-  category
-    ? `<span class="category-pill">${escapeHtml(category)}</span>`
-    : '';
+const renderCategoryPill = (category) =>
+  category ? `<span class="category-pill">${escapeHtml(category)}</span>` : '';
 
 export const renderEmptyState = (message) =>
   `<div class="empty-state">${escapeHtml(message)}</div>`;
@@ -176,7 +174,7 @@ export const renderPreviewPage = ({
       <div class="status-badge-container status-${escapeHtml(
         level.label.toLowerCase(),
       )}">
-        <div class="status-label">狀態</div>
+        <div class="status-label">Status</div>
         <div class="status-value">${escapeHtml(level.label.toUpperCase())}</div>
       </div>
       ${dictionaryMetrics}
@@ -188,7 +186,13 @@ export const renderPreviewPage = ({
   </div>
 `;
 
-export const renderImportPreviewItem = ({ word, meaning, category, note, examples }) => {
+export const renderImportPreviewItem = ({
+  word,
+  meaning,
+  category,
+  note,
+  examples,
+}) => {
   const exampleHtml =
     Array.isArray(examples) && examples.length > 0
       ? `
@@ -199,14 +203,14 @@ export const renderImportPreviewItem = ({ word, meaning, category, note, example
       : '';
 
   return `
-    <div class="preview-item">
+    <div class="vocab-card-modern import-preview-card">
       <div class="vocab-card-main">
         <div class="vocab-card-word">${escapeHtml(word)}</div>
         ${renderCategoryPill(category)}
         <div class="vocab-card-meaning">${escapeHtml(meaning)}</div>
+        ${note ? `<div class="vocab-card-note">${escapeHtml(note)}</div>` : ''}
+        ${exampleHtml}
       </div>
-      ${note ? `<div class="vocab-card-note">${escapeHtml(note)}</div>` : ''}
-      ${exampleHtml}
     </div>
   `;
 };

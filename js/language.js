@@ -1,12 +1,10 @@
 export const LANGUAGE_STORAGE_KEY = 'just-word-language-mode';
 
-export const LANGUAGE_MODES = {
+const LANGUAGE_MODES = {
   en: {
     mode: 'en',
     collection: 'cards',
     sourceLabel: 'Word',
-    sourceShort: 'EN',
-    sourceName: 'English',
     sourcePlaceholder: 'hej',
     exampleLabel: 'Example',
     examplePlaceholder: 'Hej! Hur mar du?',
@@ -16,8 +14,7 @@ export const LANGUAGE_MODES = {
     updateActionLabel: 'Update word',
     addExampleActionLabel: 'Add example',
     searchPlaceholder: '搜尋單字或中文意思...',
-    importTitle: 'Import words',
-    addActionLabel: '新增',
+    importTitle: 'Import',
     dictionaryLanguage: 'en',
     dictionaryEnabled: true,
     ttsLanguage: 'en',
@@ -26,8 +23,6 @@ export const LANGUAGE_MODES = {
     mode: 'sv',
     collection: 'cards_sv',
     sourceLabel: 'Word',
-    sourceShort: 'SV',
-    sourceName: 'Swedish',
     sourcePlaceholder: 'hej',
     exampleLabel: 'Example',
     examplePlaceholder: 'e.g., Det ar lagom varmt idag.',
@@ -37,8 +32,7 @@ export const LANGUAGE_MODES = {
     updateActionLabel: 'Update word',
     addExampleActionLabel: 'Add example',
     searchPlaceholder: '搜尋單字或中文意思...',
-    importTitle: 'Import words',
-    addActionLabel: '新增',
+    importTitle: 'Import',
     dictionaryLanguage: null,
     dictionaryEnabled: false,
     ttsLanguage: 'sv',

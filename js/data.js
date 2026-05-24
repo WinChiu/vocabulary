@@ -18,22 +18,6 @@ import { getLanguageConfig, normalizeLanguageMode } from './language.js';
 let currentLanguageMode = 'en';
 let mockMode = false;
 
-const makeMockStats = (state, offsetDays = 0) => {
-  const stats = INITIAL_STATS();
-  stats.state = state;
-  if (state !== 'NEW') {
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + offsetDays);
-    nextDate.setHours(0, 0, 0, 0);
-    stats.next_review_date = nextDate;
-    stats.success_streak = state === 'MASTERED' ? 4 : 1;
-    stats.interval_days = state === 'MASTERED' ? 14 : 1;
-    stats.total_attempts = state === 'MASTERED' ? 8 : 2;
-    stats.correct_attempts = state === 'MASTERED' ? 7 : 1;
-  }
-  return stats;
-};
-
 let mockCardsByLanguage;
 
 const getCollectionName = (languageMode = currentLanguageMode) =>
@@ -63,63 +47,7 @@ const getMockCardsByLanguage = () => {
   if (mockCardsByLanguage) return mockCardsByLanguage;
 
   mockCardsByLanguage = {
-    en: [
-      {
-        id: 'demo-hej',
-        word_en: 'hej',
-        meaning_zh: '你好',
-        category: '問候',
-        note: 'A short greeting.',
-        example_en: ['Hej! Hur mar du?', 'Hej, trevligt att traffas.'],
-        is_starred: false,
-        created_at: new Date('2026-05-19T09:00:00'),
-        review_stats: makeMockStats('LEARNING', -1),
-      },
-      {
-        id: 'demo-bok',
-        word_en: 'bok',
-        meaning_zh: '書',
-        category: '物品',
-        note: '',
-        example_en: ['Jag laser en bok.'],
-        is_starred: true,
-        created_at: new Date('2026-05-18T09:00:00'),
-        review_stats: makeMockStats('MASTERED', -2),
-      },
-      {
-        id: 'demo-ett',
-        word_en: 'ett',
-        meaning_zh: '一（中性）',
-        category: '數字',
-        note: '',
-        example_en: ['Jag har ett apple.'],
-        is_starred: false,
-        created_at: new Date('2026-05-17T09:00:00'),
-        review_stats: makeMockStats('LEARNING', 0),
-      },
-      {
-        id: 'demo-stol',
-        word_en: 'stol',
-        meaning_zh: '椅子',
-        category: '傢俱',
-        note: '',
-        example_en: ['Stolen ar vid bordet.'],
-        is_starred: false,
-        created_at: new Date('2026-05-16T09:00:00'),
-        review_stats: makeMockStats('NEW'),
-      },
-      {
-        id: 'demo-tack',
-        word_en: 'tack',
-        meaning_zh: '謝謝',
-        category: '問候',
-        note: '',
-        example_en: ['Tack sa mycket.'],
-        is_starred: false,
-        created_at: new Date('2026-05-15T09:00:00'),
-        review_stats: makeMockStats('LEARNING', -3),
-      },
-    ],
+    en: [],
     sv: [],
   };
 
@@ -274,7 +202,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const list = mockCards[mode] || mockCards.en;
+      const list = mockCards[mode] || (mockCards[mode] = []);
       const id = `demo-${Date.now()}`;
       list.unshift({
         id,
@@ -314,7 +242,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const cards = mockCards[mode]?.length ? mockCards[mode] : mockCards.en;
+      const cards = mockCards[mode] || [];
       return cards.map((card) => ({
         ...card,
         review_stats: JSON.parse(JSON.stringify(card.review_stats || {})),
@@ -346,7 +274,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const list = mockCards[mode] || mockCards.en;
+      const list = mockCards[mode] || [];
       const card = list.find((item) => item.id === id);
       if (card) card.is_starred = !currentStatus;
       return;
@@ -370,7 +298,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const list = mockCards[mode] || mockCards.en;
+      const list = mockCards[mode] || [];
       const index = list.findIndex((item) => item.id === id);
       if (index !== -1) {
         list[index] = {
@@ -409,7 +337,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const list = mockCards[mode] || mockCards.en;
+      const list = mockCards[mode] || [];
       const index = list.findIndex((item) => item.id === id);
       if (index !== -1) list.splice(index, 1);
       return;
@@ -471,7 +399,7 @@ const DataService = {
     if (mockMode) {
       const mode = normalizeLanguageMode(languageMode);
       const mockCards = getMockCardsByLanguage();
-      const list = mockCards[mode] || mockCards.en;
+      const list = mockCards[mode] || [];
       cards.forEach((updatedCard) => {
         const card = list.find((item) => item.id === updatedCard.id);
         if (card) card.review_stats = updatedCard.review_stats;

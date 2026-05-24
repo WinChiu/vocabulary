@@ -1051,6 +1051,8 @@ label {
 #review-session-setup {
   overflow: visible;
   padding-bottom: var(--spacing-lg);
+  height: calc(100% - var(--fixed-action-height) - var(--nav-height) - 96px);
+  overflow-y: scroll !important;
 }
 
 .import-content {

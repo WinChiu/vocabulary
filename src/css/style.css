@@ -42,9 +42,9 @@
   --nav-height: 78px;
   --fixed-action-height: 92px;
   --max-app-width: 1200px;
-  --font-display: "Noto Serif TC", "Cormorant Garamond", serif;
-  --font-body: "Noto Sans TC", sans-serif;
-  --font-code: "JetBrains Mono", "Noto Sans TC", monospace;
+  --font-display: 'Noto Serif TC', 'Cormorant Garamond', serif;
+  --font-body: 'Noto Sans TC', sans-serif;
+  --font-code: 'JetBrains Mono', 'Noto Sans TC', monospace;
   --ink: var(--colors-ink);
   --ink-2: var(--colors-body);
   --muted: var(--colors-muted);
@@ -181,7 +181,7 @@ md-outlined-button {
 
 md-icon,
 .material-symbols-rounded {
-  --md-icon-font: "Material Symbols Rounded";
+  --md-icon-font: 'Material Symbols Rounded';
   font-family: "Material Symbols Rounded";
   font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
   line-height: 1;
@@ -243,6 +243,10 @@ md-outlined-select {
   border-radius: var(--rounded-md);
   background: var(--colors-canvas);
   padding: 12px 14px;
+}
+
+.form-control::-moz-placeholder {
+  color: var(--colors-muted-soft);
 }
 
 .form-control::placeholder {
@@ -1004,6 +1008,8 @@ label {
 #review-session-setup {
   overflow: visible;
   padding-bottom: var(--spacing-lg);
+  height: calc(100% - var(--fixed-action-height) - var(--nav-height) - 96px);
+  overflow-y: scroll !important;
 }
 
 .import-content {
@@ -1131,6 +1137,9 @@ label {
   outline: 0;
   width: 100%;
 }
+.search-field::-moz-placeholder {
+  color: var(--colors-muted-soft);
+}
 .search-field::placeholder {
   color: var(--colors-muted-soft);
 }
@@ -1140,6 +1149,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  height: -moz-fit-content;
   height: fit-content;
   padding: 8px 14px;
 }
@@ -1150,7 +1160,9 @@ label {
   line-height: 1;
 }
 .select-field select {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   background: linear-gradient(45deg, transparent 50%, var(--colors-muted) 50%) calc(100% - 14px) 50%/6px 6px no-repeat, linear-gradient(135deg, var(--colors-muted) 50%, transparent 50%) calc(100% - 9px) 50%/6px 6px no-repeat;
   border: 0;
   color: var(--colors-ink);
@@ -2252,6 +2264,4 @@ body.modal-open::before {
     align-items: center;
     flex-direction: row;
   }
-}
-
-/*# sourceMappingURL=style.css.map */
+}/*# sourceMappingURL=style.css.map */

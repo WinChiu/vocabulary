@@ -356,10 +356,45 @@ const App = {
       prompt: 'select_account',
     });
 
+    const isMobileLikeBrowser = () => {
+      const ua = navigator.userAgent || '';
+      const isMobileUA = /Android|iPhone|iPad|iPod/i.test(ua);
+      const isStandalone =
+        window.matchMedia?.('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+      return isMobileUA || isStandalone;
+    };
+
     const enterDashboard = async (user) => {
+      if (!user) return;
+
       App.userInfo = user;
+
+      if (window.location.search || window.location.hash) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      }
+
       showView('dashboard');
-      await App.refreshData();
+
+      try {
+        await App.refreshData();
+      } catch (error) {
+        console.error('Dashboard data loading failed after login', error);
+        showPopup(
+          'Loading Error',
+          `<p>Login succeeded, but dashboard data failed to load.</p><p>${error.message}</p>`,
+        );
+      }
+    };
+
+    const showLogin = () => {
+      App.userInfo = null;
+      showView('login');
     };
 
     try {
@@ -370,27 +405,66 @@ const App = {
 
     try {
       const redirectResult = await getRedirectResult(auth);
+
       if (redirectResult?.user) {
+        sessionStorage.removeItem('firebaseRedirectPending');
         await enterDashboard(redirectResult.user);
         return;
       }
     } catch (error) {
-      console.error('Redirect result failed', error);
+      sessionStorage.removeItem('firebaseRedirectPending');
+
+      console.error('Redirect result failed', {
+        code: error.code,
+        message: error.message,
+        error,
+      });
+
+      showPopup(
+        'Login Error',
+        `<p>${error.code || 'unknown-error'}</p><p>${error.message}</p>`,
+      );
     }
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        sessionStorage.removeItem('firebaseRedirectPending');
         await enterDashboard(user);
-      } else {
-        showView('login');
+        return;
       }
+
+      const redirectPending =
+        sessionStorage.getItem('firebaseRedirectPending') === 'true';
+
+      if (redirectPending) {
+        sessionStorage.removeItem('firebaseRedirectPending');
+
+        console.warn(
+          'Returned from redirect, but Firebase did not restore a user.',
+        );
+
+        showPopup(
+          'Login Not Completed',
+          `<p>Google login returned, but Firebase did not restore the session.</p>
+         <p>Please open this app in Chrome/Safari directly, not inside LINE, Instagram, Messenger, or another in-app browser.</p>`,
+        );
+      }
+
+      showLogin();
     });
 
     const loginBtn = $('#google-login-btn');
+
     if (loginBtn) {
       on(loginBtn, 'click', async () => {
         try {
           await setPersistence(auth, browserLocalPersistence);
+
+          if (isMobileLikeBrowser()) {
+            sessionStorage.setItem('firebaseRedirectPending', 'true');
+            await signInWithRedirect(auth, provider);
+            return;
+          }
 
           const result = await signInWithPopup(auth, provider);
 
@@ -398,13 +472,43 @@ const App = {
             await enterDashboard(result.user);
           }
         } catch (popupError) {
-          console.warn('Popup login failed, fallback to redirect', popupError);
+          console.warn('Popup login failed, fallback to redirect', {
+            code: popupError.code,
+            message: popupError.message,
+            error: popupError,
+          });
+
+          const fallbackCodes = new Set([
+            'auth/popup-blocked',
+            'auth/popup-closed-by-user',
+            'auth/cancelled-popup-request',
+            'auth/operation-not-supported-in-this-environment',
+          ]);
+
+          if (!fallbackCodes.has(popupError.code)) {
+            showPopup(
+              'Login Error',
+              `<p>${popupError.code || 'unknown-error'}</p><p>${popupError.message}</p>`,
+            );
+            return;
+          }
 
           try {
+            sessionStorage.setItem('firebaseRedirectPending', 'true');
             await signInWithRedirect(auth, provider);
           } catch (redirectError) {
-            console.error('Redirect login failed', redirectError);
-            showPopup('Login Error', `<p>${redirectError.message}</p>`);
+            sessionStorage.removeItem('firebaseRedirectPending');
+
+            console.error('Redirect login failed', {
+              code: redirectError.code,
+              message: redirectError.message,
+              error: redirectError,
+            });
+
+            showPopup(
+              'Login Error',
+              `<p>${redirectError.code || 'unknown-error'}</p><p>${redirectError.message}</p>`,
+            );
           }
         }
       });

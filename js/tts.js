@@ -62,11 +62,50 @@ export const playPronunciation = async (
 
   if (AudioCtor) {
     try {
-      const audio = new AudioCtor(createGoogleTtsUrl(cleanText, languageCode));
-      await audio.play();
-      return true;
+      const src = createGoogleTtsUrl(cleanText, languageCode);
+      const audio = new AudioCtor(src);
+
+      // Hints for mobile: preload and CORS may help some browsers
+      try {
+        audio.preload = 'auto';
+      } catch (e) {}
+      try {
+        audio.crossOrigin = 'anonymous';
+      } catch (e) {}
+
+      const tryPlay = async () => {
+        return audio.play();
+      };
+
+      try {
+        await tryPlay();
+        return true;
+      } catch (err) {
+        // If playback was blocked due to lack of user gesture, schedule a one-time
+        // user-interaction retry (touchstart / click). This often resolves mobile issues.
+        const isGestureError = err && (err.name === 'NotAllowedError' || err.name === 'NotSupportedError');
+        if (isGestureError) {
+          const retry = async () => {
+            document.removeEventListener('touchstart', retry, true);
+            document.removeEventListener('click', retry, true);
+            try {
+              await tryPlay();
+            } catch (e) {
+              logWarning(`Google TTS playback retry failed: ${e && e.message}`);
+            }
+          };
+
+          // Use capture so we catch early interaction on some mobile webviews
+          document.addEventListener('touchstart', retry, { once: true, passive: true, capture: true });
+          document.addEventListener('click', retry, { once: true, capture: true });
+          logWarning('Google TTS playback blocked — will retry on next user interaction.');
+          return false;
+        }
+
+        throw err;
+      }
     } catch (error) {
-      logWarning(`Google TTS playback failed: ${error.message}`);
+      logWarning(`Google TTS playback failed: ${error && error.message}`);
     }
   }
 

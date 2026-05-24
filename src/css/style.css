@@ -39,7 +39,7 @@
   --spacing-xl: 32px;
   --spacing-xxl: 48px;
   --spacing-section: 96px;
-  --nav-height: 78px;
+  --nav-height: 90px;
   --fixed-action-height: 92px;
   --max-app-width: 1200px;
   --font-display: 'Noto Serif TC', 'Cormorant Garamond', serif;
@@ -928,7 +928,6 @@ label {
   left: 0;
   margin-top: auto;
   max-width: none;
-  padding: 18px 24px max(18px, env(safe-area-inset-bottom));
   position: fixed;
   width: 100%;
   z-index: 40;
@@ -1014,6 +1013,7 @@ label {
 
 #self-assess-btns {
   padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
 }
 
 .import-content {
@@ -1219,7 +1219,6 @@ label {
   background: var(--colors-canvas);
   border: 1px solid var(--colors-hairline);
   border-radius: var(--rounded-lg);
-  min-height: 460px;
   overflow: hidden;
 }
 
@@ -1721,6 +1720,7 @@ label {
   max-width: none;
   min-height: var(--nav-height);
   padding: 8px 16px max(8px, env(safe-area-inset-bottom));
+  padding-bottom: var(--spacing-xl);
   position: fixed;
   width: 100%;
   z-index: 35;
@@ -1739,8 +1739,7 @@ label {
   padding: 0 10px;
 }
 #bottom-nav-container .nav-item.active {
-  background: var(--colors-primary);
-  color: var(--colors-on-primary);
+  color: var(--colors-primary);
 }
 
 .nav-icon {
@@ -2016,9 +2015,6 @@ body.modal-open::before {
   .vocab-list-modern {
     display: flex;
   }
-  #card-list-modern {
-    min-height: 420px;
-  }
   .mobile-meaning {
     display: block;
   }
@@ -2168,10 +2164,6 @@ body.modal-open::before {
   display: flex;
 }
 
-#card-list-modern {
-  min-height: 420px;
-}
-
 .mobile-meaning {
   display: block;
 }
@@ -2200,7 +2192,7 @@ body.modal-open::before {
 }
 
 .vocab-section-container {
-  padding-bottom: var(--fixed-action-height);
+  padding-bottom: calc(var(--nav-height) + var(--spacing-md));
 }
 
 @media (min-width: 768px) {

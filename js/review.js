@@ -1,7 +1,6 @@
 // Review Logic (ES Module)
 import { $, $$, showView, showPopup } from './utils.js';
 import DataService, { calculateNextReviewStats } from './data.js';
-import { normalizeCategory } from './category.js';
 
 const MODE_MAP = {
   1: 'flip_en',
@@ -24,7 +23,7 @@ const normalize = (text) => {
 };
 
 // Familiarity Calculator (Spec 5) - Updated for new state
-export const calculateFamiliarity = (stats) => {
+const calculateFamiliarity = (stats) => {
   if (!stats) return 0;
 
   // Map states to a score for backward compatibility with UI progress bars/filters
@@ -129,11 +128,6 @@ class ReviewSession {
   renderCard() {
     const card = this.getCurrentCard();
     if (!card) return '<div class="flashcard">Error: No card</div>';
-    const category = normalizeCategory(card.category);
-    // const categoryBadge = category
-    //   ? `<div class="review-card-meta"><span class="category-pill">${category}</span></div>`
-    //   : '';
-
     const categoryBadge = '';
 
     switch (this.mode) {
@@ -168,33 +162,38 @@ class ReviewSession {
                         </div>
                         ${
                           !this.isCardRevealed
-                            ? '<div class="hint">點擊翻面</div>'
+                            ? '<div class="hint">Click to flip</div>'
                             : ''
                         }
                     </div>
                 `;
       case 3: // Spelling
         const spellingEx = getExamples(card)[0]; // Show first example context
-        if (this.isCardRevealed) {
-          return `
-                        <div class="flashcard">
-                            ${categoryBadge}
-                            <div class="sub-content review-prompt">${card.meaning_zh}</div>
-                            <div class="content">${card.word_en}</div>
-                             <div class="sub-content"><small>${spellingEx}</small></div>
-                        </div>
-                    `;
-        }
         const answerLength = Math.max(
           String(card.word_en || '').trim().length,
           4,
         );
+        if (this.isCardRevealed) {
+          return `
+                        <div class="flashcard">
+                            ${categoryBadge}
+                            <div class="review-question">${card.meaning_zh}</div>
+                            <div class="review-answer-slot">
+                              <input type="text" class="review-answer-field revealed" value="${card.word_en}" disabled size="${answerLength}" style="width:${answerLength}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                            </div>
+                            <div class="review-example">${spellingEx}</div>
+                        </div>
+                    `;
+        }
         return `
                     <div class="flashcard">
                         ${categoryBadge}
-                        <div class="content">${card.meaning_zh}</div>
-                        <input type="text" class="cloze-input" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${answerLength}" style="width:${answerLength}ch">
-                         <div id="spelling-feedback" class="feedback-msg"></div>
+                        <div class="review-question">${card.meaning_zh}</div>
+                        <div class="review-answer-slot">
+                          <input type="text" class="review-answer-field" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${answerLength}" style="width:${answerLength}ch">
+                        </div>
+                        <div class="review-example">${spellingEx}</div>
+                        <div id="spelling-feedback" class="feedback-msg"></div>
                     </div>
                 `;
       case 4: // Cloze
@@ -471,8 +470,6 @@ const ReviewManager = {
   finish: async () => {
     const session = ReviewManager.session;
 
-    // $('#summary-total').textContent = session.cards.length; // Removed from DOM
-
     const forgotCount = session.incorrectCardIds.size;
     const totalCount = session.cards.length;
     const rememberedCount = totalCount - forgotCount;
@@ -499,7 +496,7 @@ const ReviewManager = {
       if (forgotCount > 0) {
         // Render List Structure
         forgottenContainer.innerHTML = `
-            <div class="card-label">需要再複習</div>
+            <div class="card-label">Needs more review</div>
             <div id="summary-forgotten-list" class="summary-forgotten-text"></div>
         `;
         forgottenContainer.style.display = 'flex';
@@ -532,8 +529,6 @@ const ReviewManager = {
     // Batch Save
     const cardsToSave = Array.from(session.modifiedCards.values());
     if (cardsToSave.length > 0) {
-
-
       try {
         await DataService.batchUpdateStats(cardsToSave, session.languageMode);
         // console.log("Batch sync successful");

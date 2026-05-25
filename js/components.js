@@ -79,9 +79,9 @@ export const renderVocabularyTableShell = () => `
     <table class="vocab-table">
       <thead>
         <tr>
-          <th>單字</th>
+          <th>Word</th>
           <th class="desktop-only">Meaning</th>
-          <th>狀態</th>
+          <th>Status</th>
           <th class="actions-col">Actions</th>
         </tr>
       </thead>
@@ -115,12 +115,12 @@ export const createVocabularyCard = (card, level) =>
     'vocab-card-modern',
     { id: card.id },
     `
-      <div class="vocab-card-main">
+      <div class="vocab-card-row vocab-card-row-primary">
         <div class="vocab-card-word">${escapeHtml(card.word_en)}</div>
-        <div class="vocab-card-meaning">${escapeHtml(card.meaning_zh)}</div>
-      </div>
-      <div class="vocab-card-side">
         ${renderStatusBadge(level)}
+      </div>
+      <div class="vocab-card-row vocab-card-row-secondary">
+        <div class="vocab-card-meaning">${escapeHtml(card.meaning_zh)}</div>
         <div class="vocab-card-actions">${renderRowActions(card)}</div>
       </div>
     `,
@@ -188,7 +188,7 @@ export const renderPreviewPage = ({
 
 export const renderImportPreviewItem = ({ word, category }) => `
     <div class="vocab-card-modern import-preview-card">
-      <div class="import-preview-card-row">
+      <div class="vocab-card-row vocab-card-row-primary">
         <div class="vocab-card-word">${escapeHtml(word)}</div>
         ${renderCategoryPill(category)}
       </div>

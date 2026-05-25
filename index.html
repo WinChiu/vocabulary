@@ -186,7 +186,7 @@
             </label>
             <div class="filter-group-row">
               <label class="select-field">
-                <!-- <span>狀態</span> -->
+                <!-- <span>Status</span> -->
                 <select
                   id="filter-status"
                   class="vocab-select-pill"
@@ -200,7 +200,7 @@
               </label>
 
               <label class="select-field">
-                <!-- <span>類型</span> -->
+                <!-- <span>Type</span> -->
                 <select
                   id="filter-type"
                   class="vocab-select-pill"
@@ -212,7 +212,7 @@
               </label>
 
               <label class="select-field">
-                <!-- <span>類別</span> -->
+                <!-- <span>Category</span> -->
                 <select
                   id="filter-category"
                   class="vocab-select-pill"
@@ -236,7 +236,7 @@
         <!-- Vocabulary List Section (Full Width) -->
         <div class="workspace-header words-header">
           <div>
-            <h1>Word list</h1>
+            <h1>Vocabulary</h1>
           </div>
           <div class="topbar-actions">
             <button
@@ -259,7 +259,7 @@
           </div>
         </div>
         <div class="full-width-list-container vocab-section-container">
-          <div id="card-list-modern">
+          <div id="card-list-modern" class="card-list-modern">
             <!-- Cards injected here -->
           </div>
 
@@ -368,16 +368,8 @@
       <!-- Import View -->
       <section id="import" class="view">
         <div class="view-header-flex app-bar">
-          <button
-            type="button"
-            id="btn-back-import"
-            class="icon-button"
-            aria-label="Back"
-          >
-            <span class="material-symbols-rounded">arrow_back</span>
-          </button>
           <h1 id="import-title">Import</h1>
-          <div class="app-bar-spacer"></div>
+          <div class="section-label import-preview-label">0 vocabulary</div>
         </div>
         <div class="import-content">
           <div id="import-file-section">
@@ -392,10 +384,14 @@
             </div>
           </div>
 
-          <div id="import-preview" class="hidden">
-            <div class="section-label import-preview-label"></div>
-            <div id="preview-list" class="preview-list-container">
-              <!-- Preview items injected here -->
+          <div
+            id="import-preview"
+            class="full-width-list-container vocab-section-container hidden"
+          >
+            <div id="preview-list" class="card-list-modern">
+              <div class="vocab-list-modern import-preview-list">
+                <!-- Preview items injected here -->
+              </div>
             </div>
           </div>
         </div>
@@ -414,60 +410,60 @@
       <!-- Review Configuration View -->
       <section id="review-setup" class="view">
         <div class="view-header-flex app-bar">
-          <button
-            type="button"
-            id="btn-back-review-setup"
-            class="icon-button"
-            aria-label="Back"
-          >
-            <span class="material-symbols-rounded">arrow_back</span>
-          </button>
           <h1>Review</h1>
-          <!-- Empty element for grid balance -->
-          <div class="app-bar-spacer"></div>
         </div>
         <div id="review-session-setup" class="bento-card full-height">
           <form id="review-setup-form">
-            <div class="form-group input-group-flex">
-              <label class="select-field">
-                <span>Type</span>
-                <select name="type" id="review-setup-type">
-                  <option value="word" selected>Word</option>
-                  <option value="phrase">Phrase</option>
-                </select>
-              </label>
-              <label class="select-field">
-                <span>Selection Scope</span>
-                <select name="scope" id="review-scope">
-                  <option value="all" selected>All</option>
-                  <option value="starred">Starred</option>
-                </select>
-              </label>
-              <label class="select-field">
-                <span>Status</span>
-                <select name="status" id="review-status">
-                  <option value="all" selected>All Status</option>
-                  <option value="new">New</option>
-                  <option value="learning">Learning</option>
-                  <option value="mastered">Mastered</option>
-                </select>
-              </label>
-              <label class="select-field">
-                <span>Category</span>
-                <select name="category" id="review-category">
-                  <option value="all" selected>All Categories</option>
-                  <option value="__uncategorized">Uncategorized</option>
-                </select>
-              </label>
-              <label class="select-field">
-                <span>Limit</span>
-                <select name="limit" id="review-limit">
-                  <option value="10" selected>10</option>
-                  <option value="15">15</option>
-                  <option value="20">20</option>
-                  <option value="25">25</option>
-                </select>
-              </label>
+            <div class="form-group input-group-flex review-select-group">
+              <div class="input-wrapper-flex">
+                <label for="review-setup-type">Type</label>
+                <div class="select-field">
+                  <select name="type" id="review-setup-type">
+                    <option value="word" selected>Word</option>
+                    <option value="phrase">Phrase</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-wrapper-flex">
+                <label for="review-scope">Selection Scope</label>
+                <div class="select-field">
+                  <select name="scope" id="review-scope">
+                    <option value="all" selected>All</option>
+                    <option value="starred">Starred</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-wrapper-flex">
+                <label for="review-status">Status</label>
+                <div class="select-field">
+                  <select name="status" id="review-status">
+                    <option value="all" selected>All Status</option>
+                    <option value="new">New</option>
+                    <option value="learning">Learning</option>
+                    <option value="mastered">Mastered</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-wrapper-flex">
+                <label for="review-category">Category</label>
+                <div class="select-field">
+                  <select name="category" id="review-category">
+                    <option value="all" selected>All Categories</option>
+                    <option value="__uncategorized">Uncategorized</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-wrapper-flex">
+                <label for="review-limit">Limit</label>
+                <div class="select-field">
+                  <select name="limit" id="review-limit">
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                  </select>
+                </div>
+              </div>
             </div>
             <div class="form-group checkbox-group mt-n05 mb-6">
               <div class="checkbox-wrapper">

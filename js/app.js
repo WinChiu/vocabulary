@@ -26,10 +26,7 @@ import {
   renderPreviewSection,
   renderVocabularyTableShell,
 } from './components.js?v=4.1';
-import ReviewManager, {
-  calculateFamiliarity,
-  getFamiliarityLevel,
-} from './review.js?v=4.1';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=4.1';
 import { playPronunciation } from './tts.js?v=4.1';
 import {
   $,
@@ -201,7 +198,7 @@ const App = {
     if (importTitle) importTitle.textContent = config.importTitle;
 
     const modeFlipSource = $('#mode-flip-source-label');
-    if (modeFlipSource) modeFlipSource.textContent = '單字卡';
+    if (modeFlipSource) modeFlipSource.textContent = 'Flashcard';
 
     if (!App.editingCardId) {
       const addTitle = $('#add-card .view-header-flex h1');
@@ -330,6 +327,8 @@ const App = {
 
   prepareImportView: () => {
     $('#import-preview').classList.add('hidden');
+    const importPreviewLabel = $('.import-preview-label');
+    if (importPreviewLabel) importPreviewLabel.textContent = '0 vocabulary';
     $('#import-file-section').classList.remove('hidden');
     $('#csv-file-input').value = '';
   },
@@ -702,40 +701,6 @@ const App = {
       }
     });
 
-    $$('.dashboard-menu-item').forEach((item) => {
-      on(item, 'click', () => {
-        const target = item.dataset.dashboardTarget;
-        const action = item.dataset.dashboardAction;
-
-        if (target === 'review-setup') {
-          App.updateDueCount();
-          showView('review-setup');
-          return;
-        }
-
-        if (target === 'import') {
-          App.prepareImportView();
-          showView('import');
-          return;
-        }
-
-        if (target === 'words') {
-          App.setControlChecked('#filter-starred-only', false);
-          App.currentPage = 1;
-          App.renderDashboard();
-          showView('words');
-          return;
-        }
-
-        if (action === 'starred') {
-          App.setControlChecked('#filter-starred-only', true);
-          App.currentPage = 1;
-          App.renderDashboard();
-          showView('words');
-        }
-      });
-    });
-
     const btnBackAddCard = $('#btn-back-add-card');
     if (btnBackAddCard) {
       on(btnBackAddCard, 'click', () => {
@@ -743,24 +708,6 @@ const App = {
         $('#add-card-form').reset();
         // Return to Words view
         showView('words');
-      });
-    }
-
-    const btnBackImport = $('#btn-back-import');
-    if (btnBackImport) {
-      on(btnBackImport, 'click', () => {
-        // Reset Input
-        $('#csv-file-input').value = '';
-        // Return to Words view
-        showView('words');
-      });
-    }
-
-    const btnBackReviewSetup = $('#btn-back-review-setup');
-    if (btnBackReviewSetup) {
-      on(btnBackReviewSetup, 'click', () => {
-        // Return to Dashboard (standard back from Review Setup started from dashboard)
-        showView('dashboard');
       });
     }
 
@@ -835,16 +782,10 @@ const App = {
 
     $$('.mode-option').forEach((option) => {
       on(option, 'click', () => {
-        const radio = option.querySelector('md-radio');
-        if (radio && !option.style.pointerEvents) {
-          App.setSelectedReviewMode(radio.value);
+        if (option.style.pointerEvents !== 'none') {
+          App.setSelectedReviewMode(option.dataset.value);
         }
       });
-    });
-
-    // Cancel buttons
-    $$('.cancel-nav').forEach((btn) => {
-      on(btn, 'click', () => showView('dashboard'));
     });
 
     // Add Card Form
@@ -1162,39 +1103,39 @@ const App = {
                 lowKey === 'sv' ||
                 lowKey === 'swedish' ||
                 lowKey === 'svenska' ||
-                lowKey === '單字' ||
-                lowKey === '英文' ||
-                lowKey === '瑞典文'
+                lowKey === '\u55ae\u5b57' ||
+                lowKey === '\u82f1\u6587' ||
+                lowKey === '\u745e\u5178\u6587'
               ) {
                 newRow.word_en = row[key];
               } else if (
                 lowKey === 'category' ||
                 lowKey === 'categories' ||
                 lowKey === 'type' ||
-                lowKey === '類別' ||
-                lowKey === '分類'
+                lowKey === '\u985e\u5225' ||
+                lowKey === '\u5206\u985e'
               ) {
                 newRow.category = row[key];
               } else if (
                 lowKey.includes('mean') ||
                 lowKey === 'zh' ||
                 lowKey === 'chinese' ||
-                lowKey === '意思' ||
-                lowKey === '中文'
+                lowKey === '\u610f\u601d' ||
+                lowKey === '\u4e2d\u6587'
               ) {
                 newRow.meaning_zh = row[key];
               } else if (
                 lowKey === 'note' ||
                 lowKey === 'notes' ||
                 lowKey.includes('note') ||
-                lowKey === '備註' ||
-                lowKey === '筆記'
+                lowKey === '\u5099\u8a3b' ||
+                lowKey === '\u7b46\u8a18'
               ) {
                 newRow.note = row[key];
               } else if (
                 lowKey.includes('example') ||
                 lowKey.includes('sentence') ||
-                lowKey.includes('例句')
+                lowKey.includes('\u4f8b\u53e5')
               ) {
                 // Aggregate examples
                 if (!newRow.example_en) newRow.example_en = [];
@@ -1287,6 +1228,8 @@ const App = {
         $('#csv-file-input').value = '';
         $('#csv-file-input').value = '';
         $('#import-preview').classList.add('hidden');
+        const importPreviewLabel = $('.import-preview-label');
+        if (importPreviewLabel) importPreviewLabel.textContent = '0 vocabulary';
         showView('dashboard');
       }
     });
@@ -1397,14 +1340,9 @@ const App = {
 
   renderDashboard: () => {
     const dashboardCards = App.allCards;
-
-    // Advanced Stats Calculation
     const now = new Date();
 
-    let dueTotal = 0,
-      dueNew = 0,
-      dueLrn = 0,
-      dueMst = 0;
+    let dueTotal = 0;
     let totalNew = 0,
       totalLrn = 0,
       totalMst = 0;
@@ -1412,63 +1350,6 @@ const App = {
     dashboardCards.forEach((card) => {
       const stats = card.review_stats || {};
 
-      // Use the exact same logic as card display to count states
-      const level = getFamiliarityLevel(stats);
-      const label = level.label.toUpperCase(); // 'NEW', 'LEARNING', 'MASTERED'
-
-      // Total State Count
-      if (label === 'NEW') totalNew++;
-      else if (label === 'LEARNING') totalLrn++;
-      else if (label === 'MASTERED') totalMst++;
-
-      // Due Calculation
-      let isDue = false;
-
-      // New cards are not "Due" for review until they have been learned at least once
-      if (label !== 'NEW') {
-        if (!stats.next_review_date) {
-          isDue = true;
-        } else {
-          const nextDate = stats.next_review_date.toDate
-            ? stats.next_review_date.toDate()
-            : new Date(stats.next_review_date);
-          if (nextDate <= now) isDue = true;
-        }
-      }
-
-      if (isDue) {
-        dueTotal++;
-        if (label === 'NEW') dueNew++;
-        else if (label === 'LEARNING') dueLrn++;
-        else if (label === 'MASTERED') dueMst++;
-
-        // Separate Word vs Phrase Count
-        const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
-        if (isPhrase) {
-          // It's a phrase
-        } else {
-          // It's a word
-        }
-      }
-    });
-
-    // Re-loop for efficient breakdown or just integrate above?
-    // Integrated above is cleaner but need variables.
-    // Let's refactor the loop slightly to be cleaner.
-
-    // Reset counters
-    dueTotal = 0;
-    dueNew = 0;
-    dueLrn = 0;
-    dueMst = 0;
-    totalNew = 0;
-    totalLrn = 0;
-    totalMst = 0;
-    let dueWordCount = 0;
-    let duePhraseCount = 0;
-
-    dashboardCards.forEach((card) => {
-      const stats = card.review_stats || {};
       const level = getFamiliarityLevel(stats);
       const label = level.label.toUpperCase();
 
@@ -1477,6 +1358,7 @@ const App = {
       else if (label === 'MASTERED') totalMst++;
 
       let isDue = false;
+
       if (label !== 'NEW') {
         if (!stats.next_review_date) {
           isDue = true;
@@ -1490,58 +1372,22 @@ const App = {
 
       if (isDue) {
         dueTotal++;
-        const isPhrase = card.word_en.trim().split(/\s+/).length > 1;
-        if (isPhrase) duePhraseCount++;
-        else dueWordCount++;
       }
     });
 
-    // Update Dashboard DOM
     if ($('#dashboard-new-count'))
       App.countUp($('#dashboard-new-count'), 0, totalNew, 1000);
     if ($('#dashboard-lrn-count'))
       App.countUp($('#dashboard-lrn-count'), 0, totalLrn, 1000);
     if ($('#dashboard-mst-count'))
       App.countUp($('#dashboard-mst-count'), 0, totalMst, 1000);
-    const goalReviewed = Math.min(dueTotal, 30);
-    if ($('#goal-reviewed-count'))
-      $('#goal-reviewed-count').textContent = goalReviewed;
-    if ($('#goal-progress-value')) {
-      $('#goal-progress-value').style.width =
-        `${Math.min(100, (goalReviewed / 30) * 100)}%`;
-    }
 
     const elDueCount = $('#due-count');
     const elDueCard = $('#card-due-container');
     const elActionLabel = $('#start-review-action');
-    const masteryPercentEl = $('#mastery-percent');
-    const masteryRingValue = $('#mastery-ring-value');
-    const mockupDueCount = $('#mockup-due-count');
-
-    // Breakdown Elements
-    const elDueWord = $('#due-count-word');
-    const elDuePhrase = $('#due-count-phrase');
 
     if (elDueCount) {
       App.countUp(elDueCount, 0, dueTotal, 1000);
-    }
-
-    if (mockupDueCount) {
-      mockupDueCount.textContent = dueTotal;
-    }
-
-    if (elDueWord) elDueWord.textContent = dueWordCount;
-    if (elDuePhrase) elDuePhrase.textContent = duePhraseCount;
-
-    const totalCards = dashboardCards.length;
-    const masteryPercent =
-      totalCards > 0 ? Math.round((totalMst / totalCards) * 100) : 0;
-    if (masteryPercentEl) masteryPercentEl.textContent = `${masteryPercent}%`;
-    if (masteryRingValue) {
-      const circumference = 188.5;
-      masteryRingValue.style.strokeDashoffset = String(
-        circumference - (circumference * masteryPercent) / 100,
-      );
     }
 
     if (elDueCard && elActionLabel) {
@@ -1721,7 +1567,7 @@ const App = {
     const config = App.getLanguageConfig();
     const dictionaryEnabled = config.dictionaryEnabled;
     const note = String(card.note || '').trim();
-    const noteSection = renderPreviewSection('筆記', note);
+    const noteSection = renderPreviewSection('Notes', note);
     const examples = Array.isArray(card.example_en)
       ? card.example_en.filter((ex) => String(ex).trim().length > 0)
       : [];
@@ -1787,10 +1633,8 @@ const App = {
   },
 
   fetchDictionaryData: async (word, language = 'en') => {
-    // const phoneticContainer = $('#preview-phonetic-container'); // Removed
     const phoneticBadge = $('#preview-phonetic-badge');
     const phoneticContainer = $('#preview-phonetic-container');
-    // const posValue = $('#preview-pos-value'); // Removed
     const synonymsValue = $('#preview-synonyms-value');
     const synonymsContainer = $('#preview-synonyms-container');
     const definitionsContainer = $('#preview-definitions-container');
@@ -1829,9 +1673,6 @@ const App = {
         if (!phoneticText && textEntry) phoneticText = textEntry.text;
       }
 
-      // if (phoneticContainer && phoneticText) ... Removed subtitle logic
-
-      // 2. Populate Phonetic Badge
       if (phoneticBadge && phoneticContainer && phoneticText) {
         phoneticBadge.textContent = phoneticText;
         phoneticContainer.classList.remove('hidden');
@@ -1948,14 +1789,15 @@ const App = {
   },
 
   renderImportPreview: (data) => {
-    const previewData = data.slice(0, 5);
+    const previewData = data;
     const importPreviewContainer = $('#import-preview');
-    const previewList = $('#preview-list');
+    const previewList = $('#preview-list .vocab-list-modern');
 
     // Update Header with Count
-    const sectionLabel = importPreviewContainer.querySelector('.section-label');
+    const sectionLabel = $('.import-preview-label');
     if (sectionLabel) {
-      sectionLabel.innerHTML = `Data Preview <span class="import-count">(${escapeHtml(data.length)} vocabularies)</span>`;
+      const countLabel = data.length === 1 ? 'vocabulary' : 'vocabularies';
+      sectionLabel.textContent = `${data.length} ${countLabel}`;
     }
 
     if (importPreviewContainer) {

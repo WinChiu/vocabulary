@@ -318,7 +318,7 @@ const ReviewManager = {
 
       const spellingInput = $('#spelling-input');
       if (spellingInput) {
-        spellingInput.focus();
+        spellingInput.focus({ preventScroll: true });
         spellingInput.onkeydown = (e) => {
           if (e.key === 'Enter') ReviewManager.checkSpelling();
         };
@@ -326,7 +326,7 @@ const ReviewManager = {
 
       const clozeInput = $('#cloze-input');
       if (clozeInput) {
-        clozeInput.focus();
+        clozeInput.focus({ preventScroll: true });
         clozeInput.onkeydown = (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -644,12 +644,12 @@ const ReviewManager = {
       setTimeout(() => {
         ReviewManager.next();
       }, 1000);
-    } else {
-      session.incorrectCardIds.add(card.id);
-      feedback.textContent = '';
-      input.classList.add('error');
-      input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
+        } else {
+          session.incorrectCardIds.add(card.id);
+          feedback.textContent = '';
+          input.classList.add('error');
+          input.focus({ preventScroll: true });
+          input.setSelectionRange(input.value.length, input.value.length);
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];

@@ -28,6 +28,7 @@ import {
 } from './components.js?v=4.1';
 import ReviewManager, { getFamiliarityLevel } from './review.js?v=4.1';
 import { playPronunciation } from './tts.js?v=4.1';
+import { sortVocabularyCards } from './sort.js?v=4.1';
 import {
   $,
   $$,
@@ -55,6 +56,7 @@ const App = {
   isMockMode: false,
   editingCardId: null, // Track editing state
   currentPreviewId: null, // Track current preview card
+  vocabSortOrder: 'newest',
   currentLanguageMode: normalizeLanguageMode(
     localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en',
   ),
@@ -679,19 +681,35 @@ const App = {
     const wordsView = $('#words');
     const wordsFilterBtn = $('#words-filter-btn');
     const wordsFilterCloseBtn = $('#words-filter-close-btn');
+    const wordsSortBtn = $('#vocab-sort-btn');
+    const wordsSortCloseBtn = $('#words-sort-close-btn');
     const closeWordsFilters = () => {
       if (!wordsView) return;
       wordsView.classList.remove('filters-open');
       if (wordsFilterBtn) wordsFilterBtn.setAttribute('aria-expanded', 'false');
     };
+    const closeWordsSort = () => {
+      if (!wordsView) return;
+      wordsView.classList.remove('sort-open');
+      if (wordsSortBtn) wordsSortBtn.setAttribute('aria-expanded', 'false');
+    };
     const openWordsFilters = () => {
       if (!wordsView) return;
+      closeWordsSort();
       wordsView.classList.add('filters-open');
       if (wordsFilterBtn) wordsFilterBtn.setAttribute('aria-expanded', 'true');
+    };
+    const openWordsSort = () => {
+      if (!wordsView) return;
+      closeWordsFilters();
+      wordsView.classList.add('sort-open');
+      if (wordsSortBtn) wordsSortBtn.setAttribute('aria-expanded', 'true');
     };
 
     on(wordsFilterBtn, 'click', openWordsFilters);
     on(wordsFilterCloseBtn, 'click', closeWordsFilters);
+    on(wordsSortBtn, 'click', openWordsSort);
+    on(wordsSortCloseBtn, 'click', closeWordsSort);
     on(wordsView, 'click', (event) => {
       if (
         event.target === wordsView &&
@@ -699,6 +717,26 @@ const App = {
       ) {
         closeWordsFilters();
       }
+      if (
+        event.target === wordsView &&
+        wordsView.classList.contains('sort-open')
+      ) {
+        closeWordsSort();
+      }
+    });
+
+    $$('.sort-option').forEach((option) => {
+      on(option, 'click', () => {
+        App.vocabSortOrder = option.dataset.sortOrder || 'newest';
+        $$('.sort-option').forEach((item) => {
+          const isActive = item.dataset.sortOrder === App.vocabSortOrder;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-pressed', String(isActive));
+        });
+        App.currentPage = 1;
+        App.renderDashboard();
+        closeWordsSort();
+      });
     });
 
     const btnBackAddCard = $('#btn-back-add-card');
@@ -1420,16 +1458,18 @@ const App = {
     if (!container) return; // Fallback if view not active
 
     // Get filter values
-    const showStarredOnly = App.getControlChecked('#filter-starred-only');
+    const showStarredOnly =
+      App.getControlValue('#filter-starred-only', 'all') === 'starred';
     const searchQuery = App.getControlValue('#search-input')
       .toLowerCase()
       .trim();
     const statusFilter = App.getControlValue('#filter-status', 'all');
     const categoryFilter = App.getControlValue('#filter-category', 'all');
+    const sortOrder = App.vocabSortOrder;
 
     // Apply filtering
-    const filteredCards = App.allCards
-      .filter((card) => {
+    const filteredCards = sortVocabularyCards(
+      App.allCards.filter((card) => {
         // Starred filter
         const isStarred =
           card.is_starred === true || String(card.is_starred) === 'true';
@@ -1462,22 +1502,9 @@ const App = {
         if (typeFilter === 'phrase' && !isPhrase) return false;
 
         return true;
-      })
-      .sort((a, b) => {
-        // Primary Sort: Created At (Desc) - Join Time
-        const getTime = (t) => {
-          if (!t) return 0;
-          return t.toDate ? t.toDate().getTime() : new Date(t).getTime();
-        };
-        // Use ONLY created_at for stability. fallback to 0 if missing.
-        const aTime = getTime(a.created_at);
-        const bTime = getTime(b.created_at);
-
-        if (bTime !== aTime) return bTime - aTime;
-
-        // Secondary Sort: ID (Stable Tie-breaker for batch imports)
-        return (a.id || '').localeCompare(b.id || '');
-      });
+      }),
+      sortOrder,
+    );
 
     // Pagination Logic
     App.currentList = filteredCards; // Save for navigation

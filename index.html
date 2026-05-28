@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Just Word</title>
+    <title>wwwords</title>
     <link rel="icon" type="image/png" href="assets/app-icon.png" />
     <link rel="apple-touch-icon" href="assets/app-icon.png" />
     <!-- Fonts -->
@@ -184,9 +184,33 @@
                 placeholder=""
               />
             </label>
-            <div class="filter-group-row">
+            <div class="filter-grid-2x2">
               <label class="select-field">
-                <!-- <span>Status</span> -->
+                <span>Type</span>
+                <select
+                  id="filter-type"
+                  class="vocab-select-pill"
+                  aria-label="Type"
+                >
+                  <option value="word" selected>Word</option>
+                  <option value="phrase">Phrase</option>
+                </select>
+              </label>
+
+              <label class="select-field">
+                <span>Star</span>
+                <select
+                  id="filter-starred-only"
+                  class="vocab-select-pill"
+                  aria-label="Star"
+                >
+                  <option value="all" selected>All</option>
+                  <option value="starred">Starred</option>
+                </select>
+              </label>
+
+              <label class="select-field">
+                <span>Status</span>
                 <select
                   id="filter-status"
                   class="vocab-select-pill"
@@ -200,19 +224,7 @@
               </label>
 
               <label class="select-field">
-                <!-- <span>Type</span> -->
-                <select
-                  id="filter-type"
-                  class="vocab-select-pill"
-                  aria-label="Type"
-                >
-                  <option value="word" selected>Word</option>
-                  <option value="phrase">Phrase</option>
-                </select>
-              </label>
-
-              <label class="select-field">
-                <!-- <span>Category</span> -->
+                <span>Category</span>
                 <select
                   id="filter-category"
                   class="vocab-select-pill"
@@ -223,13 +235,54 @@
                 </select>
               </label>
             </div>
-            <div class="filter-action-row">
-              <!-- Starred Toggle -->
-              <label class="toggle-switch">
-                <span class="filter-label">Starred</span>
-                <md-switch id="filter-starred-only"></md-switch>
-              </label>
-            </div>
+          </div>
+        </div>
+
+        <div class="section-label sort-sheet-label">
+          <div class="filter-sheet-header">
+            <h2>Sort words</h2>
+            <button
+              id="words-sort-close-btn"
+              type="button"
+              class="topbar-icon-button"
+              aria-label="Close sort"
+            >
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+          <div class="sort-options" role="radiogroup" aria-label="Sort words">
+            <button
+              type="button"
+              class="sort-option active"
+              data-sort-order="newest"
+              aria-pressed="true"
+            >
+              New - Old
+            </button>
+            <button
+              type="button"
+              class="sort-option"
+              data-sort-order="az"
+              aria-pressed="false"
+            >
+              A-Z
+            </button>
+            <button
+              type="button"
+              class="sort-option"
+              data-sort-order="za"
+              aria-pressed="false"
+            >
+              Z-A
+            </button>
+            <button
+              type="button"
+              class="sort-option"
+              data-sort-order="status"
+              aria-pressed="false"
+            >
+              Status
+            </button>
           </div>
         </div>
 
@@ -239,6 +292,15 @@
             <h1>Vocabulary</h1>
           </div>
           <div class="topbar-actions">
+            <button
+              id="vocab-sort-btn"
+              type="button"
+              class="topbar-icon-button"
+              aria-label="Sort vocabulary"
+              aria-expanded="false"
+            >
+              <span class="material-symbols-rounded">sort</span>
+            </button>
             <button
               id="words-add-btn"
               type="button"
@@ -414,46 +476,48 @@
         </div>
         <div id="review-session-setup" class="bento-card full-height">
           <form id="review-setup-form">
-            <div class="form-group input-group-flex review-select-group">
-              <div class="input-wrapper-flex">
-                <label for="review-setup-type">Type</label>
-                <div class="select-field">
-                  <select name="type" id="review-setup-type">
-                    <option value="word" selected>Word</option>
-                    <option value="phrase">Phrase</option>
-                  </select>
+            <div class="form-group review-select-group">
+              <div class="review-grid-2x2">
+                <div class="input-wrapper-flex">
+                  <label for="review-setup-type">Type</label>
+                  <div class="select-field">
+                    <select name="type" id="review-setup-type">
+                      <option value="word" selected>Word</option>
+                      <option value="phrase">Phrase</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="input-wrapper-flex">
+                  <label for="review-scope">Star</label>
+                  <div class="select-field">
+                    <select name="scope" id="review-scope">
+                      <option value="all" selected>All</option>
+                      <option value="starred">Starred</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="input-wrapper-flex">
+                  <label for="review-status">Status</label>
+                  <div class="select-field">
+                    <select name="status" id="review-status">
+                      <option value="all" selected>All Status</option>
+                      <option value="new">New</option>
+                      <option value="learning">Learning</option>
+                      <option value="mastered">Mastered</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="input-wrapper-flex">
+                  <label for="review-category">Category</label>
+                  <div class="select-field">
+                    <select name="category" id="review-category">
+                      <option value="all" selected>All Categories</option>
+                      <option value="__uncategorized">Uncategorized</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div class="input-wrapper-flex">
-                <label for="review-scope">Star</label>
-                <div class="select-field">
-                  <select name="scope" id="review-scope">
-                    <option value="all" selected>All</option>
-                    <option value="starred">Starred</option>
-                  </select>
-                </div>
-              </div>
-              <div class="input-wrapper-flex">
-                <label for="review-status">Status</label>
-                <div class="select-field">
-                  <select name="status" id="review-status">
-                    <option value="all" selected>All Status</option>
-                    <option value="new">New</option>
-                    <option value="learning">Learning</option>
-                    <option value="mastered">Mastered</option>
-                  </select>
-                </div>
-              </div>
-              <div class="input-wrapper-flex">
-                <label for="review-category">Category</label>
-                <div class="select-field">
-                  <select name="category" id="review-category">
-                    <option value="all" selected>All Categories</option>
-                    <option value="__uncategorized">Uncategorized</option>
-                  </select>
-                </div>
-              </div>
-              <div class="input-wrapper-flex">
+              <div class="input-wrapper-flex review-limit-row">
                 <label for="review-limit">Limit</label>
                 <div class="select-field">
                   <select name="limit" id="review-limit">
@@ -621,13 +685,12 @@
           <md-icon-button id="btn-back-card-preview" aria-label="Back">
             <md-icon>arrow_back</md-icon>
           </md-icon-button>
-          <div class="preview-header-status">
+          <div class="app-bar-spacer"></div>
+          <div class="preview-top-actions">
             <span
               id="preview-status-badge"
               class="level-indicator hidden"
             ></span>
-          </div>
-          <div class="preview-top-actions">
             <md-icon-button
               id="preview-audio-btn"
               class="preview-audio-btn"

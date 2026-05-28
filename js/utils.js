@@ -99,6 +99,17 @@ export const showPopup = (title, content, options = {}) => {
 };
 
 export const showView = (viewId) => {
+  if (viewId === 'review-session') {
+    document.documentElement.style.setProperty(
+      '--review-viewport-height',
+      `${window.innerHeight}px`,
+    );
+  }
+  document.body.classList.toggle(
+    'review-session-active',
+    viewId === 'review-session',
+  );
+
   $$('.view').forEach((el) => el.classList.remove('active'));
   $$('.nav-btn, .nav-item').forEach((el) => el.classList.remove('active'));
 

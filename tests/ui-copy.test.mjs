@@ -22,7 +22,9 @@ test("vocabulary table headers are English-only", () => {
   const html = renderVocabularyTableShell();
 
   assert.match(html, /<th>Word<\/th>/);
-  assert.match(html, /<th>Status<\/th>/);
+  assert.match(html, /<th class="desktop-only">Meaning<\/th>/);
+  assert.match(html, /<th class="actions-col">Actions<\/th>/);
+  assert.doesNotMatch(html, /<th>Status<\/th>/);
   assert.equal(uiCopyHasCjk(html), false);
 });
 

@@ -42,13 +42,17 @@ test("renders vocabulary row and card from the same status and action components
   assert.equal(row.dataset.id, "word-1");
   assert.equal(mobileCard.dataset.id, "word-1");
   assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-primary/);
-  assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-secondary/);
   assert.match(row.innerHTML, /assets\/star-filled\.svg/);
   assert.match(mobileCard.innerHTML, /assets\/star-filled\.svg/);
+  assert.match(row.innerHTML, /btn-audio/);
+  assert.match(mobileCard.innerHTML, /btn-audio/);
   assert.match(row.innerHTML, /&lt;hej&gt;/);
   assert.match(mobileCard.innerHTML, /&lt;hej&gt;/);
   assert.match(row.innerHTML, /level-learning/);
   assert.match(mobileCard.innerHTML, /level-learning/);
+  assert.match(mobileCard.innerHTML, /status-dot/);
+  assert.doesNotMatch(row.innerHTML, /btn-edit|btn-delete/);
+  assert.doesNotMatch(mobileCard.innerHTML, /btn-edit|btn-delete/);
 });
 
 test("renders reusable preview and empty state sections", () => {

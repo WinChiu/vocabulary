@@ -425,7 +425,7 @@
                 </div>
               </div>
               <div class="input-wrapper-flex">
-                <label for="review-scope">Selection Scope</label>
+                <label for="review-scope">Star</label>
                 <div class="select-field">
                   <select name="scope" id="review-scope">
                     <option value="all" selected>All</option>
@@ -490,7 +490,9 @@
                 <label class="mode-option active" data-value="1">
                   <span id="mode-flip-source-label">Flip Card (EN)</span>
                 </label>
-                <label class="mode-option" data-value="2">Flip Card (ZH)</label>
+                <label class="mode-option" data-value="2"
+                  >Flip Card (Meaning)</label
+                >
                 <label class="mode-option" data-value="3">Spelling</label>
                 <label class="mode-option" id="grade-mode-cloze" data-value="4">
                   Cloze
@@ -619,9 +621,12 @@
           <md-icon-button id="btn-back-card-preview" aria-label="Back">
             <md-icon>arrow_back</md-icon>
           </md-icon-button>
-          <!-- No Title as requested -->
-          <div></div>
-          <!-- Empty right side -->
+          <div class="preview-header-status">
+            <span
+              id="preview-status-badge"
+              class="level-indicator hidden"
+            ></span>
+          </div>
           <div class="preview-top-actions">
             <md-icon-button
               id="preview-audio-btn"

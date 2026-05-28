@@ -57,16 +57,23 @@ const renderStarButton = (card) => {
   });
 };
 
+const renderAudioButton = () =>
+  renderIconButton({ className: 'btn-audio', icon: 'volume_up' });
+
 const renderRowActions = (card) => `
+  ${renderAudioButton()}
   ${renderStarButton(card)}
-  ${renderIconButton({ className: 'btn-edit', icon: 'edit' })}
-  ${renderIconButton({ className: 'btn-delete', icon: 'delete' })}
 `;
 
 const renderStatusBadge = (level) =>
   `<span class="level-indicator ${escapeHtml(level.class)}">${escapeHtml(
     level.label,
   )}</span>`;
+
+const renderStatusDot = (level) =>
+  `<span class="status-dot ${escapeHtml(level.class)}" aria-label="${escapeHtml(
+    level.label,
+  )}"></span>`;
 
 const renderCategoryPill = (category) =>
   category ? `<span class="category-pill">${escapeHtml(category)}</span>` : '';
@@ -80,8 +87,6 @@ export const renderVocabularyTableShell = () => `
       <thead>
         <tr>
           <th>Word</th>
-          <th class="desktop-only">Meaning</th>
-          <th>Status</th>
           <th class="actions-col">Actions</th>
         </tr>
       </thead>
@@ -98,13 +103,12 @@ export const createVocabularyTableRow = (card, level) =>
     { id: card.id },
     `
       <td>
-        <div class="vocab-table-word">${escapeHtml(card.word_en)}</div>
-        <div class="mobile-meaning">${escapeHtml(card.meaning_zh)}</div>
+        <div class="vocab-table-word">${renderStatusDot(level)}<span>${escapeHtml(
+          card.word_en,
+        )}</span></div>
+
       </td>
-      <td class="desktop-only">
-        <div class="vocab-table-meaning">${escapeHtml(card.meaning_zh)}</div>
-      </td>
-      <td>${renderStatusBadge(level)}</td>
+
       <td class="vocab-table-actions">${renderRowActions(card)}</td>
     `,
   );
@@ -116,12 +120,13 @@ export const createVocabularyCard = (card, level) =>
     { id: card.id },
     `
       <div class="vocab-card-row vocab-card-row-primary">
-        <div class="vocab-card-word">${escapeHtml(card.word_en)}</div>
-        ${renderStatusBadge(level)}
-      </div>
-      <div class="vocab-card-row vocab-card-row-secondary">
-        <div class="vocab-card-meaning">${escapeHtml(card.meaning_zh)}</div>
-        <div class="vocab-card-actions">${renderRowActions(card)}</div>
+        <div class="vocab-card-word">${renderStatusDot(level)}<span>${escapeHtml(
+          card.word_en,
+        )}</span></div>
+        <div class="vocab-card-actions">
+          ${renderAudioButton()}
+          ${renderStarButton(card)}
+        </div>
       </div>
     `,
   );
@@ -158,26 +163,14 @@ export const renderPreviewSection = (label, items) => {
 
 export const renderPreviewPage = ({
   card,
-  level,
   noteSection,
   exampleSection,
-  dictionaryMetrics = '',
   dictionarySections = '',
 }) => `
   <div class="preview-page">
     <div>
       <div class="preview-title">${escapeHtml(card.word_en)}</div>
       <div class="preview-meaning">${escapeHtml(card.meaning_zh)}</div>
-    </div>
-
-    <div class="preview-metrics">
-      <div class="status-badge-container status-${escapeHtml(
-        level.label.toLowerCase(),
-      )}">
-        <div class="status-label">Status</div>
-        <div class="status-value">${escapeHtml(level.label.toUpperCase())}</div>
-      </div>
-      ${dictionaryMetrics}
     </div>
 
     ${noteSection}

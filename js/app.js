@@ -198,7 +198,7 @@ const App = {
     if (importTitle) importTitle.textContent = config.importTitle;
 
     const modeFlipSource = $('#mode-flip-source-label');
-    if (modeFlipSource) modeFlipSource.textContent = 'Flashcard';
+    if (modeFlipSource) modeFlipSource.textContent = 'Flip Card (Word)';
 
     if (!App.editingCardId) {
       const addTitle = $('#add-card .view-header-flex h1');
@@ -913,7 +913,7 @@ const App = {
     // CARD LIST EVENT DELEGATION (New)
     const listContainer = $('#card-list-modern');
     if (listContainer) {
-      on(listContainer, 'click', (e) => {
+      on(listContainer, 'click', async (e) => {
         // 1. Handle Action Buttons (Star, Delete)
         const btn = e.target.closest('button, md-icon-button');
         if (btn) {
@@ -924,6 +924,21 @@ const App = {
           if (btn.classList.contains('btn-star')) {
             const isStarred = btn.dataset.starred === 'true';
             App.toggleStar(id, isStarred);
+          } else if (btn.classList.contains('btn-audio')) {
+            const card = App.allCards.find((c) => c.id === id);
+            const config = App.getLanguageConfig();
+            if (card) {
+              const played = await playPronunciation(
+                card.word_en,
+                config.ttsLanguage,
+              );
+              if (!played) {
+                showPopup(
+                  'Audio Unavailable',
+                  '<p>Your browser could not play audio for this word.</p>',
+                );
+              }
+            }
           } else if (btn.classList.contains('btn-delete')) {
             App.handleDelete(id);
           } else if (btn.classList.contains('btn-edit')) {
@@ -1512,7 +1527,7 @@ const App = {
 
     if (filteredCards.length === 0) {
       const emptyMsg = renderEmptyState('No vocabulary found.');
-      tbody.innerHTML = `<tr><td colspan="4">${emptyMsg}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3">${emptyMsg}</td></tr>`;
       listEl.innerHTML = emptyMsg;
       return;
     }
@@ -1572,14 +1587,6 @@ const App = {
       ? card.example_en.filter((ex) => String(ex).trim().length > 0)
       : [];
     const exampleSection = renderPreviewSection(config.exampleLabel, examples);
-    const dictionaryMetrics = dictionaryEnabled
-      ? `
-                <div id="preview-phonetic-container" class="preview-metric-card hidden">
-                    <div class="preview-section-label">Phonetic</div>
-                    <div id="preview-phonetic-badge" class="preview-metric-value"></div>
-                </div>
-      `
-      : '';
     const dictionarySections = dictionaryEnabled
       ? `
             <div id="preview-synonyms-container" class="preview-section hidden">
@@ -1597,12 +1604,16 @@ const App = {
     const container = $('#card-preview-container');
     container.innerHTML = renderPreviewPage({
       card,
-      level,
       noteSection,
       exampleSection,
-      dictionaryMetrics,
       dictionarySections,
     });
+
+    const statusBadge = $('#preview-status-badge');
+    if (statusBadge) {
+      statusBadge.textContent = level.label;
+      statusBadge.className = `level-indicator ${level.class}`;
+    }
 
     // 2. Update Footer States (Star Icon)
     const starBtn = document.querySelector('.preview-star-btn');
@@ -1633,8 +1644,6 @@ const App = {
   },
 
   fetchDictionaryData: async (word, language = 'en') => {
-    const phoneticBadge = $('#preview-phonetic-badge');
-    const phoneticContainer = $('#preview-phonetic-container');
     const synonymsValue = $('#preview-synonyms-value');
     const synonymsContainer = $('#preview-synonyms-container');
     const definitionsContainer = $('#preview-definitions-container');
@@ -1648,7 +1657,6 @@ const App = {
         definitionsContainer.classList.add('hidden');
         definitionsContainer.style.minHeight = '140px';
       }
-      if (phoneticContainer) phoneticContainer.classList.add('hidden');
       if (synonymsContainer) synonymsContainer.classList.add('hidden');
 
       const cleanWord = word.trim().toLowerCase();
@@ -1662,23 +1670,7 @@ const App = {
 
       const entry = data[0];
 
-      // 1. Phonetics
-      let phoneticText = entry.phonetic || '';
-
-      if (entry.phonetics) {
-        const textEntry = entry.phonetics.find(
-          (p) => p.text && p.text.length > 0,
-        );
-
-        if (!phoneticText && textEntry) phoneticText = textEntry.text;
-      }
-
-      if (phoneticBadge && phoneticContainer && phoneticText) {
-        phoneticBadge.textContent = phoneticText;
-        phoneticContainer.classList.remove('hidden');
-      }
-
-      // 3. Definitions (Grouped by POS)
+      // Definitions (grouped by part of speech)
       const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
       const posMap = {
         noun: 'n.',
@@ -1705,9 +1697,8 @@ const App = {
 
       if (definitionsContainer && definitionItems.length > 0) {
         let defsHtml = `
-            <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('md-icon, .material-symbols-rounded'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
+            <div class="definition-toggle">
                 <span>OTHER DEFINITIONS</span>
-                <md-icon>chevron_right</md-icon>
             </div>
         `;
         defsHtml += `<div class="definition-list">`;

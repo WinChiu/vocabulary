@@ -42,9 +42,9 @@
   --nav-height: 90px;
   --fixed-action-height: 92px;
   --max-app-width: 1200px;
-  --font-display: "Noto Serif TC", "Cormorant Garamond", serif;
-  --font-body: "Noto Sans TC", sans-serif;
-  --font-code: "JetBrains Mono", "Noto Sans TC", monospace;
+  --font-display: 'Noto Serif TC', 'Cormorant Garamond', serif;
+  --font-body: 'Noto Sans TC', sans-serif;
+  --font-code: 'JetBrains Mono', 'Noto Sans TC', monospace;
   --ink: var(--colors-ink);
   --ink-2: var(--colors-body);
   --muted: var(--colors-muted);
@@ -180,7 +180,7 @@ md-outlined-button {
 
 md-icon,
 .material-symbols-rounded {
-  --md-icon-font: "Material Symbols Rounded";
+  --md-icon-font: 'Material Symbols Rounded';
   font-family: "Material Symbols Rounded";
   font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
   line-height: 1;
@@ -242,6 +242,10 @@ md-outlined-select {
   border-radius: var(--rounded-md);
   background: var(--colors-canvas);
   padding: 12px 14px;
+}
+
+.form-control::-moz-placeholder {
+  color: var(--colors-muted-soft);
 }
 
 .form-control::placeholder {
@@ -1011,6 +1015,9 @@ label {
   outline: 0;
   width: 100%;
 }
+.search-field::-moz-placeholder {
+  color: var(--colors-muted-soft);
+}
 .search-field::placeholder {
   color: var(--colors-muted-soft);
 }
@@ -1020,6 +1027,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  height: -moz-fit-content;
   height: fit-content;
   padding: 16px 12px;
 }
@@ -1030,7 +1038,9 @@ label {
   line-height: 1;
 }
 .select-field select {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   background: linear-gradient(45deg, transparent 50%, var(--colors-muted) 50%) calc(100% - 14px) 50%/6px 6px no-repeat, linear-gradient(135deg, var(--colors-muted) 50%, transparent 50%) calc(100% - 9px) 50%/6px 6px no-repeat;
   border: 0;
   color: var(--colors-ink);
@@ -1130,15 +1140,17 @@ label {
 }
 
 .vocab-card-modern {
-  background: transparent;
-  border-bottom: 1px solid var(--colors-hairline-soft);
+  background: var(--colors-canvas);
+  border: 1px solid var(--colors-hairline);
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 0;
   justify-content: center;
   align-items: flex-start;
-  padding: var(--spacing-lg) var(--spacing-md);
+  min-height: 88px;
+  padding: 12px 18px;
 }
 
 .vocab-card-row {
@@ -1151,7 +1163,7 @@ label {
 }
 
 .vocab-card-row-primary {
-  align-items: flex-start;
+  align-items: center;
 }
 
 .vocab-card-row-secondary {
@@ -1161,14 +1173,39 @@ label {
 
 .vocab-card-word,
 .vocab-table-word {
+  align-items: center;
   color: var(--colors-ink);
+  display: inline-flex;
   font-family: var(--font-display);
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  gap: 18px;
+  letter-spacing: 0;
   line-height: 1.1;
+  min-width: 0;
   overflow-wrap: anywhere;
-  text-align: center;
+  text-align: left;
+}
+.vocab-card-word span:not(.status-dot),
+.vocab-table-word span:not(.status-dot) {
+  min-width: 0;
+}
+
+.status-dot {
+  border-radius: var(--rounded-pill);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 8px;
+  width: 8px;
+}
+.status-dot.level-new {
+  background: #e8774f;
+}
+.status-dot.level-learning {
+  background: #3f80df;
+}
+.status-dot.level-mastered {
+  background: #42a66a;
 }
 
 .vocab-card-meaning,
@@ -1208,16 +1245,16 @@ label {
 }
 
 .level-new, .level-indicator.level-new, .level-badge.level-new {
-  background: rgba(232, 165, 90, 0.18);
-  color: #9a641f;
+  background: rgba(232, 119, 79, 0.16);
+  color: #a54f2e;
 }
 .level-learning, .level-indicator.level-learning, .level-badge.level-learning {
-  background: rgba(93, 184, 166, 0.15);
-  color: #337e70;
+  background: rgba(63, 128, 223, 0.14);
+  color: #2f63b3;
 }
 .level-mastered, .level-indicator.level-mastered, .level-badge.level-mastered {
-  background: rgba(93, 184, 114, 0.16);
-  color: #427d4f;
+  background: rgba(66, 166, 106, 0.16);
+  color: #357a51;
 }
 
 .vocab-card-actions,
@@ -1231,15 +1268,15 @@ label {
   flex: 0 0 auto;
 }
 .vocab-card-actions .icon-button {
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
 }
 .vocab-card-actions .material-symbols-rounded {
-  font-size: 20px;
+  font-size: 22px;
 }
 .vocab-card-actions .action-icon {
-  height: 18px;
-  width: 18px;
+  height: 22px;
+  width: 22px;
 }
 
 .empty-state {
@@ -1611,6 +1648,14 @@ label {
   gap: var(--spacing-lg);
 }
 
+.preview-header-status {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+}
+
 .status-badge-container,
 .preview-metric-card,
 .preview-section {
@@ -1654,7 +1699,6 @@ label {
 .definition-toggle {
   align-items: center;
   color: var(--colors-muted);
-  cursor: pointer;
   display: flex;
   font-size: 0.84rem;
   font-weight: 500;
@@ -1807,14 +1851,6 @@ body.modal-open::before {
 .lottie-container {
   height: 104px;
   width: 104px;
-}
-
-.desktop-only {
-  display: table-cell;
-}
-
-.mobile-only {
-  display: none;
 }
 
 .text-accent-orange {
@@ -2193,6 +2229,4 @@ body.modal-open::before {
   .due-card-bottom-row {
     gap: var(--spacing-lg);
   }
-}
-
-/*# sourceMappingURL=style.css.map */
+}/*# sourceMappingURL=style.css.map */

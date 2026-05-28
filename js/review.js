@@ -181,7 +181,6 @@ class ReviewSession {
                             <div class="review-answer-slot">
                               <input type="text" class="review-answer-field revealed" value="${card.word_en}" disabled size="${answerLength}" style="width:${answerLength}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </div>
-                            <div class="review-example">${spellingEx}</div>
                         </div>
                     `;
         }
@@ -192,7 +191,7 @@ class ReviewSession {
                         <div class="review-answer-slot">
                           <input type="text" class="review-answer-field" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${answerLength}" style="width:${answerLength}ch">
                         </div>
-                        <div class="review-example">${spellingEx}</div>
+
                         <div id="spelling-feedback" class="feedback-msg"></div>
                     </div>
                 `;

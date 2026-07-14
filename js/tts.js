@@ -109,7 +109,9 @@ const playWithSpeechSynthesis = async (
       done(false);
     };
 
-    speechSynthesis.cancel();
+    if (typeof speechSynthesis.cancel === 'function') {
+      speechSynthesis.cancel();
+    }
 
     setTimeout(() => {
       try {

@@ -31,6 +31,7 @@ const renderIconButton = ({
   icon,
   imageSrc,
   imageAlt = '',
+  ariaLabel,
   dataset = {},
 } = {}) => {
   const dataAttrs = Object.entries(dataset)
@@ -44,23 +45,23 @@ const renderIconButton = ({
 
   return `<button type="button" class="icon-button ${escapeHtml(
     className,
-  )}"${dataAttrs}>${content}</button>`;
+  )}" aria-label="${escapeHtml(ariaLabel || icon || imageAlt)}"${dataAttrs}>${content}</button>`;
 };
 
 const renderStarButton = (card) => {
   const active = isStarred(card);
   return renderIconButton({
     className: `btn-star ${active ? 'starred' : ''}`.trim(),
-    imageSrc: active ? 'assets/star-filled.svg' : 'assets/star.svg',
-    imageAlt: 'star',
+    icon: active ? 'star' : 'star_outline',
+    ariaLabel: active ? `Remove star from ${card.word_en}` : `Star ${card.word_en}`,
     dataset: { starred: String(active) },
   });
 };
 
 const renderRowActions = (card) => `
   ${renderStarButton(card)}
-  ${renderIconButton({ className: 'btn-edit', icon: 'edit' })}
-  ${renderIconButton({ className: 'btn-delete', icon: 'delete' })}
+  ${renderIconButton({ className: 'btn-edit', icon: 'edit', ariaLabel: `Edit ${card.word_en}` })}
+  ${renderIconButton({ className: 'btn-delete', icon: 'delete', ariaLabel: `Delete ${card.word_en}` })}
 `;
 
 const renderStatusBadge = (level) =>

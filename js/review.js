@@ -499,8 +499,8 @@ const ReviewManager = {
             <div class="card-label">Needs more review</div>
             <div id="summary-forgotten-list" class="summary-forgotten-text"></div>
         `;
-        forgottenContainer.style.display = 'flex';
-        forgottenContainer.style.justifyContent = 'flex-start';
+        forgottenContainer.classList.add('is-review-list');
+        forgottenContainer.classList.remove('is-review-complete');
 
         const listDiv = forgottenContainer.querySelector(
           '#summary-forgotten-list',
@@ -521,8 +521,8 @@ const ReviewManager = {
                 <h2>Well done!</h2>
             </div>
         `;
-        forgottenContainer.style.display = 'flex';
-        forgottenContainer.style.justifyContent = 'center';
+        forgottenContainer.classList.remove('is-review-list');
+        forgottenContainer.classList.add('is-review-complete');
       }
     }
 

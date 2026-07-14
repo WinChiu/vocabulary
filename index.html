@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0"
     />
     <title>Just Word</title>
     <link rel="icon" type="image/png" href="assets/app-icon.png" />
@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500&family=Source+Serif+4:wght@400&display=swap"
       rel="stylesheet"
     />
     <!-- CSS -->
@@ -616,33 +616,48 @@
       <!-- Card Preview View -->
       <section id="card-preview" class="view">
         <div class="view-header-flex app-bar">
-          <md-icon-button id="btn-back-card-preview" aria-label="Back">
-            <md-icon>arrow_back</md-icon>
-          </md-icon-button>
+          <button
+            type="button"
+            id="btn-back-card-preview"
+            class="icon-button"
+            aria-label="Back"
+          >
+            <span class="material-symbols-rounded">arrow_back</span>
+          </button>
           <!-- No Title as requested -->
           <div></div>
           <!-- Empty right side -->
           <div class="preview-top-actions">
-            <md-icon-button
+            <button
+              type="button"
               id="preview-audio-btn"
-              class="preview-audio-btn"
+              class="icon-button preview-audio-btn"
               disabled
               aria-label="Audio"
             >
-              <md-icon>volume_off</md-icon>
-            </md-icon-button>
-            <md-icon-button class="preview-star-btn" aria-label="Star">
-              <img src="assets/star.svg" class="action-icon" alt="star" />
-            </md-icon-button>
-            <md-icon-button class="preview-edit-btn" aria-label="Edit">
-              <md-icon>edit</md-icon>
-            </md-icon-button>
-            <md-icon-button
-              class="preview-delete-btn danger-icon-btn"
+              <span class="material-symbols-rounded">volume_off</span>
+            </button>
+            <button
+              type="button"
+              class="icon-button preview-star-btn"
+              aria-label="Star"
+            >
+              <span class="material-symbols-rounded">star_outline</span>
+            </button>
+            <button
+              type="button"
+              class="icon-button preview-edit-btn"
+              aria-label="Edit"
+            >
+              <span class="material-symbols-rounded">edit</span>
+            </button>
+            <button
+              type="button"
+              class="icon-button preview-delete-btn danger-icon-btn"
               aria-label="Delete"
             >
-              <md-icon>delete</md-icon>
-            </md-icon-button>
+              <span class="material-symbols-rounded">delete</span>
+            </button>
           </div>
         </div>
         <div id="card-preview-container" class="bento-card full-height">

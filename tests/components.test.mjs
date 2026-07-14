@@ -43,8 +43,13 @@ test("renders vocabulary row and card from the same status and action components
   assert.equal(mobileCard.dataset.id, "word-1");
   assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-primary/);
   assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-secondary/);
-  assert.match(row.innerHTML, /assets\/star-filled\.svg/);
-  assert.match(mobileCard.innerHTML, /assets\/star-filled\.svg/);
+  assert.match(row.innerHTML, /material-symbols-rounded">star</);
+  assert.match(mobileCard.innerHTML, /material-symbols-rounded">star</);
+  assert.match(row.innerHTML, /aria-label="Remove star from &lt;hej&gt;"/);
+  assert.match(
+    mobileCard.innerHTML,
+    /aria-label="Remove star from &lt;hej&gt;"/,
+  );
   assert.match(row.innerHTML, /&lt;hej&gt;/);
   assert.match(mobileCard.innerHTML, /&lt;hej&gt;/);
   assert.match(row.innerHTML, /level-learning/);

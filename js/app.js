@@ -37,6 +37,7 @@ import {
   closeModal,
   showLoading,
   hideLoading,
+  isCompactViewport,
 } from './utils.js?v=4.1';
 import {
   getAuth,
@@ -296,14 +297,14 @@ const App = {
     const addBtn = $('#add-example-btn');
 
     // Hide/Show Add Button
-    if (addBtn) addBtn.style.display = rows.length >= 5 ? 'none' : 'flex';
+    if (addBtn) addBtn.hidden = rows.length >= 5;
 
     // Handle Remove Buttons
     rows.forEach((row, index) => {
       const btn = row.querySelector('.btn-remove-example');
       if (btn) {
         // If only one row, hide remove button to enforce "at least one"
-        btn.style.display = rows.length === 1 ? 'none' : 'block';
+        btn.hidden = rows.length === 1;
       }
     });
   },
@@ -528,11 +529,11 @@ const App = {
     if (dueCheckbox && dueLabel) {
       if (statusFilter === 'new') {
         dueCheckbox.disabled = true;
-        dueLabel.style.opacity = '0.5';
+        dueLabel.classList.add('is-disabled');
         dueLabel.title = 'New cards do not have due dates';
       } else {
         dueCheckbox.disabled = false;
-        dueLabel.style.opacity = '1';
+        dueLabel.classList.remove('is-disabled');
         dueLabel.title = '';
       }
     }
@@ -738,15 +739,15 @@ const App = {
         if (!clozeLabel) return;
 
         if (isPhrase) {
-          clozeLabel.style.opacity = '0.5';
-          clozeLabel.style.pointerEvents = 'none';
+          clozeLabel.classList.add('is-disabled');
+          clozeLabel.setAttribute('aria-disabled', 'true');
           if (clozeLabel.classList.contains('active')) {
             // Switch to Flip EN if Cloze was selected
             App.setSelectedReviewMode('1');
           }
         } else {
-          clozeLabel.style.opacity = '1';
-          clozeLabel.style.pointerEvents = 'auto';
+          clozeLabel.classList.remove('is-disabled');
+          clozeLabel.removeAttribute('aria-disabled');
         }
       });
     }
@@ -782,7 +783,7 @@ const App = {
 
     $$('.mode-option').forEach((option) => {
       on(option, 'click', () => {
-        if (option.style.pointerEvents !== 'none') {
+        if (!option.classList.contains('is-disabled')) {
           App.setSelectedReviewMode(option.dataset.value);
         }
       });
@@ -1466,7 +1467,7 @@ const App = {
 
     // Pagination Logic
     App.currentList = filteredCards; // Save for navigation
-    const isMobile = window.innerWidth <= 899;
+    const isMobile = isCompactViewport();
     const ITEMS_PER_PAGE = 15;
     const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE) || 1;
     App.lastFilteredCount = filteredCards.length;
@@ -1491,15 +1492,9 @@ const App = {
 
         const prevBtn = $('#prev-page-btn');
         prevBtn.disabled = App.currentPage === 1;
-        prevBtn.style.opacity = App.currentPage === 1 ? '0.5' : '1';
-        prevBtn.style.cursor =
-          App.currentPage === 1 ? 'not-allowed' : 'pointer';
 
         const nextBtn = $('#next-page-btn');
         nextBtn.disabled = App.currentPage === totalPages;
-        nextBtn.style.opacity = App.currentPage === totalPages ? '0.5' : '1';
-        nextBtn.style.cursor =
-          App.currentPage === totalPages ? 'not-allowed' : 'pointer';
       } else {
         paginationEl.classList.add('hidden');
       }
@@ -1536,16 +1531,12 @@ const App = {
 
     if (!cleanWord || !languageCode) {
       audioBtn.disabled = true;
-      audioBtn.style.opacity = '0.3';
-      audioBtn.style.cursor = 'default';
       if (icon) icon.textContent = 'volume_off';
       audioBtn.onclick = null;
       return;
     }
 
     audioBtn.disabled = false;
-    audioBtn.style.opacity = '1';
-    audioBtn.style.cursor = 'pointer';
     if (icon) icon.textContent = 'volume_up';
     audioBtn.onclick = async () => {
       const played = await playPronunciation(cleanWord, languageCode);
@@ -1609,14 +1600,13 @@ const App = {
     if (starBtn) {
       const isStarred =
         card.is_starred === true || String(card.is_starred) === 'true';
-      const img = starBtn.querySelector('img');
-      if (isStarred) {
-        img.src = 'assets/star-filled.svg';
-        // img.style.filter = 'none';
-      } else {
-        img.src = 'assets/star.svg';
-        // img.style.filter = 'grayscale(100%) opacity(0.5)';
-      }
+      const icon = starBtn.querySelector('md-icon, .material-symbols-rounded');
+      starBtn.classList.toggle('is-selected', isStarred);
+      starBtn.setAttribute(
+        'aria-label',
+        isStarred ? `Remove star from ${card.word_en}` : `Star ${card.word_en}`,
+      );
+      if (icon) icon.textContent = isStarred ? 'star' : 'star_outline';
     }
 
     // 3. Switch View
@@ -1646,7 +1636,7 @@ const App = {
       if (definitionsContainer) {
         definitionsContainer.innerHTML = '';
         definitionsContainer.classList.add('hidden');
-        definitionsContainer.style.minHeight = '140px';
+        definitionsContainer.classList.add('is-loading-content');
       }
       if (phoneticContainer) phoneticContainer.classList.add('hidden');
       if (synonymsContainer) synonymsContainer.classList.add('hidden');
@@ -1705,12 +1695,12 @@ const App = {
 
       if (definitionsContainer && definitionItems.length > 0) {
         let defsHtml = `
-            <div class="definition-toggle" onclick="const content = this.nextElementSibling; const icon = this.querySelector('md-icon, .material-symbols-rounded'); content.style.display = content.style.display === 'none' ? 'flex' : 'none'; icon.style.transform = content.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">
+            <button type="button" class="definition-toggle" aria-expanded="true" aria-controls="dictionary-definition-list">
                 <span>OTHER DEFINITIONS</span>
                 <md-icon>chevron_right</md-icon>
-            </div>
+            </button>
         `;
-        defsHtml += `<div class="definition-list">`;
+        defsHtml += `<div class="definition-list" id="dictionary-definition-list">`;
 
         definitionItems.forEach((item) => {
           defsHtml += `
@@ -1724,6 +1714,17 @@ const App = {
         defsHtml += `</div>`;
         definitionsContainer.innerHTML = defsHtml;
         definitionsContainer.classList.remove('hidden');
+        const disclosure = definitionsContainer.querySelector(
+          '.definition-toggle',
+        );
+        const definitionList = definitionsContainer.querySelector(
+          '#dictionary-definition-list',
+        );
+        on(disclosure, 'click', () => {
+          const expanded = disclosure.getAttribute('aria-expanded') === 'true';
+          disclosure.setAttribute('aria-expanded', String(!expanded));
+          definitionList.hidden = expanded;
+        });
       }
 
       // 3. Synonyms
@@ -1742,7 +1743,7 @@ const App = {
     } finally {
       hideLoading('#card-preview');
       if (definitionsContainer) {
-        definitionsContainer.style.minHeight = '';
+        definitionsContainer.classList.remove('is-loading-content');
         // If innerHTML is empty (no defs found or error), hide it
         if (!definitionsContainer.innerHTML) {
           definitionsContainer.classList.add('hidden');

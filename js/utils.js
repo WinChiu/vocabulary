@@ -3,6 +3,16 @@
 export const $ = (selector) => document.querySelector(selector);
 export const $$ = (selector) => document.querySelectorAll(selector);
 
+// JavaScript viewport decisions mirror the SCSS breakpoint tokens.
+export const VIEWPORT = Object.freeze({
+  medium: 768,
+  expanded: 1024,
+  wide: 1440,
+});
+
+export const isCompactViewport = () =>
+  window.matchMedia(`(max-width: ${VIEWPORT.medium - 1}px)`).matches;
+
 // Simple event listener wrapper
 export const on = (element, event, handler) => {
   if (element) {

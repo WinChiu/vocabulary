@@ -110,7 +110,10 @@ export const showPopup = (title, content, options = {}) => {
 
 export const showView = (viewId) => {
   $$('.view').forEach((el) => el.classList.remove('active'));
-  $$('.nav-btn, .nav-item').forEach((el) => el.classList.remove('active'));
+  $$('.nav-btn, .nav-item').forEach((el) => {
+    el.classList.remove('active');
+    el.removeAttribute('active');
+  });
 
   const target = $(`#${viewId}`);
   if (target) {
@@ -122,6 +125,7 @@ export const showView = (viewId) => {
   );
   navElements.forEach((el) => {
     el.classList.add('active');
+    el.setAttribute('active', '');
   });
 
   // Toggle Main Nav visibility for primary tab-style destinations.

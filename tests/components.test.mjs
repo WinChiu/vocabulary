@@ -41,10 +41,12 @@ test("renders vocabulary row and card from the same status and action components
 
   assert.equal(row.dataset.id, "word-1");
   assert.equal(mobileCard.dataset.id, "word-1");
-  assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-primary/);
-  assert.match(mobileCard.innerHTML, /vocab-card-row vocab-card-row-secondary/);
-  assert.match(row.innerHTML, /material-symbols-rounded">star</);
-  assert.match(mobileCard.innerHTML, /material-symbols-rounded">star</);
+  assert.match(mobileCard.innerHTML, /vocab-list-item-content/);
+  assert.match(mobileCard.innerHTML, /vocab-list-item-meta/);
+  assert.match(row.innerHTML, /<md-icon>star<\/md-icon>/);
+  assert.match(mobileCard.innerHTML, /<md-icon>star<\/md-icon>/);
+  assert.match(row.innerHTML, /<md-icon-button/);
+  assert.match(mobileCard.innerHTML, /<md-icon-button/);
   assert.match(row.innerHTML, /aria-label="Remove star from &lt;hej&gt;"/);
   assert.match(
     mobileCard.innerHTML,
@@ -71,9 +73,10 @@ test("renders reusable preview and empty state sections", () => {
 test("renders example input through a shared form component", () => {
   const html = renderExampleInput("Example <placeholder>");
 
-  assert.match(html, /<textarea/);
-  assert.match(html, /class="form-field form-field-textarea example-field"/);
-  assert.match(html, /class="example-input form-control form-textarea"/);
+  assert.match(html, /<md-outlined-text-field/);
+  assert.match(html, /type="textarea"/);
+  assert.match(html, /class="example-field"/);
+  assert.match(html, /class="example-input material-field"/);
   assert.match(html, /placeholder="Example &lt;placeholder&gt;"/);
   assert.match(html, /btn-remove-example/);
 });

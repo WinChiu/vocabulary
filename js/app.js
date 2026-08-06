@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=4.1';
+import DataService from './data.js?v=4.2';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=4.1';
+} from './language.js?v=4.2';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=4.1';
+} from './auth-flow.js?v=4.2';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=4.1';
+} from './category.js?v=4.2';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=4.1';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=4.1';
-import { playPronunciation } from './tts.js?v=4.1';
+} from './components.js?v=4.2';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=4.2';
+import { playPronunciation } from './tts.js?v=4.2';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=4.1';
+} from './utils.js?v=4.2';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -64,19 +64,41 @@ const App = {
 
   getControlValue: (selector, fallback = '') => {
     const el = typeof selector === 'string' ? $(selector) : selector;
-    return el && typeof el.value !== 'undefined' ? el.value : fallback;
+    if (!el || typeof el.value === 'undefined') return fallback;
+    if (el.value !== '') return el.value;
+
+    const selectedOption = Array.from(
+      el.querySelectorAll?.('md-select-option') || [],
+    ).find((option) => option.selected || option.hasAttribute('selected'));
+
+    return selectedOption?.value || fallback;
   },
 
   setControlValue: (selector, value = '') => {
     const el = typeof selector === 'string' ? $(selector) : selector;
-    if (el && typeof el.value !== 'undefined') el.value = value;
+    if (el && typeof el.value !== 'undefined') {
+      el.value = value;
+      const options = Array.from(el.querySelectorAll?.('md-select-option') || []);
+      options.forEach((option, index) => {
+        const isSelected = option.value === String(value);
+        option.selected = isSelected;
+        option.toggleAttribute('selected', isSelected);
+        if (isSelected && typeof el.selectedIndex !== 'undefined') {
+          el.selectedIndex = index;
+        }
+      });
+    }
   },
 
   getControlChecked: (selector) => {
     const el = typeof selector === 'string' ? $(selector) : selector;
     if (!el) return false;
-    if (typeof el.selected !== 'undefined') return Boolean(el.selected);
-    if (typeof el.checked !== 'undefined') return Boolean(el.checked);
+    if (typeof el.checked !== 'undefined') {
+      return Boolean(el.checked || el.hasAttribute('checked'));
+    }
+    if (typeof el.selected !== 'undefined') {
+      return Boolean(el.selected || el.hasAttribute('selected'));
+    }
     return false;
   },
 
@@ -97,20 +119,10 @@ const App = {
 
     selects.forEach((select) => {
       const previousValue = App.getControlValue(select, 'all');
-      const isNativeSelect = select.tagName.toLowerCase() === 'select';
-      select.innerHTML = isNativeSelect
-        ? `
-          <option value="all" selected>${select.id === 'filter-category' ? 'All' : 'All Categories'}</option>
-          <option value="${UNCATEGORIZED_FILTER_VALUE}">Uncategorized</option>
-          ${categoryOptions
-            .map(
-              (category) => `<option value="${category}">${category}</option>`,
-            )
-            .join('')}
-        `
-        : `
+      const allLabel = 'All Categories';
+      select.innerHTML = `
           <md-select-option value="all" selected>
-            <div slot="headline">All</div>
+            <div slot="headline">${allLabel}</div>
           </md-select-option>
           <md-select-option value="${UNCATEGORIZED_FILTER_VALUE}">
             <div slot="headline">Uncategorized</div>
@@ -118,8 +130,8 @@ const App = {
           ${categoryOptions
             .map(
               (category) => `
-                <md-select-option value="${category}">
-                  <div slot="headline">${category}</div>
+                <md-select-option value="${escapeHtml(category)}">
+                  <div slot="headline">${escapeHtml(category)}</div>
                 </md-select-option>
               `,
             )
@@ -149,12 +161,38 @@ const App = {
     $$('.mode-option').forEach((el) => {
       const isSelected = el.dataset.value === String(mode);
       el.classList.toggle('active', isSelected);
+      el.toggleAttribute('selected', isSelected);
     });
   },
 
   setButtonText: (selector, text) => {
     const el = typeof selector === 'string' ? $(selector) : selector;
     if (el) el.textContent = text;
+  },
+
+  updateAuthAction: () => {
+    const btn = $('#dashboard-auth-btn');
+    if (!btn) return;
+
+    const isSignedIn = Boolean(App.userInfo);
+    const icon = btn.querySelector('md-icon');
+    const label = isSignedIn ? 'Sign out' : 'Sign in';
+
+    if (icon) icon.textContent = isSignedIn ? 'logout' : 'login';
+    btn.ariaLabel = label;
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+    btn.title = label;
+
+    const textNodes = Array.from(btn.childNodes).filter(
+      (node) => node.nodeType === Node.TEXT_NODE,
+    );
+    const textNode = textNodes.at(-1);
+    if (textNode) {
+      textNode.textContent = ` ${label}`;
+    } else {
+      btn.append(` ${label}`);
+    }
   },
 
   applyLanguageCopy: () => {
@@ -169,11 +207,9 @@ const App = {
       btn.setAttribute('aria-pressed', String(isActive));
     });
 
-    const sourceLabel = $('#source-word-label');
-    if (sourceLabel) sourceLabel.textContent = config.sourceLabel;
-
     const sourceInput = $('#word_en');
     if (sourceInput) {
+      sourceInput.label = config.sourceLabel;
       sourceInput.placeholder = config.sourcePlaceholder;
     }
 
@@ -198,8 +234,8 @@ const App = {
     const importTitle = $('#import-title');
     if (importTitle) importTitle.textContent = config.importTitle;
 
-    const modeFlipSource = $('#mode-flip-source-label');
-    if (modeFlipSource) modeFlipSource.textContent = 'Flashcard';
+    const modeFlipSource = $('.mode-option[data-value="1"]');
+    if (modeFlipSource) modeFlipSource.label = 'Flashcard';
 
     if (!App.editingCardId) {
       const addTitle = $('#add-card .view-header-flex h1');
@@ -342,6 +378,7 @@ const App = {
 
     if (App.isMockMode) {
       App.userInfo = createAuthBypassUser();
+      App.updateAuthAction();
       showView('dashboard');
       await App.refreshData();
       return;
@@ -358,6 +395,7 @@ const App = {
       if (!user) return;
 
       App.userInfo = user;
+      App.updateAuthAction();
 
       if (window.location.search || window.location.hash) {
         window.history.replaceState(
@@ -382,6 +420,7 @@ const App = {
 
     const showLogin = () => {
       App.userInfo = null;
+      App.updateAuthAction();
       showView('login');
     };
 
@@ -590,6 +629,40 @@ const App = {
       if (!dashboardLanguageMenu) return;
       const isOpen = dashboardLanguageMenu.classList.toggle('is-open');
       dashboardLanguageBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    on($('#dashboard-auth-btn'), 'click', async () => {
+      if (!App.userInfo) {
+        showView('login');
+        return;
+      }
+
+      if (App.isMockMode) {
+        App.isMockMode = false;
+        App.userInfo = null;
+        App.allCards = [];
+        DataService.setMockMode(false);
+        App.updateAuthAction();
+        if (window.location.search || window.location.hash) {
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
+        }
+        showView('login');
+        return;
+      }
+
+      try {
+        await signOut(getAuth());
+      } catch (error) {
+        console.error('Logout failed', error);
+        showPopup(
+          'Logout Error',
+          `<p>${error.code || 'unknown-error'}</p><p>${error.message}</p>`,
+        );
+      }
     });
 
     document.addEventListener('click', (event) => {
@@ -966,6 +1039,10 @@ const App = {
       });
     }
 
+    on($('#csv-file-trigger'), 'click', () => {
+      $('#csv-file-input')?.click();
+    });
+
     // Start Review Button (Global, e.g. in FAB now)
     on($('#start-review-action'), 'click', (e) => {
       e.stopPropagation();
@@ -982,8 +1059,12 @@ const App = {
     // Mode Selection Click Handlers
     $$('.mode-option').forEach((el) => {
       on(el, 'click', () => {
-        $$('.mode-option').forEach((opt) => opt.classList.remove('active'));
+        $$('.mode-option').forEach((opt) => {
+          opt.classList.remove('active');
+          opt.removeAttribute('selected');
+        });
         el.classList.add('active');
+        el.setAttribute('selected', '');
       });
     });
 
@@ -1695,10 +1776,10 @@ const App = {
 
       if (definitionsContainer && definitionItems.length > 0) {
         let defsHtml = `
-            <button type="button" class="definition-toggle" aria-expanded="true" aria-controls="dictionary-definition-list">
+            <md-text-button type="button" class="definition-toggle" aria-expanded="true" aria-controls="dictionary-definition-list">
                 <span>OTHER DEFINITIONS</span>
                 <md-icon>chevron_right</md-icon>
-            </button>
+            </md-text-button>
         `;
         defsHtml += `<div class="definition-list" id="dictionary-definition-list">`;
 

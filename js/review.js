@@ -179,7 +179,7 @@ class ReviewSession {
                             ${categoryBadge}
                             <div class="review-question">${card.meaning_zh}</div>
                             <div class="review-answer-slot">
-                              <input type="text" class="review-answer-field revealed" value="${card.word_en}" disabled size="${answerLength}" style="width:${answerLength}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                              <md-outlined-text-field type="text" class="review-answer-field revealed" value="${card.word_en}" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>
                             </div>
                             <div class="review-example">${spellingEx}</div>
                         </div>
@@ -190,7 +190,7 @@ class ReviewSession {
                         ${categoryBadge}
                         <div class="review-question">${card.meaning_zh}</div>
                         <div class="review-answer-slot">
-                          <input type="text" class="review-answer-field" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${answerLength}" style="width:${answerLength}ch">
+                          <md-outlined-text-field type="text" class="review-answer-field" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>
                         </div>
                         <div class="review-example">${spellingEx}</div>
                         <div id="spelling-feedback" class="feedback-msg"></div>
@@ -234,14 +234,11 @@ class ReviewSession {
                            <div class="content cloze-content">${sentence.replace(
                              regex,
                              (fullMatch, prefix, matchWord) =>
-                               `${prefix}<input type="text" class="cloze-input ${
+                               `${prefix}<md-outlined-text-field type="text" class="cloze-input ${
                                  this.clozeRevealedByUnknown
                                    ? 'revealed'
                                    : 'error'
-                               }" value="${matchWord}" disabled size="${Math.max(
-                                 matchWord.length,
-                                 4,
-                               )}" style="width:${Math.max(matchWord.length, 4)}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`,
+                               }" value="${matchWord}" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`,
                            )}</div>
                         </div>
                     `;
@@ -262,13 +259,10 @@ class ReviewSession {
                                 ? sentence.replace(
                                     regex,
                                     (fullMatch, prefix, matchWord) =>
-                                      `${prefix}<input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" size="${Math.max(
-                                        matchWord.length,
-                                        4,
-                                      )}" style="width:${Math.max(matchWord.length, 4)}ch">`,
+                                      `${prefix}<md-outlined-text-field type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`,
                                   )
                                 : sentence +
-                                  `<br><br><input type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="" style="width:4ch">`
+                                  `<br><br><md-outlined-text-field type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`
                             }
                         </div>
                         <div id="cloze-feedback" class="feedback-msg"></div>
@@ -650,7 +644,9 @@ const ReviewManager = {
       feedback.textContent = '';
       input.classList.add('error');
       input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
+      if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
 
       const modeKey = MODE_MAP[session.mode];
       const weight = MODE_WEIGHTS[session.mode];

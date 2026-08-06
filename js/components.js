@@ -23,8 +23,7 @@ const createElement = (tagName, className, dataset = {}, innerHTML = '') => {
   return element;
 };
 
-const renderMaterialIcon = (name) =>
-  `<span class="material-symbols-rounded">${escapeHtml(name)}</span>`;
+const renderMaterialIcon = (name) => `<md-icon>${escapeHtml(name)}</md-icon>`;
 
 const renderIconButton = ({
   className = '',
@@ -43,9 +42,9 @@ const renderIconButton = ({
       )}" />`
     : renderMaterialIcon(icon);
 
-  return `<button type="button" class="icon-button ${escapeHtml(
+  return `<md-icon-button type="button" class="icon-button ${escapeHtml(
     className,
-  )}" aria-label="${escapeHtml(ariaLabel || icon || imageAlt)}"${dataAttrs}>${content}</button>`;
+  )}" aria-label="${escapeHtml(ariaLabel || icon || imageAlt)}"${dataAttrs}>${content}</md-icon-button>`;
 };
 
 const renderStarButton = (card) => {
@@ -116,25 +115,26 @@ export const createVocabularyCard = (card, level) =>
     'vocab-card-modern',
     { id: card.id },
     `
-      <div class="vocab-card-row vocab-card-row-primary">
+      <div class="vocab-list-item-content">
         <div class="vocab-card-word">${escapeHtml(card.word_en)}</div>
-        ${renderStatusBadge(level)}
-      </div>
-      <div class="vocab-card-row vocab-card-row-secondary">
         <div class="vocab-card-meaning">${escapeHtml(card.meaning_zh)}</div>
+      </div>
+      <div class="vocab-list-item-meta">
+        ${renderStatusBadge(level)}
         <div class="vocab-card-actions">${renderRowActions(card)}</div>
       </div>
     `,
   );
 
 export const renderExampleInput = (placeholder) => `
-  <label class="form-field form-field-textarea example-field">
-    <textarea
+  <div class="example-field">
+    <md-outlined-text-field
+      type="textarea"
       rows="2"
       placeholder="${escapeHtml(placeholder)}"
-      class="example-input form-control form-textarea"
-    ></textarea>
-  </label>
+      class="example-input material-field"
+    ></md-outlined-text-field>
+  </div>
   <md-icon-button type="button" class="btn-remove-example" aria-label="Remove example">
     <md-icon>close</md-icon>
   </md-icon-button>

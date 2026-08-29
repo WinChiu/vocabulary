@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=6.0';
+import DataService from './data.js?v=6.1';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=6.0';
+} from './language.js?v=6.1';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=6.0';
+} from './auth-flow.js?v=6.1';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=6.0';
+} from './category.js?v=6.1';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=6.0';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.0';
-import { playPronunciation } from './tts.js?v=6.0';
+} from './components.js?v=6.1';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.1';
+import { playPronunciation } from './tts.js?v=6.1';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=6.0';
+} from './utils.js?v=6.1';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -1730,9 +1730,20 @@ const App = {
       if (synonymsContainer) synonymsContainer.classList.add('hidden');
 
       const cleanWord = word.trim().toLowerCase();
-      const response = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/${language}/${cleanWord}`,
-      );
+      // Hard timeout: if the dictionary API never responds (slow network,
+      // silently dropped request, etc.) the fetch must not be allowed to
+      // hang forever — that's what left the preview stuck on "loading".
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 6000);
+      let response;
+      try {
+        response = await fetch(
+          `https://api.dictionaryapi.dev/api/v2/entries/${language}/${cleanWord}`,
+          { signal: timeoutController.signal },
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
       if (!response.ok) throw new Error('Not found');
 
       const data = await response.json();

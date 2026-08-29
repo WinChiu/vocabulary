@@ -25,7 +25,7 @@ test("renders shared vocabulary table shell", () => {
   const html = renderVocabularyTableShell();
 
   assert.match(html, /id="vocab-table-body"/);
-  assert.match(html, /class="vocab-list-modern"/);
+  assert.match(html, /class="jw-list vocab-list-modern"/);
 });
 
 test("renders vocabulary row and card from the same status and action components", () => {
@@ -41,12 +41,12 @@ test("renders vocabulary row and card from the same status and action components
 
   assert.equal(row.dataset.id, "word-1");
   assert.equal(mobileCard.dataset.id, "word-1");
-  assert.match(mobileCard.innerHTML, /vocab-list-item-content/);
+  assert.match(mobileCard.innerHTML, /vocab-list-item-main/);
   assert.match(mobileCard.innerHTML, /vocab-list-item-meta/);
-  assert.match(row.innerHTML, /<md-icon>star<\/md-icon>/);
-  assert.match(mobileCard.innerHTML, /<md-icon>star<\/md-icon>/);
-  assert.match(row.innerHTML, /<md-icon-button/);
-  assert.match(mobileCard.innerHTML, /<md-icon-button/);
+  assert.match(row.innerHTML, /<i class="ph-bold ph-star" aria-hidden="true"><\/i>/);
+  assert.match(mobileCard.innerHTML, /<i class="ph-bold ph-star" aria-hidden="true"><\/i>/);
+  assert.match(row.innerHTML, /<button type="button" class="btn btn-icon/);
+  assert.match(mobileCard.innerHTML, /<button type="button" class="btn btn-icon/);
   assert.match(row.innerHTML, /aria-label="Remove star from &lt;hej&gt;"/);
   assert.match(
     mobileCard.innerHTML,
@@ -73,10 +73,9 @@ test("renders reusable preview and empty state sections", () => {
 test("renders example input through a shared form component", () => {
   const html = renderExampleInput("Example <placeholder>");
 
-  assert.match(html, /<md-outlined-text-field/);
-  assert.match(html, /type="textarea"/);
+  assert.match(html, /<textarea/);
   assert.match(html, /class="example-field"/);
-  assert.match(html, /class="example-input material-field"/);
+  assert.match(html, /class="input example-input"/);
   assert.match(html, /placeholder="Example &lt;placeholder&gt;"/);
   assert.match(html, /btn-remove-example/);
 });
@@ -90,7 +89,7 @@ test("renders import preview as word and category only", () => {
     examples: ["Jag heter Win."],
   });
 
-  assert.match(html, /class="vocab-card-modern import-preview-card"/);
+  assert.match(html, /class="vocab-list-item import-preview-card"/);
   assert.match(html, /&lt;Jag&gt;/);
   assert.match(html, /人稱代名詞/);
   assert.doesNotMatch(html, /我/);

@@ -1,3 +1,8 @@
+// UI markup generators — "Field Notes" edition.
+// Plain HTML carrying the app.css component classes. Icons are Phosphor
+// bold weight (`.ph-bold .ph-*`); state (e.g. starred) is signalled with
+// color via the `.starred` class rather than swapping icon glyphs.
+
 export const escapeHtml = (value = '') =>
   String(value)
     .replaceAll('&', '&amp;')
@@ -23,7 +28,9 @@ const createElement = (tagName, className, dataset = {}, innerHTML = '') => {
   return element;
 };
 
-const renderMaterialIcon = (name) => `<md-icon>${escapeHtml(name)}</md-icon>`;
+// Phosphor duotone glyph. `name` is the icon name without the `ph-` prefix.
+const renderIcon = (name) =>
+  `<i class="ph-bold ph-${escapeHtml(name)}" aria-hidden="true"></i>`;
 
 const renderIconButton = ({
   className = '',
@@ -40,27 +47,31 @@ const renderIconButton = ({
     ? `<img src="${escapeHtml(imageSrc)}" class="action-icon" alt="${escapeHtml(
         imageAlt,
       )}" />`
-    : renderMaterialIcon(icon);
+    : renderIcon(icon);
 
-  return `<md-icon-button type="button" class="icon-button ${escapeHtml(
+  return `<button type="button" class="btn btn-icon ${escapeHtml(
     className,
-  )}" aria-label="${escapeHtml(ariaLabel || icon || imageAlt)}"${dataAttrs}>${content}</md-icon-button>`;
+  )}" aria-label="${escapeHtml(
+    ariaLabel || icon || imageAlt,
+  )}"${dataAttrs}>${content}</button>`;
 };
 
 const renderStarButton = (card) => {
   const active = isStarred(card);
   return renderIconButton({
     className: `btn-star ${active ? 'starred' : ''}`.trim(),
-    icon: active ? 'star' : 'star_outline',
-    ariaLabel: active ? `Remove star from ${card.word_en}` : `Star ${card.word_en}`,
+    icon: 'star',
+    ariaLabel: active
+      ? `Remove star from ${card.word_en}`
+      : `Star ${card.word_en}`,
     dataset: { starred: String(active) },
   });
 };
 
 const renderRowActions = (card) => `
   ${renderStarButton(card)}
-  ${renderIconButton({ className: 'btn-edit', icon: 'edit', ariaLabel: `Edit ${card.word_en}` })}
-  ${renderIconButton({ className: 'btn-delete', icon: 'delete', ariaLabel: `Delete ${card.word_en}` })}
+  ${renderIconButton({ className: 'btn-edit', icon: 'pencil-simple', ariaLabel: `Edit ${card.word_en}` })}
+  ${renderIconButton({ className: 'btn-delete', icon: 'trash', ariaLabel: `Delete ${card.word_en}` })}
 `;
 
 const renderStatusBadge = (level) =>
@@ -74,9 +85,10 @@ const renderCategoryPill = (category) =>
 export const renderEmptyState = (message) =>
   `<div class="empty-state">${escapeHtml(message)}</div>`;
 
+// Broadsheet prints data tables with `.table`; row rules are the hairline.
 export const renderVocabularyTableShell = () => `
   <div class="table-responsive">
-    <table class="vocab-table">
+    <table class="table vocab-table">
       <thead>
         <tr>
           <th>Word</th>
@@ -88,7 +100,7 @@ export const renderVocabularyTableShell = () => `
       <tbody id="vocab-table-body"></tbody>
     </table>
   </div>
-  <div class="vocab-list-modern"></div>
+  <ul class="jw-list vocab-list-modern" aria-label="Vocabulary words"></ul>
 `;
 
 export const createVocabularyTableRow = (card, level) =>
@@ -111,11 +123,11 @@ export const createVocabularyTableRow = (card, level) =>
 
 export const createVocabularyCard = (card, level) =>
   createElement(
-    'div',
-    'vocab-card-modern',
+    'li',
+    'vocab-list-item',
     { id: card.id },
     `
-      <div class="vocab-list-item-content">
+      <div class="vocab-list-item-main">
         <div class="vocab-card-word">${escapeHtml(card.word_en)}</div>
         <div class="vocab-card-meaning">${escapeHtml(card.meaning_zh)}</div>
       </div>
@@ -128,23 +140,31 @@ export const createVocabularyCard = (card, level) =>
 
 export const renderExampleInput = (placeholder) => `
   <div class="example-field">
-    <md-outlined-text-field
-      type="textarea"
-      rows="2"
-      placeholder="${escapeHtml(placeholder)}"
-      class="example-input material-field"
-    ></md-outlined-text-field>
+    <label class="field">
+      <textarea
+        rows="2"
+        placeholder="${escapeHtml(placeholder)}"
+        aria-label="Example sentence"
+        class="input example-input"
+      ></textarea>
+    </label>
   </div>
-  <md-icon-button type="button" class="btn-remove-example" aria-label="Remove example">
-    <md-icon>close</md-icon>
-  </md-icon-button>
+  <button type="button" class="btn btn-icon btn-remove-example" aria-label="Remove example">
+    ${renderIcon('x')}
+  </button>
 `;
 
 export const renderPreviewSection = (label, items) => {
   const normalizedItems = Array.isArray(items) ? items : [items];
   const content = normalizedItems
     .filter((item) => String(item || '').trim().length > 0)
-    .map((item) => `<div>${escapeHtml(item)}</div>`)
+    .map(
+      (item) => `
+        <li class="preview-content-list-item">
+          <div class="preview-list-body">${escapeHtml(item)}</div>
+        </li>
+      `,
+    )
     .join('');
 
   if (!content) return '';
@@ -152,7 +172,9 @@ export const renderPreviewSection = (label, items) => {
   return `
     <div class="preview-section">
       <div class="preview-section-label">${escapeHtml(label)}</div>
-      <div class="preview-section-content">${content}</div>
+      <ul class="jw-list preview-content-list" aria-label="${escapeHtml(label)}">
+        ${content}
+      </ul>
     </div>
   `;
 };
@@ -166,20 +188,14 @@ export const renderPreviewPage = ({
   dictionarySections = '',
 }) => `
   <div class="preview-page">
-    <div>
+    <section class="preview-hero">
       <div class="preview-title">${escapeHtml(card.word_en)}</div>
       <div class="preview-meaning">${escapeHtml(card.meaning_zh)}</div>
-    </div>
-
-    <div class="preview-metrics">
-      <div class="status-badge-container status-${escapeHtml(
-        level.label.toLowerCase(),
-      )}">
-        <div class="status-label">Status</div>
-        <div class="status-value">${escapeHtml(level.label.toUpperCase())}</div>
-      </div>
+      <span class="level-indicator ${escapeHtml(
+        level.class,
+      )} preview-status-chip">${escapeHtml(level.label)}</span>
       ${dictionaryMetrics}
-    </div>
+    </section>
 
     ${noteSection}
     ${exampleSection}
@@ -188,10 +204,8 @@ export const renderPreviewPage = ({
 `;
 
 export const renderImportPreviewItem = ({ word, category }) => `
-    <div class="vocab-card-modern import-preview-card">
-      <div class="vocab-card-row vocab-card-row-primary">
-        <div class="vocab-card-word">${escapeHtml(word)}</div>
-        ${renderCategoryPill(category)}
-      </div>
-    </div>
+    <li class="vocab-list-item import-preview-card">
+      <div class="vocab-card-word">${escapeHtml(word)}</div>
+      <div class="vocab-list-item-meta">${renderCategoryPill(category)}</div>
+    </li>
   `;

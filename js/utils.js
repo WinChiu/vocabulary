@@ -129,31 +129,33 @@ export const showView = (viewId) => {
     el.setAttribute('aria-selected', 'true');
   });
 
-  const bottomNav = $('#bottom-nav-container');
-  if (bottomNav) {
-    // Only the two top-level scenes carry the Today/Library switch now —
-    // Review, Add word, Import and the word detail panel are all reached
-    // as sheets/panels from within those two, and hide it while active.
-    // It's a single shared element, so it's physically moved into the
-    // active scene's own header slot rather than left position:fixed —
-    // fixed-over-everything is what made it overlap the sign-out /
-    // language controls at narrow widths.
-    const navSlotByView = {
-      dashboard: '#dashboard-nav-slot',
-      words: '#words-nav-slot',
-    };
-    const slotSelector = navSlotByView[viewId];
-
+  // Today and Library share a couple of chrome elements (the nav switch,
+  // the sign-out/language controls) that only make sense on those two
+  // scenes. Each is a single element physically moved into the active
+  // scene's own header slot rather than left position:fixed — fixed-over-
+  // everything is what made it overlap the header's own controls at
+  // narrow widths.
+  const moveIntoSlot = (elementSelector, slotByView) => {
+    const el = $(elementSelector);
+    if (!el) return;
+    const slotSelector = slotByView[viewId];
     if (slotSelector) {
       const slot = $(slotSelector);
-      if (slot && bottomNav.parentElement !== slot) {
-        slot.appendChild(bottomNav);
-      }
-      bottomNav.classList.remove('hidden');
+      if (slot && el.parentElement !== slot) slot.appendChild(el);
+      el.classList.remove('hidden');
     } else {
-      bottomNav.classList.add('hidden');
+      el.classList.add('hidden');
     }
-  }
+  };
+
+  moveIntoSlot('#bottom-nav-container', {
+    dashboard: '#dashboard-nav-slot',
+    words: '#words-nav-slot',
+  });
+  moveIntoSlot('#account-controls', {
+    dashboard: '#dashboard-actions-slot',
+    words: '#words-actions-slot',
+  });
 
   window.scrollTo(0, 0);
 };

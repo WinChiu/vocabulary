@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" href="assets/app-icon.png" />
 
     <!-- Just Word "Quiet Focus" design system: self-contained tokens + components -->
-    <link rel="stylesheet" href="src/css/app.css?v=6.6" />
+    <link rel="stylesheet" href="src/css/app.css?v=6.7" />
 
     <!-- Phosphor icons, bold weight -->
     <link
@@ -62,50 +62,7 @@
       >
         <header class="app-bar dashboard-intro">
           <div class="wordmark">Just Word</div>
-          <span class="dashboard-header-actions">
-            <button
-              id="dashboard-auth-btn"
-              type="button"
-              class="btn btn-icon"
-              aria-label="Sign out"
-              title="Sign out"
-            >
-              <i class="ph-bold ph-sign-out" aria-hidden="true"></i>
-            </button>
-            <span class="dashboard-language-menu">
-              <button
-                id="dashboard-language-btn"
-                type="button"
-                class="btn btn-ghost dashboard-language-trigger"
-                aria-label="Learning language: English"
-                aria-expanded="false"
-              >
-                English
-              </button>
-              <span
-                class="top-language-nav"
-                role="radiogroup"
-                aria-label="Learning language"
-              >
-                <button
-                  type="button"
-                  class="btn btn-ghost language-mode-option active"
-                  data-language-mode="en"
-                  aria-pressed="true"
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-ghost language-mode-option"
-                  data-language-mode="sv"
-                  aria-pressed="false"
-                >
-                  Swedish
-                </button>
-              </span>
-            </span>
-          </span>
+          <span class="account-controls-slot" id="dashboard-actions-slot"></span>
         </header>
 
         <div class="scene-switch-slot" id="dashboard-nav-slot"></div>
@@ -200,13 +157,7 @@
                 </div>
 
                 <div class="form-section checkbox-group">
-                  <label class="checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      id="review-due-only"
-                      name="dueOnly"
-                      checked
-                    />
+                  <label class="toggle-switch">
                     <span class="checkbox-label-text">
                       Due Only&nbsp;—&nbsp;<span
                         id="due-count-badge"
@@ -214,6 +165,13 @@
                         >0</span
                       >&nbsp;cards
                     </span>
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      id="review-due-only"
+                      name="dueOnly"
+                      checked
+                    />
                   </label>
                 </div>
 
@@ -329,7 +287,8 @@
         </aside>
 
         <header class="app-bar words-header">
-          <h1>Library</h1>
+          <div class="wordmark">Just Word</div>
+          <span class="account-controls-slot" id="words-actions-slot"></span>
         </header>
 
         <div class="scene-switch-slot" id="words-nav-slot"></div>
@@ -717,6 +676,57 @@
         </div>
       </section>
 
+      <!-- Shared account controls (sign-out + language switch) — moved into
+           the active scene's header slot by showView(), same as the nav
+           below, so Today and Library both show it. -->
+      <span
+        id="account-controls"
+        class="dashboard-header-actions hidden"
+      >
+        <button
+          id="dashboard-auth-btn"
+          type="button"
+          class="btn btn-icon"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <i class="ph-bold ph-sign-out" aria-hidden="true"></i>
+        </button>
+        <span class="dashboard-language-menu">
+          <button
+            id="dashboard-language-btn"
+            type="button"
+            class="btn btn-ghost dashboard-language-trigger"
+            aria-label="Learning language: English"
+            aria-expanded="false"
+          >
+            English
+          </button>
+          <span
+            class="top-language-nav"
+            role="radiogroup"
+            aria-label="Learning language"
+          >
+            <button
+              type="button"
+              class="btn btn-ghost language-mode-option active"
+              data-language-mode="en"
+              aria-pressed="true"
+            >
+              English
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost language-mode-option"
+              data-language-mode="sv"
+              aria-pressed="false"
+            >
+              Swedish
+            </button>
+          </span>
+        </span>
+      </span>
+
       <!-- Shared top navigation (Today / Library segmented switch) -->
       <nav
         id="bottom-nav-container"
@@ -746,7 +756,7 @@
       </nav>
     </main>
 
-    <script type="module" src="js/app.js?v=6.3"></script>
+    <script type="module" src="js/app.js?v=6.4"></script>
 
     <dialog id="modal-dialog" class="dialog"></dialog>
   </body>

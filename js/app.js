@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=6.3';
+import DataService from './data.js?v=6.4';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=6.3';
+} from './language.js?v=6.4';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=6.3';
+} from './auth-flow.js?v=6.4';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=6.3';
+} from './category.js?v=6.4';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=6.3';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.3';
-import { playPronunciation } from './tts.js?v=6.3';
+} from './components.js?v=6.4';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.4';
+import { playPronunciation } from './tts.js?v=6.4';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=6.3';
+} from './utils.js?v=6.4';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -162,11 +162,22 @@ const App = {
     document.body.dataset.languageMode = config.mode;
     DataService.setLanguageMode(config.mode);
 
+    let activeLanguageLabel = '';
     $$('.language-mode-option').forEach((btn) => {
       const isActive = btn.dataset.languageMode === config.mode;
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-pressed', String(isActive));
+      if (isActive) activeLanguageLabel = btn.textContent.trim();
     });
+
+    const languageTrigger = $('#dashboard-language-btn');
+    if (languageTrigger && activeLanguageLabel) {
+      languageTrigger.textContent = activeLanguageLabel;
+      languageTrigger.setAttribute(
+        'aria-label',
+        `Learning language: ${activeLanguageLabel}`,
+      );
+    }
 
     const setFieldLabel = (input, text) => {
       const span = input?.closest('.field')?.querySelector('span');

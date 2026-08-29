@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=6.1';
+import DataService from './data.js?v=6.2';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=6.1';
+} from './language.js?v=6.2';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=6.1';
+} from './auth-flow.js?v=6.2';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=6.1';
+} from './category.js?v=6.2';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=6.1';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.1';
-import { playPronunciation } from './tts.js?v=6.1';
+} from './components.js?v=6.2';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.2';
+import { playPronunciation } from './tts.js?v=6.2';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=6.1';
+} from './utils.js?v=6.2';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -1705,8 +1705,6 @@ const App = {
 
     if (dictionaryEnabled) {
       App.fetchDictionaryData(card.word_en, config.dictionaryLanguage);
-    } else {
-      hideLoading('#card-preview');
     }
   },
 
@@ -1717,8 +1715,12 @@ const App = {
     const synonymsContainer = $('#preview-synonyms-container');
     const definitionsContainer = $('#preview-definitions-container');
 
-    // Show full page loading with delay
-    showLoading('#card-preview', { delay: 300 });
+    // The word itself, its meaning, status and examples are already
+    // rendered by the time this runs — this only fills in *optional*
+    // dictionary extras (phonetic, synonyms, other definitions), so it
+    // must never show a full-page loading state over content that's
+    // already there. Those sections just stay hidden until (if) they
+    // arrive.
 
     try {
       if (definitionsContainer) {
@@ -1840,7 +1842,6 @@ const App = {
         definitionsContainer.classList.add('hidden');
       }
     } finally {
-      hideLoading('#card-preview');
       if (definitionsContainer) {
         definitionsContainer.classList.remove('is-loading-content');
         // If innerHTML is empty (no defs found or error), hide it

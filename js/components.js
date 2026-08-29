@@ -191,9 +191,12 @@ export const renderPreviewPage = ({
     <section class="preview-hero">
       <div class="preview-title">${escapeHtml(card.word_en)}</div>
       <div class="preview-meaning">${escapeHtml(card.meaning_zh)}</div>
-      <span class="level-indicator ${escapeHtml(
-        level.class,
-      )} preview-status-chip">${escapeHtml(level.label)}</span>
+      <div class="preview-status-row">
+        <span class="level-indicator ${escapeHtml(
+          level.class,
+        )} preview-status-chip">${escapeHtml(level.label)}</span>
+        ${renderCategoryPill(card.category)}
+      </div>
       ${dictionaryMetrics}
     </section>
 

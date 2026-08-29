@@ -179,7 +179,7 @@ class ReviewSession {
                             ${categoryBadge}
                             <div class="review-question">${card.meaning_zh}</div>
                             <div class="review-answer-slot">
-                              <md-outlined-text-field type="text" class="review-answer-field revealed" value="${card.word_en}" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>
+                              <input type="text" class="input review-answer-field revealed" value="${card.word_en}" aria-label="Correct spelling answer" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
                             </div>
                             <div class="review-example">${spellingEx}</div>
                         </div>
@@ -190,7 +190,7 @@ class ReviewSession {
                         ${categoryBadge}
                         <div class="review-question">${card.meaning_zh}</div>
                         <div class="review-answer-slot">
-                          <md-outlined-text-field type="text" class="review-answer-field" id="spelling-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>
+                          <input type="text" class="input review-answer-field" id="spelling-input" aria-label="Type the vocabulary word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
                         </div>
                         <div class="review-example">${spellingEx}</div>
                         <div id="spelling-feedback" class="feedback-msg"></div>
@@ -234,11 +234,11 @@ class ReviewSession {
                            <div class="content cloze-content">${sentence.replace(
                              regex,
                              (fullMatch, prefix, matchWord) =>
-                               `${prefix}<md-outlined-text-field type="text" class="cloze-input ${
+                               `${prefix}<input type="text" aria-label="Correct cloze answer" class="input cloze-input ${
                                  this.clozeRevealedByUnknown
                                    ? 'revealed'
                                    : 'error'
-                               }" value="${matchWord}" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`,
+                               }" value="${matchWord}" disabled autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />`,
                            )}</div>
                         </div>
                     `;
@@ -259,10 +259,10 @@ class ReviewSession {
                                 ? sentence.replace(
                                     regex,
                                     (fullMatch, prefix, matchWord) =>
-                                      `${prefix}<md-outlined-text-field type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`,
+                                      `${prefix}<input type="text" class="input cloze-input" id="cloze-input" aria-label="Type the missing vocabulary word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />`,
                                   )
                                 : sentence +
-                                  `<br><br><md-outlined-text-field type="text" class="cloze-input" id="cloze-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></md-outlined-text-field>`
+                                  `<br><br><input type="text" class="input cloze-input" id="cloze-input" aria-label="Type the missing vocabulary word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />`
                             }
                         </div>
                         <div id="cloze-feedback" class="feedback-msg"></div>
@@ -284,6 +284,16 @@ const ReviewManager = {
     }
     ReviewManager.session = new ReviewSession(cards, mode, languageMode);
 
+    // Reset the container in case a previous session left it in the
+    // finished/summary state.
+    const reviewSession = $('#review-session');
+    $('#review-content')?.classList.remove('hidden');
+    document.querySelector('.review-controls')?.classList.remove('hidden');
+    $('#review-summary-content')?.classList.add('hidden');
+    $('#done-btn-container')?.classList.add('hidden');
+    $('#exit-review-btn')?.classList.remove('hidden');
+    reviewSession?.classList.remove('session-finished');
+
     showView('review-session');
 
     ReviewManager.updateUI();
@@ -300,6 +310,12 @@ const ReviewManager = {
         progEl.textContent = `${session.currentIndex + 1} / ${
           session.cards.length
         }`;
+
+      const progFillEl = $('#review-progress-fill');
+      if (progFillEl) {
+        const pct = ((session.currentIndex + 1) / session.cards.length) * 100;
+        progFillEl.style.width = `${pct}%`;
+      }
 
       // Render Card
       const contentEl = $('#review-content');
@@ -490,7 +506,7 @@ const ReviewManager = {
       if (forgotCount > 0) {
         // Render List Structure
         forgottenContainer.innerHTML = `
-            <div class="card-label">Needs more review</div>
+            <div class="section-label section-label-spot">Worth another look</div>
             <div id="summary-forgotten-list" class="summary-forgotten-text"></div>
         `;
         forgottenContainer.classList.add('is-review-list');
@@ -535,7 +551,21 @@ const ReviewManager = {
       }
     }
 
-    showView('review-summary');
+    // Close the session out INSIDE the same immersive container — swap the
+    // flashcard content for the summary state rather than pushing a new view.
+    const reviewSession = $('#review-session');
+    const reviewContent = $('#review-content');
+    const summaryContent = $('#review-summary-content');
+    const controls = document.querySelector('.review-controls');
+    const doneContainer = $('#done-btn-container');
+    const exitBtn = $('#exit-review-btn');
+
+    if (reviewContent) reviewContent.classList.add('hidden');
+    if (controls) controls.classList.add('hidden');
+    if (summaryContent) summaryContent.classList.remove('hidden');
+    if (doneContainer) doneContainer.classList.remove('hidden');
+    if (exitBtn) exitBtn.classList.add('hidden');
+    if (reviewSession) reviewSession.classList.add('session-finished');
 
     ReviewManager.session = null;
   },

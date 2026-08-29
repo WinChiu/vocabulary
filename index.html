@@ -4,784 +4,750 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Just Word</title>
     <link rel="icon" type="image/png" href="assets/app-icon.png" />
     <link rel="apple-touch-icon" href="assets/app-icon.png" />
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <!-- CSS -->
-    <link rel="stylesheet" href="src/css/style.css" />
 
-    <!-- Material Symbols -->
+    <!-- Just Word "Quiet Focus" design system: self-contained tokens + components -->
+    <link rel="stylesheet" href="src/css/app.css?v=6.5" />
+
+    <!-- Phosphor icons, bold weight -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
       rel="stylesheet"
+      href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"
     />
+
     <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <!-- Lottie Web -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   </head>
-  <body class="light-mode">
-    <!-- Main Workspace -->
+  <body>
     <main class="main-workspace">
       <!-- Login View -->
       <section id="login" class="view active">
-        <div class="auth-card material-card max-w-400-center">
-          <div class="auth-icon-shell">
-            <span class="material-symbols-rounded icon-login-large"
-              >lock_person</span
-            >
-          </div>
-          <h1>Welcome</h1>
+        <div class="auth-card">
+          <div class="login-kicker">Just Word</div>
+          <h1 class="display">
+            Keep<br />
+            the words<br />
+            <em>that stick.</em>
+          </h1>
           <p class="supporting-text">
-            Please sign in to access your vocabulary.
+            One question per card, spaced 0–1–3–7–14–30 days apart — reviewed
+            right before you'd forget it.
           </p>
-          <md-filled-button
+          <button
             id="google-login-btn"
-            class="btn-full-width btn-google-signin"
+            type="button"
+            class="btn btn-primary btn-block"
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
+              alt=""
               class="google-icon-svg"
             />
             Sign in with Google
-          </md-filled-button>
+          </button>
+          <div class="login-footnote">No password, no ads, your list only.</div>
         </div>
       </section>
 
-      <!-- Dashboard View -->
-      <section id="dashboard" class="view">
-        <header class="top-app-bar dashboard-intro">
-          <div>
-            <h1>Today's review</h1>
-          </div>
-          <div class="dashboard-header-actions">
-            <md-text-button
+      <!-- Dashboard View ("Today" — merges old Dashboard + Review setup) -->
+      <section
+        id="dashboard"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="dashboard-tab"
+      >
+        <header class="app-bar dashboard-intro">
+          <div class="wordmark">Just Word</div>
+          <span class="dashboard-header-actions">
+            <button
               id="dashboard-auth-btn"
               type="button"
-              class="dashboard-auth-button"
+              class="btn btn-icon"
               aria-label="Sign out"
+              title="Sign out"
             >
-              <md-icon slot="icon">logout</md-icon>
-              Sign out
-            </md-text-button>
-            <div class="dashboard-language-menu">
-              <md-icon-button
+              <i class="ph-bold ph-sign-out" aria-hidden="true"></i>
+            </button>
+            <span class="dashboard-language-menu">
+              <button
                 id="dashboard-language-btn"
                 type="button"
-                class="topbar-icon-button"
-                aria-label="Learning language"
+                class="btn btn-ghost dashboard-language-trigger"
+                aria-label="Learning language: English"
                 aria-expanded="false"
               >
-                <md-icon>language</md-icon>
-              </md-icon-button>
-              <div
+                English
+              </button>
+              <span
                 class="top-language-nav"
                 role="radiogroup"
                 aria-label="Learning language"
               >
-                <md-text-button
+                <button
                   type="button"
-                  class="language-mode-option active"
+                  class="btn btn-ghost language-mode-option active"
                   data-language-mode="en"
                   aria-pressed="true"
                 >
                   English
-                </md-text-button>
-                <md-text-button
+                </button>
+                <button
                   type="button"
-                  class="language-mode-option"
+                  class="btn btn-ghost language-mode-option"
                   data-language-mode="sv"
                   aria-pressed="false"
                 >
                   Swedish
-                </md-text-button>
-              </div>
-            </div>
-          </div>
+                </button>
+              </span>
+            </span>
+          </span>
         </header>
 
+        <div class="scene-switch-slot" id="dashboard-nav-slot"></div>
+
         <div class="content-pane dashboard-pane">
-        <div class="metric-grid full-height dashboard">
-          <!-- Summary Stats -->
-          <div
-            class="metric-card metric-card-prominent col-12 card-height-half"
-            id="card-due-container"
-          >
-            <div class="card-label">Today Due</div>
-            <div class="due-card-bottom-row">
-              <div class="due-stats-group">
-                <div class="due-count-line">
-                  <div class="card-value card-value-large" id="due-count">
-                    0
-                  </div>
-                </div>
+          <div class="due-hero" id="card-due-container">
+            <div>
+              <div class="card-label" id="dashboard-dateline">Due right now</div>
+              <div class="figure-xl" id="due-count">0</div>
+            </div>
+            <div class="due-stat-list">
+              <div class="due-stat-row">
+                <span>New</span>
+                <span class="figure-sm" id="dashboard-new-count">0</span>
               </div>
-
-              <md-filled-icon-button
-                type="button"
-                class="topbar-icon-button due-review-button"
-                id="start-review-action"
-                aria-label="Start review"
-                title="Start review"
-              >
-                <md-icon>play_arrow</md-icon>
-              </md-filled-icon-button>
+              <div class="due-stat-row">
+                <span class="accent-text">Learning</span>
+                <span class="figure-sm accent" id="dashboard-lrn-count">0</span>
+              </div>
+              <div class="due-stat-row">
+                <span>Mastered</span>
+                <span class="figure-sm" id="dashboard-mst-count">0</span>
+              </div>
             </div>
           </div>
 
-          <div
-            class="metric-card col-4 mobile-col-4 card-height-half"
-            id="card-new-container"
+          <button
+            type="button"
+            class="btn btn-primary btn-block due-review-button"
+            id="start-review-action"
+            aria-label="Begin today's review"
+            title="Begin today's review"
           >
-            <div class="card-label">New</div>
-            <div class="flex-fill-bottom">
-              <div class="card-value" id="dashboard-new-count">0</div>
-            </div>
-          </div>
+            Begin today's review
+            <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>
+          </button>
 
-          <div
-            class="metric-card col-4 mobile-col-4 card-height-half"
-            id="card-lrn-container"
-          >
-            <div class="card-label">Learning</div>
-            <div class="flex-fill-bottom">
-              <div class="card-value" id="dashboard-lrn-count">0</div>
-            </div>
-          </div>
+          <!-- Customize this session (merges old Review-setup page into an inline accordion) -->
+          <div class="accordion" id="customize-session-accordion">
+            <button
+              type="button"
+              class="accordion-trigger"
+              id="customize-session-trigger"
+              aria-expanded="false"
+              aria-controls="customize-session-panel"
+            >
+              <span>Customize this session</span>
+              <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+            </button>
+            <div class="accordion-panel" id="customize-session-panel" hidden>
+              <form id="review-setup-form" class="material-form">
+                <div class="field-grid review-select-group">
+                  <label class="field">
+                    <span>Type</span>
+                    <select name="type" id="review-setup-type" class="input">
+                      <option value="word" selected>Word</option>
+                      <option value="phrase">Phrase</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Selection Scope</span>
+                    <select name="scope" id="review-scope" class="input">
+                      <option value="all" selected>All</option>
+                      <option value="starred">Starred</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Status</span>
+                    <select name="status" id="review-status" class="input">
+                      <option value="all" selected>All Status</option>
+                      <option value="new">New</option>
+                      <option value="learning">Learning</option>
+                      <option value="mastered">Mastered</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Category</span>
+                    <select name="category" id="review-category" class="input">
+                      <option value="all" selected>All Categories</option>
+                      <option value="__uncategorized">Uncategorized</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Limit</span>
+                    <select name="limit" id="review-limit" class="input">
+                      <option value="10" selected>10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="25">25</option>
+                    </select>
+                  </label>
+                </div>
 
-          <div
-            class="metric-card col-4 mobile-col-4 card-height-half"
-            id="card-mst-container"
-          >
-            <div class="card-label">Mastered</div>
-            <div class="flex-fill-bottom">
-              <div class="card-value" id="dashboard-mst-count">0</div>
+                <div class="form-section checkbox-group">
+                  <label class="checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      id="review-due-only"
+                      name="dueOnly"
+                      checked
+                    />
+                    <span class="checkbox-label-text">
+                      Due Only&nbsp;—&nbsp;<span
+                        id="due-count-badge"
+                        class="text-spot"
+                        >0</span
+                      >&nbsp;cards
+                    </span>
+                  </label>
+                </div>
+
+                <section class="form-section" aria-label="Review mode">
+                  <div class="section-label">Mode</div>
+                  <div
+                    class="mode-selection"
+                    role="radiogroup"
+                    aria-label="Review mode"
+                  >
+                    <button
+                      type="button"
+                      class="tag tag-accent mode-option active"
+                      data-value="1"
+                      aria-pressed="true"
+                    >
+                      Flip Card (EN)
+                    </button>
+                    <button
+                      type="button"
+                      class="tag tag-outline mode-option"
+                      data-value="2"
+                      aria-pressed="false"
+                    >
+                      Flip Card (ZH)
+                    </button>
+                    <button
+                      type="button"
+                      class="tag tag-outline mode-option"
+                      data-value="3"
+                      aria-pressed="false"
+                    >
+                      Spelling
+                    </button>
+                    <button
+                      type="button"
+                      class="tag tag-outline mode-option"
+                      id="grade-mode-cloze"
+                      data-value="4"
+                      aria-pressed="false"
+                    >
+                      Cloze
+                    </button>
+                  </div>
+                </section>
+              </form>
             </div>
           </div>
-        </div>
         </div>
       </section>
 
-      <!-- Words View -->
-      <section id="words" class="view">
-        <aside class="supporting-sheet filter-sheet section-header-label">
+      <!-- Words View ("Library" — merges old Words + Add-card entry + Import entry + Filter) -->
+      <section
+        id="words"
+        class="view"
+        role="tabpanel"
+        aria-labelledby="words-tab"
+      >
+        <aside class="filter-sheet">
           <div class="filter-sheet-header">
             <h2>Filter words</h2>
-            <md-icon-button
+            <button
               id="words-filter-close-btn"
               type="button"
-              class="topbar-icon-button"
+              class="btn btn-icon"
               aria-label="Close filters"
             >
-              <md-icon>close</md-icon>
-            </md-icon-button>
+              <i class="ph-bold ph-x" aria-hidden="true"></i>
+            </button>
           </div>
           <div class="filter-controls-flex">
-            <md-outlined-text-field
-              id="search-input"
-              class="material-field"
-              type="search"
-              label="Search"
-            >
-              <md-icon slot="leading-icon">search</md-icon>
-            </md-outlined-text-field>
+            <label class="field">
+              <span>Search</span>
+              <input id="search-input" class="input" type="search" />
+            </label>
             <div class="filter-group-row">
-              <md-outlined-select id="filter-status" class="material-field" label="Status">
-                <md-select-option value="all" selected>
-                  <div slot="headline">All Status</div>
-                </md-select-option>
-                <md-select-option value="mastered">
-                  <div slot="headline">Mastered</div>
-                </md-select-option>
-                <md-select-option value="learning">
-                  <div slot="headline">Learning</div>
-                </md-select-option>
-                <md-select-option value="new">
-                  <div slot="headline">New</div>
-                </md-select-option>
-              </md-outlined-select>
-
-              <md-outlined-select id="filter-type" class="material-field" label="Type">
-                <md-select-option value="word" selected>
-                  <div slot="headline">Word</div>
-                </md-select-option>
-                <md-select-option value="phrase">
-                  <div slot="headline">Phrase</div>
-                </md-select-option>
-              </md-outlined-select>
-
-              <md-outlined-select id="filter-category" class="material-field" label="Category">
-                <md-select-option value="all" selected>
-                  <div slot="headline">All Categories</div>
-                </md-select-option>
-                <md-select-option value="__uncategorized">
-                  <div slot="headline">Uncategorized</div>
-                </md-select-option>
-              </md-outlined-select>
+              <label class="field">
+                <span>Status</span>
+                <select id="filter-status" class="input">
+                  <option value="all" selected>All Status</option>
+                  <option value="mastered">Mastered</option>
+                  <option value="learning">Learning</option>
+                  <option value="new">New</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Type</span>
+                <select id="filter-type" class="input">
+                  <option value="word" selected>Word</option>
+                  <option value="phrase">Phrase</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Category</span>
+                <select id="filter-category" class="input">
+                  <option value="all" selected>All Categories</option>
+                  <option value="__uncategorized">Uncategorized</option>
+                </select>
+              </label>
             </div>
-            <md-chip-set class="filter-action-row" aria-label="Filter toggles">
-              <!-- Starred Toggle -->
+            <div class="filter-action-row">
               <label class="toggle-switch">
                 <span class="filter-label">Starred</span>
-                <md-switch id="filter-starred-only"></md-switch>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  id="filter-starred-only"
+                  aria-label="Show starred only"
+                />
               </label>
-            </md-chip-set>
+            </div>
           </div>
         </aside>
 
-        <!-- Vocabulary List Section (Full Width) -->
-        <header class="top-app-bar workspace-header words-header">
-          <div>
-            <h1>Vocabulary</h1>
-          </div>
-          <div class="topbar-actions">
-            <md-icon-button
-              id="words-add-btn"
-              type="button"
-              class="topbar-icon-button"
-              aria-label="Add word"
-            >
-              <md-icon>add</md-icon>
-            </md-icon-button>
-            <md-icon-button
-              id="words-filter-btn"
-              type="button"
-              class="topbar-icon-button"
-              aria-label="Filter words"
-              aria-expanded="false"
-            >
-              <md-icon>tune</md-icon>
-            </md-icon-button>
-          </div>
+        <header class="app-bar words-header">
+          <h1>Library</h1>
         </header>
-        <div class="words-pane">
-        <div class="vocab-section-container">
-          <div id="card-list-modern" class="material-list-surface">
-            <!-- Cards injected here -->
-          </div>
 
-          <!-- Pagination Controls -->
-          <div id="pagination-controls" class="pagination-container hidden">
-            <md-filled-tonal-icon-button
-              id="prev-page-btn"
-              aria-label="Previous page"
-            >
-              <md-icon>arrow_back</md-icon>
-            </md-filled-tonal-icon-button>
-            <span id="page-indicator" class="page-indicator-text"
-              >Page 1 of 1</span
-            >
-            <md-filled-tonal-icon-button
-              id="next-page-btn"
-              aria-label="Next page"
-            >
-              <md-icon>arrow_forward</md-icon>
-            </md-filled-tonal-icon-button>
+        <div class="scene-switch-slot" id="words-nav-slot"></div>
+
+        <div class="words-pane">
+          <div class="vocab-section-container">
+            <div id="card-list-modern" class="list-surface">
+              <!-- Cards injected here -->
+            </div>
+
+            <div id="pagination-controls" class="pagination-container hidden">
+              <button
+                type="button"
+                id="prev-page-btn"
+                class="btn btn-ghost"
+                aria-label="Previous page"
+              >
+                <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+              </button>
+              <span id="page-indicator" class="page-indicator-text"
+                >Page 1 of 1</span
+              >
+              <button
+                type="button"
+                id="next-page-btn"
+                class="btn btn-ghost"
+                aria-label="Next page"
+              >
+                <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- floating filter pill -->
+        <button
+          type="button"
+          id="words-filter-btn"
+          class="filter-pill"
+          aria-label="Filter words"
+          aria-expanded="false"
+        >
+          <i class="ph-bold ph-sliders-horizontal" aria-hidden="true"></i>
+          Filter
+        </button>
+
+        <!-- floating add FAB -->
+        <button
+          type="button"
+          id="words-add-btn"
+          class="add-fab"
+          aria-label="Add words"
+          aria-expanded="false"
+          aria-controls="words-add-sheet"
+        >
+          <i class="ph-bold ph-plus" aria-hidden="true"></i>
+        </button>
+
+        <!-- add / import chooser sheet -->
+        <div id="words-add-sheet" class="scrim hidden">
+          <div class="sheet">
+            <div class="sheet-handle"></div>
+            <button
+              type="button"
+              class="sheet-option"
+              id="words-add-sheet-manual"
+            >
+              <span class="sheet-option-icon"
+                ><i class="ph-bold ph-plus" aria-hidden="true"></i
+              ></span>
+              <span>
+                <span class="sheet-option-title">Add one word</span>
+                <span class="sheet-option-desc"
+                  >Type it in yourself, with an example</span
+                >
+              </span>
+            </button>
+            <button
+              type="button"
+              class="sheet-option"
+              id="words-add-sheet-import"
+            >
+              <span class="sheet-option-icon"
+                ><i class="ph-bold ph-upload-simple" aria-hidden="true"></i
+              ></span>
+              <span>
+                <span class="sheet-option-title">Import a CSV</span>
+                <span class="sheet-option-desc"
+                  >Bring in a whole list at once</span
+                >
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
-      <!-- Add Card View -->
-      <section id="add-card" class="view">
-        <header class="top-app-bar view-header-flex app-bar">
-          <md-icon-button id="btn-back-add-card" aria-label="Back">
-            <md-icon>arrow_back</md-icon>
-          </md-icon-button>
+      <!-- Add Card View (presented as a sheet over Library) -->
+      <section id="add-card" class="view sheet-view">
+        <div class="sheet-view-handle"></div>
+        <header class="app-bar">
+          <button
+            type="button"
+            id="btn-back-add-card"
+            class="btn btn-icon"
+            aria-label="Back"
+          >
+            <i class="ph-bold ph-arrow-left" aria-hidden="true"></i>
+          </button>
           <h1>Add word</h1>
           <div class="app-bar-spacer"></div>
         </header>
         <div id="add-card-container" class="content-pane form-pane">
           <form id="add-card-form" class="material-form">
             <div class="field-group">
-              <md-outlined-text-field
-                id="word_en"
-                class="material-field"
-                type="text"
-                label="Word"
-                required
-              ></md-outlined-text-field>
+              <label class="field">
+                <span>Word</span>
+                <input id="word_en" class="input" type="text" required />
+              </label>
             </div>
             <div class="field-group">
-              <md-outlined-text-field
-                id="meaning_zh"
-                class="material-field"
-                type="text"
-                label="Meaning"
-                required
-              ></md-outlined-text-field>
+              <label class="field">
+                <span>Meaning</span>
+                <input id="meaning_zh" class="input" type="text" required />
+              </label>
             </div>
             <div class="field-group">
-              <md-outlined-text-field
-                id="category"
-                class="material-field"
-                type="text"
-                label="Category"
-              ></md-outlined-text-field>
+              <label class="field">
+                <span>Category</span>
+                <input id="category" class="input" type="text" />
+              </label>
             </div>
             <div class="field-group">
-              <md-outlined-text-field
-                id="note"
-                class="material-field"
-                type="textarea"
-                label="Note"
-                rows="3"
-              ></md-outlined-text-field>
+              <label class="field">
+                <span>Note</span>
+                <textarea id="note" class="input" rows="3"></textarea>
+              </label>
             </div>
             <section class="form-section" aria-labelledby="examples-field-label">
-              <h2 id="examples-field-label">Example</h2>
+              <h2 id="examples-field-label" class="section-label">Example</h2>
               <div id="examples-container" class="flex-col-gap">
                 <!-- Dynamic inputs will be added here -->
               </div>
-              <md-text-button type="button" id="add-example-btn">
-                <md-icon slot="icon">add</md-icon>
+              <button type="button" class="btn btn-ghost" id="add-example-btn">
+                <i class="ph-bold ph-plus" aria-hidden="true"></i>
                 Add example
-              </md-text-button>
+              </button>
             </section>
-            <div class="form-section checkbox-group mb-0">
-              <div class="checkbox-wrapper">
-                <md-checkbox id="is_starred"></md-checkbox>
-                <label class="checkbox-label-text" for="is_starred">
-                  Starred
-                </label>
-              </div>
+            <div class="form-section checkbox-group">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" id="is_starred" />
+                <span class="checkbox-label-text">Starred</span>
+              </label>
             </div>
           </form>
         </div>
         <div class="form-actions form-actions-fixed">
-          <md-filled-button
+          <button
             form="add-card-form"
             type="submit"
             id="save-card-btn"
-            class="btn-full-width"
+            class="btn btn-primary btn-block"
+            aria-label="Save word"
+            title="Save word"
           >
             Save word
-          </md-filled-button>
+          </button>
         </div>
       </section>
 
-      <!-- Import View -->
-      <section id="import" class="view">
-        <header class="top-app-bar view-header-flex app-bar">
+      <!-- Import View (presented as a sheet over Library) -->
+      <section
+        id="import"
+        class="view sheet-view"
+        role="tabpanel"
+        aria-labelledby="import-tab"
+      >
+        <div class="sheet-view-handle"></div>
+        <header class="app-bar">
           <h1 id="import-title">Import</h1>
           <div class="section-label import-preview-label">0 vocabulary</div>
         </header>
         <div class="content-pane import-content">
           <div id="import-file-section">
-            <!-- <div class="section-label">Select CSV File</div> -->
             <div class="field-group">
-              <md-outlined-button type="button" id="csv-file-trigger" class="file-input-dropzone">
-                <md-icon slot="icon">upload_file</md-icon>
+              <button
+                type="button"
+                id="csv-file-trigger"
+                class="btn btn-secondary btn-block"
+              >
+                <i class="ph-bold ph-file-arrow-up" aria-hidden="true"></i>
                 Choose CSV
-              </md-outlined-button>
-              <input
-                type="file"
-                id="csv-file-input"
-                accept=".csv"
-                class="file-input-dropzone"
-                hidden
-              />
+              </button>
+              <input type="file" id="csv-file-input" accept=".csv" hidden />
             </div>
           </div>
 
-          <div
-            id="import-preview"
-            class="list-pane vocab-section-container hidden"
-          >
-            <div id="preview-list" class="material-list-surface">
-              <div class="vocab-list-modern import-preview-list">
+          <div id="import-preview" class="list-pane vocab-section-container hidden">
+            <div id="preview-list" class="list-surface">
+              <ul
+                class="jw-list import-preview-list"
+                aria-label="Import preview words"
+              >
                 <!-- Preview items injected here -->
-              </div>
+              </ul>
             </div>
           </div>
         </div>
         <div id="import-actions" class="form-actions form-actions-fixed">
-          <md-filled-button
+          <button
             type="button"
             id="confirm-import-btn"
-            class="btn-full-width"
+            class="btn btn-primary btn-block"
+            aria-label="Import"
+            title="Import"
             disabled
           >
-            Import
-          </md-filled-button>
+            <i class="ph-bold ph-upload-simple" aria-hidden="true"></i>
+            <span class="action-label">Import</span>
+          </button>
         </div>
       </section>
 
-      <!-- Review Configuration View -->
-      <section id="review-setup" class="view">
-        <header class="top-app-bar view-header-flex app-bar">
-          <h1>Review</h1>
-        </header>
-        <div id="review-session-setup" class="content-pane form-pane">
-          <form id="review-setup-form" class="material-form">
-            <div class="field-grid review-select-group">
-              <div class="field-group">
-                <md-outlined-select name="type" id="review-setup-type" class="material-field" label="Type">
-                  <md-select-option value="word" selected>
-                    <div slot="headline">Word</div>
-                  </md-select-option>
-                  <md-select-option value="phrase">
-                    <div slot="headline">Phrase</div>
-                  </md-select-option>
-                </md-outlined-select>
-              </div>
-              <div class="field-group">
-                <md-outlined-select name="scope" id="review-scope" class="material-field" label="Selection Scope">
-                  <md-select-option value="all" selected>
-                    <div slot="headline">All</div>
-                  </md-select-option>
-                  <md-select-option value="starred">
-                    <div slot="headline">Starred</div>
-                  </md-select-option>
-                </md-outlined-select>
-              </div>
-              <div class="field-group">
-                <md-outlined-select name="status" id="review-status" class="material-field" label="Status">
-                  <md-select-option value="all" selected>
-                    <div slot="headline">All Status</div>
-                  </md-select-option>
-                  <md-select-option value="new">
-                    <div slot="headline">New</div>
-                  </md-select-option>
-                  <md-select-option value="learning">
-                    <div slot="headline">Learning</div>
-                  </md-select-option>
-                  <md-select-option value="mastered">
-                    <div slot="headline">Mastered</div>
-                  </md-select-option>
-                </md-outlined-select>
-              </div>
-              <div class="field-group">
-                <md-outlined-select name="category" id="review-category" class="material-field" label="Category">
-                  <md-select-option value="all" selected>
-                    <div slot="headline">All Categories</div>
-                  </md-select-option>
-                  <md-select-option value="__uncategorized">
-                    <div slot="headline">Uncategorized</div>
-                  </md-select-option>
-                </md-outlined-select>
-              </div>
-              <div class="field-group">
-                <md-outlined-select name="limit" id="review-limit" class="material-field" label="Limit">
-                  <md-select-option value="10" selected>
-                    <div slot="headline">10</div>
-                  </md-select-option>
-                  <md-select-option value="15">
-                    <div slot="headline">15</div>
-                  </md-select-option>
-                  <md-select-option value="20">
-                    <div slot="headline">20</div>
-                  </md-select-option>
-                  <md-select-option value="25">
-                    <div slot="headline">25</div>
-                  </md-select-option>
-                </md-outlined-select>
-              </div>
-            </div>
-            <div class="form-section checkbox-group mt-n05 mb-6">
-              <div class="checkbox-wrapper">
-                <md-checkbox
-                  id="review-due-only"
-                  name="dueOnly"
-                  checked
-                ></md-checkbox>
-                <label class="checkbox-label-text" for="review-due-only">
-                  Due Only&nbsp;-&nbsp;
-                  <span
-                    id="due-count-badge"
-                    class="font-bold text-accent-orange"
-                    >0</span
-                  >
-                  &nbsp;cards
-                </label>
-              </div>
-            </div>
-
-            <section class="form-section mb-0" aria-label="Review mode">
-              <md-chip-set class="mode-selection">
-                <md-filter-chip
-                  class="mode-option active"
-                  data-value="1"
-                  selected
-                  label="Flip Card (EN)"
-                ></md-filter-chip>
-                <md-filter-chip
-                  class="mode-option"
-                  data-value="2"
-                  label="Flip Card (ZH)"
-                ></md-filter-chip>
-                <md-filter-chip
-                  class="mode-option"
-                  data-value="3"
-                  label="Spelling"
-                ></md-filter-chip>
-                <md-filter-chip
-                  class="mode-option"
-                  id="grade-mode-cloze"
-                  data-value="4"
-                  label="Cloze"
-                ></md-filter-chip>
-              </md-chip-set>
-            </section>
-          </form>
-        </div>
-        <div class="form-actions form-actions-fixed">
-          <md-filled-button
-            form="review-setup-form"
-            type="submit"
-            id="start-session-submit"
-            class="btn-full-width"
-          >
-            Start Session
-          </md-filled-button>
-        </div>
-      </section>
-
+      <!-- Review Session View (immersive; also hosts the summary state in place) -->
       <section id="review-session" class="view">
-        <header class="top-app-bar view-header-flex app-bar">
-          <md-icon-button
+        <header class="app-bar review-bar">
+          <button
             type="button"
             id="exit-review-btn"
-            class="icon-button"
+            class="btn btn-icon"
             aria-label="Exit Session"
           >
-            <md-icon>arrow_back</md-icon>
-          </md-icon-button>
-          <!-- Empty center -->
+            <i class="ph-bold ph-x" aria-hidden="true"></i>
+          </button>
           <div></div>
           <div id="review-progress" class="review-progress-text">0 / 0</div>
         </header>
+        <div class="review-progress-track">
+          <div class="review-progress-fill" id="review-progress-fill"></div>
+        </div>
 
         <div id="review-content">
           <!-- Flashcard injected here -->
         </div>
 
-        <div class="review-controls">
-          <div
-            id="reveal-btn-container"
-            class="form-actions form-actions-fixed"
-          >
-            <md-filled-button
-              type="button"
-              id="reveal-btn"
-              class="btn-reveal btn-full-width"
-            >
-              <md-icon slot="icon">visibility</md-icon>
-              Show Answer
-            </md-filled-button>
+        <!-- Summary state: same immersive container, no page push -->
+        <div id="review-summary-content" class="hidden">
+          <div class="summary-stack">
+            <div class="summary-stack-card summary-stack-card-1"></div>
+            <div class="summary-stack-card summary-stack-card-2"></div>
+            <div class="summary-stack-card summary-stack-card-3">
+              session closed
+            </div>
+          </div>
+          <div id="summary-status-card">
+            <div class="card-label">Recalled correctly</div>
+            <div class="figure-xl" id="summary-correct">0</div>
           </div>
 
-          <div
-            id="self-assess-btns"
-            class="form-actions form-actions-fixed hidden"
-          >
-            <md-filled-tonal-button
+          <div id="summary-forgotten-container">
+            <!-- Injected: "Worth another look" list, or a congratulations message -->
+          </div>
+        </div>
+
+        <div class="review-controls">
+          <div id="reveal-btn-container" class="form-actions form-actions-fixed">
+            <button
               type="button"
-              class="text-forgot btn-flex-grow-1"
+              id="reveal-btn"
+              class="btn btn-primary btn-block btn-reveal"
+              aria-label="Show Answer"
+              title="Show Answer"
+            >
+              <span class="action-label">Show Answer</span>
+            </button>
+          </div>
+
+          <div id="self-assess-btns" class="form-actions form-actions-fixed hidden">
+            <button
+              type="button"
+              class="btn btn-secondary text-forgot btn-flex-grow-1"
               id="btn-assess-forgot"
             >
               I Forgot
-            </md-filled-tonal-button>
-            <md-filled-button
+            </button>
+            <button
               type="button"
-              class="btn-flex-grow-2"
+              class="btn btn-primary btn-flex-grow-2"
               id="btn-assess-know"
             >
               I Know
-            </md-filled-button>
+            </button>
           </div>
 
           <div id="grading-btns" class="form-actions form-actions-fixed hidden">
-            <md-filled-button
+            <button
               type="button"
-              class="btn-full-width"
+              class="btn btn-primary btn-block"
               id="btn-next-card"
+              aria-label="Next Card"
+              title="Next Card"
             >
-              Next Card
-            </md-filled-button>
+              <span class="action-label">Next Card</span>
+              <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
-      </section>
 
-      <!-- Review Summary View -->
-      <section id="review-summary" class="view">
-        <header class="top-app-bar view-header-flex app-bar app-bar-centered">
-          <h1>Summary</h1>
-        </header>
-        <div class="content-pane summary-pane">
-        <div class="metric-grid full-height summary-grid">
-          <div class="metric-card col-12 green" id="summary-status-card">
-            <div class="card-label">Result</div>
-            <div class="flex-fill-bottom">
-              <div class="card-value card-value-large" id="summary-correct">
-                0
-              </div>
-            </div>
-          </div>
-
-          <div class="material-card col-12 white" id="summary-forgotten-container">
-            <div class="card-label">Review These Words</div>
-            <div id="summary-forgotten-list" class="vocab-list-modern">
-              <!-- Items injected here -->
-            </div>
-          </div>
-
-          <!-- Spacer for visual balance if list is empty or short -->
-          <div class="summary-spacer"></div>
-        </div>
-        </div>
-
-        <div id="done-btn-container" class="form-actions form-actions-fixed">
-          <md-filled-button
-            class="nav-btn btn-full-width"
-            data-target="dashboard"
-          >
-            Done
-          </md-filled-button>
-        </div>
-      </section>
-
-      <!-- Card Preview View -->
-      <section id="card-preview" class="view">
-        <header class="top-app-bar view-header-flex app-bar">
-          <md-icon-button
+        <div id="done-btn-container" class="form-actions form-actions-fixed hidden">
+          <button
             type="button"
-            id="btn-back-card-preview"
-            class="icon-button"
-            aria-label="Back"
+            class="btn btn-primary btn-block nav-btn"
+            data-target="dashboard"
+            aria-label="Back to today"
+            title="Back to today"
           >
-            <md-icon>arrow_back</md-icon>
-          </md-icon-button>
-          <!-- No Title as requested -->
-          <div></div>
-          <!-- Empty right side -->
+            Back to today
+          </button>
+        </div>
+      </section>
+
+      <!-- Card Preview View (presented as a panel over Library) -->
+      <section id="card-preview" class="view panel-view">
+        <header class="app-bar">
+          <div class="preview-nav-arrows">
+            <button
+              type="button"
+              id="preview-prev-btn"
+              class="btn btn-icon"
+              aria-label="Previous"
+            >
+              <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              id="preview-next-btn"
+              class="btn btn-icon"
+              aria-label="Next"
+            >
+              <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+            </button>
+          </div>
           <div class="preview-top-actions">
-            <md-icon-button
+            <button
               type="button"
               id="preview-audio-btn"
-              class="icon-button preview-audio-btn"
+              class="btn btn-icon preview-audio-btn"
               disabled
               aria-label="Audio"
             >
-              <md-icon>volume_off</md-icon>
-            </md-icon-button>
-            <md-icon-button
+              <i class="ph-bold ph-speaker-simple-x" aria-hidden="true"></i>
+            </button>
+            <button
               type="button"
-              class="icon-button preview-star-btn"
+              class="btn btn-icon preview-star-btn"
               aria-label="Star"
             >
-              <md-icon>star_outline</md-icon>
-            </md-icon-button>
-            <md-icon-button
+              <i class="ph-bold ph-star" aria-hidden="true"></i>
+            </button>
+            <button
               type="button"
-              class="icon-button preview-edit-btn"
+              class="btn btn-icon preview-edit-btn"
               aria-label="Edit"
             >
-              <md-icon>edit</md-icon>
-            </md-icon-button>
-            <md-icon-button
+              <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+            </button>
+            <button
               type="button"
-              class="icon-button preview-delete-btn danger-icon-btn"
+              class="btn btn-icon preview-delete-btn danger-icon-btn"
               aria-label="Delete"
             >
-              <md-icon>delete</md-icon>
-            </md-icon-button>
+              <i class="ph-bold ph-trash" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              id="btn-back-card-preview"
+              class="btn btn-icon"
+              aria-label="Close"
+            >
+              <i class="ph-bold ph-x" aria-hidden="true"></i>
+            </button>
           </div>
         </header>
         <div id="card-preview-container" class="content-pane detail-pane">
           <!-- Content injected here -->
         </div>
-
-        <!-- Footer Actions -->
-        <div id="card-preview-footer" class="form-actions form-actions-fixed">
-          <md-filled-tonal-icon-button
-            class="btn-icon-round"
-            id="preview-prev-btn"
-            aria-label="Previous"
-          >
-            <md-icon>chevron_left</md-icon>
-          </md-filled-tonal-icon-button>
-          <md-filled-icon-button
-            class="btn-icon-round"
-            id="preview-next-btn"
-            aria-label="Next"
-          >
-            <md-icon>chevron_right</md-icon>
-          </md-filled-icon-button>
-        </div>
       </section>
 
-      <!-- Shared Bottom Navigation -->
-      <md-tabs id="bottom-nav-container" class="bottom-navigation hidden">
-        <md-primary-tab
+      <!-- Shared top navigation (Today / Library segmented switch) -->
+      <nav
+        id="bottom-nav-container"
+        class="top-navigation hidden"
+        aria-label="Primary navigation"
+      >
+        <button
           type="button"
+          id="dashboard-tab"
           class="nav-item active"
-          active
           data-target="dashboard"
-          aria-label="Dashboard"
+          aria-label="Today"
+          aria-controls="dashboard"
         >
-          <md-icon slot="icon" class="nav-icon">dashboard</md-icon>
-          <span class="nav-label">Dashboard</span>
-        </md-primary-tab>
-        <md-primary-tab
+          Today
+        </button>
+        <button
           type="button"
+          id="words-tab"
           class="nav-item"
           data-target="words"
-          aria-label="Words"
+          aria-label="Library"
+          aria-controls="words"
         >
-          <md-icon slot="icon" class="nav-icon">format_list_bulleted</md-icon>
-          <span class="nav-label">Vocabulary</span>
-        </md-primary-tab>
-        <md-primary-tab
-          type="button"
-          class="nav-item"
-          data-target="review-setup"
-          aria-label="Review"
-        >
-          <md-icon slot="icon" class="nav-icon">school</md-icon>
-          <span class="nav-label">Review</span>
-        </md-primary-tab>
-        <md-primary-tab
-          type="button"
-          class="nav-item"
-          data-target="import"
-          aria-label="Import"
-        >
-          <md-icon slot="icon" class="nav-icon">upload</md-icon>
-          <span class="nav-label">Import</span>
-        </md-primary-tab>
-      </md-tabs>
+          Library
+        </button>
+      </nav>
     </main>
 
-    <!-- Material Web Components (ESM CDN) -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@material/web/": "https://esm.run/@material/web/"
-        }
-      }
-    </script>
-    <script type="module">
-      import '@material/web/all.js';
-      import { styles as typescaleStyles } from '@material/web/typography/md-typescale-styles.js';
+    <script type="module" src="js/app.js?v=6.0"></script>
 
-      document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
-    </script>
-
-    <!-- Scripts (Type Module) -->
-    <script type="module" src="js/app.js?v=4.2"></script>
-
-    <!-- Material Dialog -->
-    <md-dialog id="modal-dialog"></md-dialog>
+    <dialog id="modal-dialog" class="dialog"></dialog>
   </body>
 </html>

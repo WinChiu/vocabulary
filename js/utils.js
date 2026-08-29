@@ -1,9 +1,10 @@
-// Utility functions (ES Module)
+// Utility functions (ES Module).
+// The modal is a native <dialog class="dialog">; the loading indicator is a
+// CSS spinner (.jw-spinner).
 
 export const $ = (selector) => document.querySelector(selector);
 export const $$ = (selector) => document.querySelectorAll(selector);
 
-// JavaScript viewport decisions mirror the SCSS breakpoint tokens.
 export const VIEWPORT = Object.freeze({
   medium: 768,
   expanded: 1024,
@@ -13,14 +14,12 @@ export const VIEWPORT = Object.freeze({
 export const isCompactViewport = () =>
   window.matchMedia(`(max-width: ${VIEWPORT.medium - 1}px)`).matches;
 
-// Simple event listener wrapper
 export const on = (element, event, handler) => {
   if (element) {
     element.addEventListener(event, handler);
   }
 };
 
-// Toggle visibility of views
 export const closeModal = () => {
   const dialog = $('#modal-dialog');
   document.body.classList.remove('modal-open');
@@ -49,26 +48,26 @@ export const showPopup = (title, content, options = {}) => {
     footerHTML = options.customFooter;
   } else if (onConfirm) {
     footerHTML = `
-      <md-text-button id="modal-cancel-btn">${cancelText}</md-text-button>
-      <md-filled-button id="modal-confirm-btn">${confirmText}</md-filled-button>
+      <button type="button" class="btn btn-ghost" id="modal-cancel-btn">${cancelText}</button>
+      <button type="button" class="btn btn-primary" id="modal-confirm-btn">${confirmText}</button>
     `;
   } else if (showClose) {
-    footerHTML = `<md-filled-button id="modal-close-btn-footer">${confirmText}</md-filled-button>`;
+    footerHTML = `<button type="button" class="btn btn-primary" id="modal-close-btn-footer">${confirmText}</button>`;
   }
 
   dialog.innerHTML = `
-        <div slot="headline" class="modal-header">
+        <div class="dialog-title modal-header">
             <span>${title}</span>
             ${
               showClose
-                ? `<md-icon-button class="modal-close-btn" id="modal-close-x" aria-label="Close"><md-icon>close</md-icon></md-icon-button>`
+                ? `<button type="button" class="btn btn-icon modal-close-btn" id="modal-close-x" aria-label="Close"><i class="ph-bold ph-x" aria-hidden="true"></i></button>`
                 : ''
             }
         </div>
-        <div slot="content" class="modal-body">
+        <div class="dialog-body modal-body">
             ${content}
         </div>
-        <div slot="actions" class="modal-footer ${footerLeft ? 'has-left' : ''}">
+        <div class="dialog-actions modal-footer ${footerLeft ? 'has-left' : ''}">
             ${footerLeft ? `<div class="modal-footer-left">${footerLeft}</div>` : ''}
             <div class="modal-footer-actions">${footerHTML}</div>
         </div>
@@ -113,6 +112,7 @@ export const showView = (viewId) => {
   $$('.nav-btn, .nav-item').forEach((el) => {
     el.classList.remove('active');
     el.removeAttribute('active');
+    el.setAttribute('aria-selected', 'false');
   });
 
   const target = $(`#${viewId}`);
@@ -121,63 +121,62 @@ export const showView = (viewId) => {
   }
 
   const navElements = $$(
-    `.nav-btn[data-target="${viewId}"], .nav-item[data-target="${viewId}"]`
+    `.nav-btn[data-target="${viewId}"], .nav-item[data-target="${viewId}"]`,
   );
   navElements.forEach((el) => {
     el.classList.add('active');
     el.setAttribute('active', '');
+    el.setAttribute('aria-selected', 'true');
   });
 
-  // Toggle Main Nav visibility for primary tab-style destinations.
   const bottomNav = $('#bottom-nav-container');
   if (bottomNav) {
-    const viewsWithBottomNav = [
-      'dashboard',
-      'words',
-      'review-setup',
-      'import',
-    ];
+    // Only the two top-level scenes carry the Today/Library switch now —
+    // Review, Add word, Import and the word detail panel are all reached
+    // as sheets/panels from within those two, and hide it while active.
+    // It's a single shared element, so it's physically moved into the
+    // active scene's own header slot rather than left position:fixed —
+    // fixed-over-everything is what made it overlap the sign-out /
+    // language controls at narrow widths.
+    const navSlotByView = {
+      dashboard: '#dashboard-nav-slot',
+      words: '#words-nav-slot',
+    };
+    const slotSelector = navSlotByView[viewId];
 
-    if (viewsWithBottomNav.includes(viewId)) {
+    if (slotSelector) {
+      const slot = $(slotSelector);
+      if (slot && bottomNav.parentElement !== slot) {
+        slot.appendChild(bottomNav);
+      }
       bottomNav.classList.remove('hidden');
     } else {
       bottomNav.classList.add('hidden');
     }
   }
+
+  window.scrollTo(0, 0);
 };
 
-// Loading Animation Helper
 export const showLoading = (selector, options = {}) => {
   const container = $(selector);
   if (!container) return;
 
   const { delay = 0 } = options;
 
-  // Clear any pending timer on this container to restart or just ensure clean slate
   if (container._loadingTimer) {
     clearTimeout(container._loadingTimer);
     container._loadingTimer = null;
   }
 
-  // Prevent multiple overlays
   if (container.querySelector('.loading-overlay')) return;
 
   const render = () => {
     const overlay = document.createElement('div');
     overlay.className = 'loading-overlay';
-    overlay.innerHTML = '<div class="lottie-container"></div>';
+    overlay.innerHTML =
+      '<div class="jw-spinner" role="status" aria-label="Loading"></div>';
     container.appendChild(overlay);
-
-    // Ensure Lottie is loaded
-    if (window.lottie) {
-      window.lottie.loadAnimation({
-        container: overlay.querySelector('.lottie-container'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: 'assets/loading.json',
-      });
-    }
   };
 
   if (delay > 0) {
@@ -214,4 +213,4 @@ window.utils = {
   closeModal,
   showLoading,
   hideLoading,
-}; // Keep global for debugging if needed, or remove
+};

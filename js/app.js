@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=4.2';
+import DataService from './data.js?v=6.0';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=4.2';
+} from './language.js?v=6.0';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=4.2';
+} from './auth-flow.js?v=6.0';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=4.2';
+} from './category.js?v=6.0';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=4.2';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=4.2';
-import { playPronunciation } from './tts.js?v=4.2';
+} from './components.js?v=6.0';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.0';
+import { playPronunciation } from './tts.js?v=6.0';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=4.2';
+} from './utils.js?v=6.0';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -65,50 +65,22 @@ const App = {
   getControlValue: (selector, fallback = '') => {
     const el = typeof selector === 'string' ? $(selector) : selector;
     if (!el || typeof el.value === 'undefined') return fallback;
-    if (el.value !== '') return el.value;
-
-    const selectedOption = Array.from(
-      el.querySelectorAll?.('md-select-option') || [],
-    ).find((option) => option.selected || option.hasAttribute('selected'));
-
-    return selectedOption?.value || fallback;
+    return el.value !== '' ? el.value : fallback;
   },
 
   setControlValue: (selector, value = '') => {
     const el = typeof selector === 'string' ? $(selector) : selector;
-    if (el && typeof el.value !== 'undefined') {
-      el.value = value;
-      const options = Array.from(el.querySelectorAll?.('md-select-option') || []);
-      options.forEach((option, index) => {
-        const isSelected = option.value === String(value);
-        option.selected = isSelected;
-        option.toggleAttribute('selected', isSelected);
-        if (isSelected && typeof el.selectedIndex !== 'undefined') {
-          el.selectedIndex = index;
-        }
-      });
-    }
+    if (el && typeof el.value !== 'undefined') el.value = value;
   },
 
   getControlChecked: (selector) => {
     const el = typeof selector === 'string' ? $(selector) : selector;
-    if (!el) return false;
-    if (typeof el.checked !== 'undefined') {
-      return Boolean(el.checked || el.hasAttribute('checked'));
-    }
-    if (typeof el.selected !== 'undefined') {
-      return Boolean(el.selected || el.hasAttribute('selected'));
-    }
-    return false;
+    return Boolean(el && el.checked);
   },
 
   setControlChecked: (selector, checked) => {
     const el = typeof selector === 'string' ? $(selector) : selector;
-    if (!el) return;
-    if (typeof el.selected !== 'undefined') el.selected = checked;
-    if (typeof el.checked !== 'undefined') el.checked = checked;
-    el.toggleAttribute('selected', Boolean(checked));
-    el.toggleAttribute('checked', Boolean(checked));
+    if (el) el.checked = Boolean(checked);
   },
 
   renderCategoryOptions: () => {
@@ -121,19 +93,12 @@ const App = {
       const previousValue = App.getControlValue(select, 'all');
       const allLabel = 'All Categories';
       select.innerHTML = `
-          <md-select-option value="all" selected>
-            <div slot="headline">${allLabel}</div>
-          </md-select-option>
-          <md-select-option value="${UNCATEGORIZED_FILTER_VALUE}">
-            <div slot="headline">Uncategorized</div>
-          </md-select-option>
+          <option value="all" selected>${allLabel}</option>
+          <option value="${UNCATEGORIZED_FILTER_VALUE}">Uncategorized</option>
           ${categoryOptions
             .map(
-              (category) => `
-                <md-select-option value="${escapeHtml(category)}">
-                  <div slot="headline">${escapeHtml(category)}</div>
-                </md-select-option>
-              `,
+              (category) =>
+                `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`,
             )
             .join('')}
         `;
@@ -161,7 +126,9 @@ const App = {
     $$('.mode-option').forEach((el) => {
       const isSelected = el.dataset.value === String(mode);
       el.classList.toggle('active', isSelected);
-      el.toggleAttribute('selected', isSelected);
+      el.classList.toggle('tag-accent', isSelected);
+      el.classList.toggle('tag-outline', !isSelected);
+      el.setAttribute('aria-pressed', String(isSelected));
     });
   },
 
@@ -175,24 +142,18 @@ const App = {
     if (!btn) return;
 
     const isSignedIn = Boolean(App.userInfo);
-    const icon = btn.querySelector('md-icon');
+    const icon = btn.querySelector('i');
     const label = isSignedIn ? 'Sign out' : 'Sign in';
 
-    if (icon) icon.textContent = isSignedIn ? 'logout' : 'login';
+    if (icon) {
+      icon.className = isSignedIn
+        ? 'ph-bold ph-sign-out'
+        : 'ph-bold ph-sign-in';
+    }
     btn.ariaLabel = label;
     btn.setAttribute('aria-label', label);
     btn.setAttribute('title', label);
     btn.title = label;
-
-    const textNodes = Array.from(btn.childNodes).filter(
-      (node) => node.nodeType === Node.TEXT_NODE,
-    );
-    const textNode = textNodes.at(-1);
-    if (textNode) {
-      textNode.textContent = ` ${label}`;
-    } else {
-      btn.append(` ${label}`);
-    }
   },
 
   applyLanguageCopy: () => {
@@ -207,9 +168,14 @@ const App = {
       btn.setAttribute('aria-pressed', String(isActive));
     });
 
+    const setFieldLabel = (input, text) => {
+      const span = input?.closest('.field')?.querySelector('span');
+      if (span) span.textContent = text;
+    };
+
     const sourceInput = $('#word_en');
     if (sourceInput) {
-      sourceInput.label = config.sourceLabel;
+      setFieldLabel(sourceInput, config.sourceLabel);
       sourceInput.placeholder = config.sourcePlaceholder;
     }
 
@@ -218,7 +184,7 @@ const App = {
 
     const addExampleBtn = $('#add-example-btn');
     if (addExampleBtn) {
-      const icon = addExampleBtn.querySelector('md-icon');
+      const icon = addExampleBtn.querySelector('i');
       addExampleBtn.textContent = config.addExampleActionLabel;
       if (icon) addExampleBtn.prepend(icon);
     }
@@ -229,16 +195,16 @@ const App = {
     });
 
     const searchInput = $('#search-input');
-    if (searchInput) searchInput.label = config.searchPlaceholder;
+    if (searchInput) setFieldLabel(searchInput, config.searchPlaceholder);
 
     const importTitle = $('#import-title');
     if (importTitle) importTitle.textContent = config.importTitle;
 
     const modeFlipSource = $('.mode-option[data-value="1"]');
-    if (modeFlipSource) modeFlipSource.label = 'Flashcard';
+    if (modeFlipSource) modeFlipSource.textContent = 'Flashcard';
 
     if (!App.editingCardId) {
-      const addTitle = $('#add-card .view-header-flex h1');
+      const addTitle = $('#add-card .app-bar h1');
       if (addTitle) addTitle.textContent = config.addTitle;
       const submitBtn = $('#save-card-btn');
       if (submitBtn && submitBtn.textContent !== 'Saving...') {
@@ -357,7 +323,7 @@ const App = {
     App.addExampleInput();
 
     App.editingCardId = null;
-    $('#add-card .view-header-flex h1').textContent = config.addTitle;
+    $('#add-card .app-bar h1').textContent = config.addTitle;
     App.setButtonText('#save-card-btn', config.saveActionLabel);
     App.applyLanguageCopy();
   },
@@ -720,11 +686,6 @@ const App = {
         App.renderDashboard();
       }
 
-      if (target === 'review-setup') {
-        // Reset scope to 'all' on enter or handle based on current selection
-        App.updateDueCount();
-      }
-
       showView(target);
     };
 
@@ -741,14 +702,53 @@ const App = {
       handleNavigationTarget(navItem.getAttribute('data-target'));
     });
 
+    // FAB opens a small "Add one word / Import a CSV" chooser sheet
+    // instead of jumping straight into a new page.
     const wordsAddBtn = $('#words-add-btn');
+    const wordsAddSheet = $('#words-add-sheet');
+    const closeAddSheet = () => {
+      if (!wordsAddSheet) return;
+      wordsAddSheet.classList.add('hidden');
+      if (wordsAddBtn) wordsAddBtn.setAttribute('aria-expanded', 'false');
+    };
+    const openAddSheet = () => {
+      if (!wordsAddSheet) return;
+      wordsAddSheet.classList.remove('hidden');
+      if (wordsAddBtn) wordsAddBtn.setAttribute('aria-expanded', 'true');
+    };
 
     if (wordsAddBtn) {
-      on(wordsAddBtn, 'click', () => {
-        App.prepareAddCardForm();
-        showView('add-card');
+      on(wordsAddBtn, 'click', (event) => {
+        event.stopPropagation();
+        openAddSheet();
       });
     }
+    on(wordsAddSheet, 'click', (event) => {
+      if (event.target === wordsAddSheet) closeAddSheet();
+    });
+    on($('#words-add-sheet-manual'), 'click', () => {
+      closeAddSheet();
+      App.prepareAddCardForm();
+      showView('add-card');
+    });
+    on($('#words-add-sheet-import'), 'click', () => {
+      closeAddSheet();
+      App.prepareImportView();
+      showView('import');
+    });
+
+    // Home's "Customize this session" accordion (replaces the old
+    // standalone Review-setup page)
+    on($('#customize-session-trigger'), 'click', () => {
+      const trigger = $('#customize-session-trigger');
+      const panel = $('#customize-session-panel');
+      if (!trigger || !panel) return;
+      const expanded = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+      $('#customize-session-accordion')?.classList.toggle('expanded', !expanded);
+      if (!expanded) App.updateDueCount();
+    });
 
     const wordsView = $('#words');
     const wordsFilterBtn = $('#words-filter-btn');
@@ -955,7 +955,7 @@ const App = {
         $('#examples-container').innerHTML = ''; // Clear inputs
         App.addExampleInput(); // Add one fresh input
         App.editingCardId = null; // Reset state
-        $('#add-card .view-header-flex h1').textContent = config.addTitle; // Reset Title
+        $('#add-card .app-bar h1').textContent = config.addTitle; // Reset Title
 
         await App.refreshData(); // Refresh list
         showView('dashboard');
@@ -989,9 +989,9 @@ const App = {
     if (listContainer) {
       on(listContainer, 'click', (e) => {
         // 1. Handle Action Buttons (Star, Delete)
-        const btn = e.target.closest('button, md-icon-button');
+        const btn = e.target.closest('button');
         if (btn) {
-          const itemEl = btn.closest('.vocab-row, .vocab-card-modern');
+          const itemEl = btn.closest('.vocab-row, .vocab-list-item');
           if (!itemEl) return;
           const id = itemEl.dataset.id;
 
@@ -1012,7 +1012,7 @@ const App = {
         }
 
         // 3. Handle Preview Click (bubble up) - Anywhere else in the row or card
-        const item = e.target.closest('.vocab-row, .vocab-card-modern');
+        const item = e.target.closest('.vocab-row, .vocab-list-item');
         if (item) {
           const id = item.dataset.id;
           App.showCardPreview(id);
@@ -1043,17 +1043,17 @@ const App = {
       $('#csv-file-input')?.click();
     });
 
-    // Start Review Button (Global, e.g. in FAB now)
+    // Begin today's review — starts a session immediately using whatever
+    // is currently set in "Customize this session" (defaults if untouched),
+    // instead of pushing to a separate setup page first.
     on($('#start-review-action'), 'click', (e) => {
       e.stopPropagation();
       if (e.currentTarget.disabled) return;
-      showView('review-setup');
-      App.updateDueCount();
+      $('#review-setup-form')?.requestSubmit();
     });
     on($('#card-due-container'), 'click', () => {
       if ($('#start-review-action')?.disabled) return;
-      showView('review-setup');
-      App.updateDueCount();
+      $('#review-setup-form')?.requestSubmit();
     });
 
     // Mode Selection Click Handlers
@@ -1413,7 +1413,7 @@ const App = {
 
     // Update View Title
     // Note: We need a better selector if there are multiple h1s, but view-header-flex h1 inside #add-card is unique enough or we use context
-    document.querySelector('#add-card .view-header-flex h1').textContent =
+    document.querySelector('#add-card .app-bar h1').textContent =
       config.editTitle;
     App.setButtonText('#save-card-btn', config.updateActionLabel);
 
@@ -1464,6 +1464,8 @@ const App = {
     if ($('#dashboard-mst-count'))
       App.countUp($('#dashboard-mst-count'), 0, totalMst, 1000);
 
+    App.updateDueCount();
+
     const elDueCount = $('#due-count');
     const elDueCard = $('#card-due-container');
     const elActionLabel = $('#start-review-action');
@@ -1476,10 +1478,10 @@ const App = {
       elDueCard.classList.remove('green', 'is-complete');
       elDueCard.classList.add('orange');
       elActionLabel.disabled = false;
-      elActionLabel.setAttribute('aria-label', 'Start review');
-      elActionLabel.setAttribute('title', 'Start review');
+      elActionLabel.setAttribute('aria-label', "Begin today's review");
+      elActionLabel.setAttribute('title', "Begin today's review");
       elActionLabel.innerHTML =
-        '<span class="material-symbols-rounded">play_arrow</span>';
+        'Begin today\'s review <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>';
     }
 
     // List rendering
@@ -1608,17 +1610,22 @@ const App = {
     if (!audioBtn) return;
 
     const cleanWord = String(word || '').trim();
-    const icon = audioBtn.querySelector('md-icon, .material-symbols-rounded');
+    const icon = audioBtn.querySelector('i');
+    const canSpeak = Boolean(cleanWord && languageCode);
 
-    if (!cleanWord || !languageCode) {
+    if (icon) {
+      icon.className = canSpeak
+        ? 'ph-bold ph-speaker-high'
+        : 'ph-bold ph-speaker-simple-x';
+    }
+
+    if (!canSpeak) {
       audioBtn.disabled = true;
-      if (icon) icon.textContent = 'volume_off';
       audioBtn.onclick = null;
       return;
     }
 
     audioBtn.disabled = false;
-    if (icon) icon.textContent = 'volume_up';
     audioBtn.onclick = async () => {
       const played = await playPronunciation(cleanWord, languageCode);
       if (!played) {
@@ -1681,13 +1688,13 @@ const App = {
     if (starBtn) {
       const isStarred =
         card.is_starred === true || String(card.is_starred) === 'true';
-      const icon = starBtn.querySelector('md-icon, .material-symbols-rounded');
-      starBtn.classList.toggle('is-selected', isStarred);
+      const icon = starBtn.querySelector('i');
+      starBtn.classList.toggle('starred', isStarred);
       starBtn.setAttribute(
         'aria-label',
         isStarred ? `Remove star from ${card.word_en}` : `Star ${card.word_en}`,
       );
-      if (icon) icon.textContent = isStarred ? 'star' : 'star_outline';
+      if (icon) icon.className = 'ph-bold ph-star';
     }
 
     // 3. Switch View
@@ -1776,10 +1783,10 @@ const App = {
 
       if (definitionsContainer && definitionItems.length > 0) {
         let defsHtml = `
-            <md-text-button type="button" class="definition-toggle" aria-expanded="true" aria-controls="dictionary-definition-list">
+            <button type="button" class="btn btn-ghost definition-toggle" aria-expanded="true" aria-controls="dictionary-definition-list">
                 <span>OTHER DEFINITIONS</span>
-                <md-icon>chevron_right</md-icon>
-            </md-text-button>
+                <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+            </button>
         `;
         defsHtml += `<div class="definition-list" id="dictionary-definition-list">`;
 
@@ -1873,7 +1880,7 @@ const App = {
   renderImportPreview: (data) => {
     const previewData = data;
     const importPreviewContainer = $('#import-preview');
-    const previewList = $('#preview-list .vocab-list-modern');
+    const previewList = $('#preview-list .import-preview-list');
 
     // Update Header with Count
     const sectionLabel = $('.import-preview-label');

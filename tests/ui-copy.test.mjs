@@ -31,5 +31,5 @@ test("review UI copy is English-only", async () => {
 
   assert.doesNotMatch(source, /\u9ede\u64ca\u7ffb\u9762|\u9700\u8981\u518d\u8907\u7fd2/);
   assert.match(source, /Click to flip/);
-  assert.match(source, /Needs more review/);
+  assert.match(source, /Worth another look/);
 });

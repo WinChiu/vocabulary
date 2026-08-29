@@ -7,3 +7,6 @@ Thumbs.db
 
 # Secrets (DO NOT COMMIT)
 js/firebase-config.js
+
+# Playwright CLI scratch profiles
+.playwright-cli/

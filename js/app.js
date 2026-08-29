@@ -1,20 +1,20 @@
 // Main App Logic (ES Module)
-import DataService from './data.js?v=6.4';
+import DataService from './data.js?v=6.5';
 import {
   getLanguageConfig,
   LANGUAGE_STORAGE_KEY,
   normalizeLanguageMode,
-} from './language.js?v=6.4';
+} from './language.js?v=6.5';
 import {
   createAuthBypassUser,
   shouldBypassAuthForTesting,
-} from './auth-flow.js?v=6.4';
+} from './auth-flow.js?v=6.5';
 import {
   buildCategoryOptions,
   categoryMatchesFilter,
   normalizeCategory,
   UNCATEGORIZED_FILTER_VALUE,
-} from './category.js?v=6.4';
+} from './category.js?v=6.5';
 import {
   createVocabularyCard,
   createVocabularyTableRow,
@@ -25,9 +25,9 @@ import {
   renderPreviewPage,
   renderPreviewSection,
   renderVocabularyTableShell,
-} from './components.js?v=6.4';
-import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.4';
-import { playPronunciation } from './tts.js?v=6.4';
+} from './components.js?v=6.5';
+import ReviewManager, { getFamiliarityLevel } from './review.js?v=6.5';
+import { playPronunciation } from './tts.js?v=6.5';
 import {
   $,
   $$,
@@ -38,7 +38,7 @@ import {
   showLoading,
   hideLoading,
   isCompactViewport,
-} from './utils.js?v=6.4';
+} from './utils.js?v=6.5';
 import {
   getAuth,
   GoogleAuthProvider,

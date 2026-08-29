@@ -157,6 +157,9 @@ export const showView = (viewId) => {
     words: '#words-actions-slot',
   });
 
+  // Each .view is its own scroll container now (not the page), so reset
+  // its scroll position directly rather than the window's.
+  if (target) target.scrollTop = 0;
   window.scrollTo(0, 0);
 };
 
